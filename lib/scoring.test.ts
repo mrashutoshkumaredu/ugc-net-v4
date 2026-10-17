@@ -11,6 +11,7 @@ function makeQuestion(overrides: Partial<Question>): Question {
     question_text: 'Q?',
     question_text_hi: null,
     layout_text: null,
+    layout_text_hi: null,
     option_a: 'A',
     option_b: 'B',
     option_c: 'C',
