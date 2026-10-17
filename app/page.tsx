@@ -71,9 +71,12 @@ export default function LandingPage() {
   const themeQuestionCount = unitCounts[selectedTheme] ?? 0;
   const sliderMax = Math.max(1, Math.min(themeQuestionCount, MAX_UNIT_QUESTIONS));
 
+  // Only clamp once the counts have loaded; before that sliderMax is 1 and
+  // would wrongly pull the default of 10 down to 1.
   useEffect(() => {
+    if (themeQuestionCount === 0) return;
     setQuestionCount((c) => Math.min(Math.max(c, 1), sliderMax));
-  }, [sliderMax]);
+  }, [sliderMax, themeQuestionCount]);
 
   const prepareTest = (mode: 'FULL' | 'UNIT') => {
     if (!user) {
