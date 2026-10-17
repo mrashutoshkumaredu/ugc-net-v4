@@ -153,7 +153,7 @@ function QuizPageInner() {
 
       <div className="flex-1 w-full max-w-[1600px] mx-auto h-[calc(100vh-70px)] overflow-hidden flex flex-col md:flex-row gap-2 p-2 sm:p-4 bg-slate-100">
         <div className="flex-1 flex flex-col md:flex-row gap-2 overflow-hidden relative">
-          {currentQuestion.layoutText && <ReferencePanel layoutText={currentQuestion.layoutText} />}
+          {currentQuestion.layoutText && (   <ReferencePanel     layoutText={       language === 'HI' && currentQuestion.layoutTextHi         ? currentQuestion.layoutTextHi         : currentQuestion.layoutText     }   /> )}
 
           <QuestionPanel
             question={currentQuestion}
