@@ -9,6 +9,7 @@ export type Question = {
   question_text: string;
   question_text_hi: string | null;
   layout_text: string | null;
+  layout_text_hi: string | null; 
   option_a: string;
   option_b: string;
   option_c: string;
@@ -35,6 +36,7 @@ export type NormalizedQuestion = {
   questionText: string;
   questionTextHi: string | null;
   layoutText: string | null;
+  layoutTextHi: string | null;  
   options: string[];
   optionsHi: string[] | null;
 };
