@@ -2,16 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      # The build only needs these to exist; no page talks to Supabase at
+      # build time. Repository secrets are used when set, placeholders otherwise.
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
     steps:
       - uses: actions/checkout@v4
 

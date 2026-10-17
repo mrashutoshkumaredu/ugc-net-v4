@@ -9,7 +9,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// createBrowserClient (from @supabase/ssr) stores the session in cookies as
-// well as localStorage, so the API routes under app/api/* can read the same
-// session server-side via lib/supabase-server.ts.
+// Browser client. All test logic runs through database functions
+// (supabase/migrations), which see the logged-in user via auth.uid().
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);

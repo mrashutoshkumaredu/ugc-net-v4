@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { isAdmin } from '@/lib/testApi';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { formatTime } from '@/lib/scoring';
@@ -12,10 +14,18 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
   const { user, signOut } = useAuth();
   const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER' | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [admin, setAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) { setAdmin(false); return; }
+    isAdmin().then((ok) => { if (!cancelled) setAdmin(ok); });
+    return () => { cancelled = true; };
+  }, [user]);
 
   const goHome = () => {
     if (masterSecondsRemaining !== undefined) {
-      if (!confirm('Are you sure you want to exit? Your active test progress will be lost.')) return;
+      if (!confirm('Leave the test? The timer keeps running. Your answers are saved on this device, and you can resume from the home page.')) return;
     }
     router.push('/');
   };
@@ -24,7 +34,7 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
     <>
       <header className="bg-indigo-900 text-white px-4 sm:px-6 py-3 shadow-md z-40 shrink-0">
         <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
-          <div onClick={goHome} className="cursor-pointer flex flex-col items-center sm:items-start group text-center sm:text-left">
+          <div onClick={goHome} role="link" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') goHome(); }} className="cursor-pointer flex flex-col items-center sm:items-start group text-center sm:text-left">
             <h1 className="text-base sm:text-lg font-bold tracking-wide group-hover:text-amber-400 transition">UGC NET Paper 1 Portal</h1>
             <p className="text-[10px] text-indigo-200">National Eligibility Test Practice Platform</p>
           </div>
@@ -57,6 +67,12 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
                   Register
                 </button>
               </div>
+            )}
+
+            {admin && masterSecondsRemaining === undefined && (
+              <Link href="/admin" className="text-xs bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg transition font-bold shrink-0">
+                Admin
+              </Link>
             )}
 
             <button onClick={() => setShowHistory(true)} className="text-xs bg-indigo-800 hover:bg-indigo-700 text-white border border-indigo-600 px-3 py-2 rounded-lg transition font-medium shrink-0">

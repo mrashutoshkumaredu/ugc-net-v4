@@ -12,14 +12,19 @@ Exam-prep platform for UGC NET Paper 1 — full-length previous year question pa
 
 This is a rewrite of the original single-file `index.html` + `app.js` version (vanilla JS, Tailwind via CDN) into a proper Next.js app, matching the structure and conventions of the sibling Polity Prep Hub project.
 
-## What changed from the old version
+## How tests work (October 2026)
 
-- **Answer key no longer reaches the browser before submission.** The old app fetched every question (including `correct_option` and `ai_hint`) client-side on page load — anyone could read the answer key from the network tab. Questions are now served through [`app/api/questions/route.ts`](app/api/questions/route.ts), which strips the answer key; scoring happens server-side in [`app/api/submit/route.ts`](app/api/submit/route.ts), which re-fetches the real rows, computes the score, saves the attempt, and only then returns the answer key for the results/review screen.
-- **"Report Issue" actually saves now.** It used to just `console.log` and show an alert. It now inserts into a new `report_issues` table (RLS: users can insert/read their own reports).
-- **Raw HTML question/table content is sanitized** with DOMPurify before rendering (`components/quiz/MathText.tsx`), instead of being trusted blindly via `innerHTML`.
-- **Componentized** into `components/`, `hooks/`, and `lib/` instead of one 770-line `app.js`, with TypeScript types for the data model (`lib/types.ts`).
-- **Tests**: `lib/scoring.ts` (pure scoring/formatting logic) and `components/quiz/PaletteDrawer.tsx` have Vitest coverage. Run with `npm test`.
-- **CI**: `.github/workflows/ci.yml` runs lint, typecheck, tests, and a production build on every push/PR to `main`.
+- **The answer key never reaches the browser before submitting.** Browsers can't read `correct_option` or `ai_hint` from the database (column privileges, see `supabase/migrations/20261017_02_lock_answer_key.sql`). Tests run through database functions:
+  - `get_catalog()`: paper and unit counts for the home page.
+  - `start_test(mode, paper, unit, count)`: login required; creates a test session and returns its questions without answers. Unit practice is a fresh random set each time, keeping passage/table questions together.
+  - `resume_test(session)`: reloads an unfinished test with its original start time.
+  - `submit_test(session, answers)`: scores on the server (2 marks per correct answer, no negative marking, NTA-dropped questions count as correct), saves the attempt once, then returns the key and explanations.
+- **Resume after refresh.** Answers are saved on the student's device (`lib/progress.ts`); the session id is in the URL and on the home page ("Resume test"). The timer counts down to a fixed end time, so it keeps running while the page is closed, like the real exam.
+- **Admin page** (`/admin`): student reports with the full question, its paper and question number; edit the question and mark reports resolved. Admin emails live in the `app_admins` table.
+- **Password reset** (`/reset-password`) and plain-English login errors (`lib/authErrors.ts`).
+- **Tests**: Vitest covers scoring rules, normalisation, saved progress and the question palette. Run with `npm test`. CI (`.github/workflows/ci.yml`) runs lint, typecheck, tests and a production build.
+
+Database changes are kept in `supabase/migrations/`. Step 1 only adds things; step 2 locks the answer key and must run after the new code is live.
 
 ## Setup
 
@@ -28,7 +33,7 @@ npm install
 npm run dev
 ```
 
-`.env.local` is already filled in with the shared Supabase project's URL and anon key. `.env.local.example` shows the format without real values, for version control. These are anon/publishable keys (safe to expose to the browser — access is enforced by Postgres Row Level Security, not by keeping the key secret).
+Create `.env.local` with the shared Supabase project's URL and anon key. `.env.local.example` shows the format without real values, for version control. These are anon/publishable keys (safe to expose to the browser — access is enforced by Postgres Row Level Security, not by keeping the key secret).
 
 ## Deployment
 
@@ -36,8 +41,8 @@ This repo is already linked to a Vercel project (`ugc-net-v4`) via GitHub, so pu
 
 If CI's build step ever fails for missing env vars, add the same two as repository secrets (Settings → Secrets and variables → Actions) — most pages are client components so this is unlikely to be needed, but the workflow is wired to pick them up if so.
 
-## Known follow-ups (flagged, not fixed here)
+## Known follow-ups
 
-- `public.questions_backup_linebreaks` in the shared Supabase project has Row Level Security disabled (200 rows exposed) and isn't referenced by this app. Decide whether to drop it or enable RLS with a policy matching `questions`.
-- Supabase Auth's "leaked password protection" (checks against HaveIBeenPwned) is currently off — a one-click toggle in the Supabase Auth settings dashboard, unrelated to this codebase.
-- No end-to-end (Playwright) tests yet — Vitest covers the pure logic and a couple of components; full user-flow coverage would be a reasonable next addition.
+- Supabase Auth: turn on "leaked password protection" in the dashboard.
+- Supabase Auth: add `https://ugc-net-v4.vercel.app/reset-password` to the allowed redirect URLs so password-reset emails work.
+- Add the questions NTA dropped (marked `is_dropped`) so those papers have all 50 questions and number them.

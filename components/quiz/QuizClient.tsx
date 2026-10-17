@@ -1,118 +1,213 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
+import AuthModal from '@/components/AuthModal';
 import QuestionPanel from '@/components/quiz/QuestionPanel';
 import ReferencePanel from '@/components/quiz/ReferencePanel';
-import PaletteDrawer from '@/components/quiz/PaletteDrawer';
+import PaletteDrawer, { type ResultState, type ReviewFilter } from '@/components/quiz/PaletteDrawer';
 import SubmitConfirmModal from '@/components/modals/SubmitConfirmModal';
 import ResultModal from '@/components/modals/ResultModal';
 import ReportModal from '@/components/modals/ReportModal';
+import { useAuth } from '@/hooks/useAuth';
 import { useCountdown } from '@/hooks/useCountdown';
 import { useStopwatch } from '@/hooks/useStopwatch';
 import { normalizeQuestion, getPaperDisplayName } from '@/lib/normalize';
-import type { NormalizedQuestion, SubmitResult } from '@/lib/types';
+import { startTest, resumeTest, submitTest } from '@/lib/testApi';
+import { clearProgress, loadProgress, saveProgress } from '@/lib/progress';
+import type { NormalizedQuestion, SubmitResult, TestSession } from '@/lib/types';
+
+type LoadState = 'auth' | 'loading' | 'ready' | 'error' | 'finished';
 
 function QuizPageInner() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const mode = searchParams.get('mode') === 'UNIT' ? 'UNIT' : 'FULL';
-  const paperId = searchParams.get('paperId') || '';
-  const theme = searchParams.get('theme') || '';
-  const count = Number(searchParams.get('count') || '5');
+  const sessionParam = searchParams.get('session');
+  const { user, checkedSession } = useAuth();
 
-  const [loading, setLoading] = useState(true);
+  const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadError, setLoadError] = useState('');
+  const [session, setSession] = useState<TestSession | null>(null);
   const [questions, setQuestions] = useState<NormalizedQuestion[]>([]);
+  const [endAtMs, setEndAtMs] = useState<number | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch('/api/questions');
-        const body = await res.json();
-        if (!res.ok) {
-          setLoadError(body.error || 'Could not load questions.');
-          setLoading(false);
-          return;
-        }
-        const normalized = (body.questions as Parameters<typeof normalizeQuestion>[0][]).map(normalizeQuestion);
-        const filtered = mode === 'FULL'
-          ? normalized.filter((q) => q.paperId === paperId)
-          : normalized.filter((q) => q.unit === theme).slice(0, count);
-        setQuestions(filtered);
-      } catch {
-        setLoadError('Could not reach the server. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const testMode = mode === 'FULL' ? `Full Test (${getPaperDisplayName(paperId)})` : theme;
-  const durationSeconds = mode === 'FULL' ? 3600 : count * 60;
-
-  const [phase, setPhase] = useState<'taking' | 'results'>('taking');
+  const [phase, setPhase] = useState<'taking' | 'submitting' | 'results'>('taking');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [reviewFlags, setReviewFlags] = useState<boolean[]>([]);
+  const [reviewFlags, setReviewFlags] = useState<Record<number, boolean>>({});
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN');
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [reportQuestionId, setReportQuestionId] = useState<number | null>(null);
   const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
-  const [timeTakenSeconds, setTimeTakenSeconds] = useState(0);
-  const hasSubmittedRef = useRef(false);
+  const [submitError, setSubmitError] = useState('');
+  const [reviewFilter, setReviewFilter] = useState<ReviewFilter>('ALL');
+  const startedRef = useRef(false);
+  const submittingRef = useRef(false);
+
+  const label = session
+    ? session.mode === 'FULL'
+      ? `Full Test (${getPaperDisplayName(session.paper_id || '')})`
+      : `${session.unit} (${questions.length} Qs)`
+    : '';
+
+  // ---- Load: resume an existing session, or start a new one --------------
+  const applySession = useCallback((s: TestSession) => {
+    // The end time is set by the server's clock; convert it to this device's
+    // clock so a wrong phone clock can't add or remove time.
+    const offset = Date.parse(s.server_now) - Date.now();
+    setEndAtMs(Date.parse(s.started_at) + s.duration_seconds * 1000 - offset);
+    setSession(s);
+    setQuestions(s.questions.map(normalizeQuestion));
+    const saved = loadProgress(s.session_id);
+    if (saved) {
+      setAnswers(saved.answers || {});
+      setReviewFlags(saved.reviewFlags || {});
+      setCurrentIndex(Math.min(saved.currentIndex || 0, Math.max(s.questions.length - 1, 0)));
+      setLanguage(saved.language || 'EN');
+    }
+    setLoadState('ready');
+  }, []);
 
   useEffect(() => {
-    setReviewFlags(new Array(questions.length).fill(false));
-  }, [questions.length]);
-
-  const executeSubmission = async (secondsRemaining: number) => {
-    if (hasSubmittedRef.current) return;
-    hasSubmittedRef.current = true;
-    setShowSubmitConfirm(false);
-    setPhase('results');
-    const taken = durationSeconds - secondsRemaining;
-    setTimeTakenSeconds(taken);
-
-    try {
-      const res = await fetch('/api/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          questionIds: questions.map((q) => q.id),
-          answers,
-          testMode,
-          paperId: mode === 'FULL' ? paperId : theme,
-          timeTakenSeconds: taken,
-        }),
-      });
-      const body = await res.json();
-      if (res.ok) {
-        setSubmitResult(body as SubmitResult);
-        setShowResultModal(true);
-      } else {
-        setLoadError(body.error || 'Could not submit test.');
-      }
-    } catch {
-      setLoadError('Could not reach the server to submit your test.');
+    if (!checkedSession) return;
+    if (!user) {
+      setLoadState('auth');
+      return;
     }
-  };
+    if (startedRef.current) return;
+    startedRef.current = true;
 
-  const masterSecondsRemaining = useCountdown(durationSeconds, phase === 'taking' && questions.length > 0, () => {
-    executeSubmission(0);
+    const run = async () => {
+      setLoadState('loading');
+      try {
+        if (sessionParam) {
+          const s = await resumeTest(sessionParam);
+          if (!s) {
+            clearProgress(sessionParam);
+            setLoadState('finished');
+            return;
+          }
+          applySession(s);
+          return;
+        }
+        const mode = searchParams.get('mode') === 'UNIT' ? 'UNIT' : 'FULL';
+        const s = await startTest(mode, {
+          paperId: searchParams.get('paperId') || undefined,
+          unit: searchParams.get('theme') || undefined,
+          count: Number(searchParams.get('count') || '10'),
+        });
+        // Put the session id in the address so a refresh resumes this test.
+        router.replace(`/quiz?session=${s.session_id}`);
+        applySession(s);
+      } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'Could not load the test.');
+        setLoadState('error');
+      }
+    };
+    run();
+  }, [checkedSession, user, sessionParam, searchParams, router, applySession]);
+
+  // ---- Save progress on this device after every change --------------------
+  useEffect(() => {
+    if (!session || phase !== 'taking') return;
+    saveProgress({
+      sessionId: session.session_id,
+      label,
+      answers,
+      reviewFlags,
+      currentIndex,
+      language,
+      savedAt: Date.now(),
+    });
+  }, [session, phase, label, answers, reviewFlags, currentIndex, language]);
+
+  // ---- Submit ---------------------------------------------------------------
+  const executeSubmission = useCallback(async () => {
+    if (!session || submittingRef.current) return;
+    submittingRef.current = true;
+    setShowSubmitConfirm(false);
+    setSubmitError('');
+    setPhase('submitting');
+    try {
+      const result = await submitTest(session.session_id, answers);
+      clearProgress(session.session_id);
+      setSubmitResult(result);
+      setPhase('results');
+      setShowResultModal(true);
+      setCurrentIndex(0);
+    } catch (err) {
+      submittingRef.current = false;
+      setPhase('taking');
+      setSubmitError(err instanceof Error ? err.message : 'Could not submit the test.');
+    }
+  }, [session, answers]);
+
+  const secondsRemaining = useCountdown(endAtMs, loadState === 'ready' && phase === 'taking', () => {
+    executeSubmission();
   });
-
-  const questionTimeSpent = useStopwatch(currentIndex, phase === 'taking');
+  const questionTimeSpent = useStopwatch(currentIndex, loadState === 'ready' && phase === 'taking');
 
   const currentQuestion = questions[currentIndex];
+  const isSubmitted = phase === 'results';
   const answeredFlags = useMemo(() => questions.map((q) => answers[q.id] !== undefined), [questions, answers]);
+  const reviewFlagList = useMemo(() => questions.map((q) => Boolean(reviewFlags[q.id])), [questions, reviewFlags]);
+  const resultStates = useMemo<ResultState[] | undefined>(() => {
+    if (!submitResult) return undefined;
+    return questions.map((q) => {
+      const key = submitResult.answerKey[q.id];
+      if (key?.isDropped) return 'dropped';
+      if (answers[q.id] === undefined) return 'skipped';
+      return answers[q.id] === key?.correctOption ? 'correct' : 'wrong';
+    });
+  }, [submitResult, questions, answers]);
 
-  if (loading) {
+  const selectOption = useCallback((optIdx: number) => {
+    if (!currentQuestion || phase !== 'taking') return;
+    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: optIdx }));
+  }, [currentQuestion, phase]);
+  const clearAnswer = useCallback(() => {
+    if (!currentQuestion || phase !== 'taking') return;
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[currentQuestion.id];
+      return next;
+    });
+  }, [currentQuestion, phase]);
+  const toggleReview = useCallback(() => {
+    if (!currentQuestion || phase !== 'taking') return;
+    setReviewFlags((prev) => ({ ...prev, [currentQuestion.id]: !prev[currentQuestion.id] }));
+  }, [currentQuestion, phase]);
+  const goPrev = useCallback(() => setCurrentIndex((i) => Math.max(i - 1, 0)), []);
+  const goNext = useCallback(() => setCurrentIndex((i) => Math.min(i + 1, questions.length - 1)), [questions.length]);
+
+  // ---- Keyboard shortcuts while taking the test ----------------------------
+  useEffect(() => {
+    if (loadState !== 'ready' || phase !== 'taking') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (showSubmitConfirm || reportQuestionId !== null) return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      switch (e.key.toLowerCase()) {
+        case '1': case '2': case '3': case '4':
+          selectOption(Number(e.key) - 1); break;
+        case 'arrowright': goNext(); break;
+        case 'arrowleft': goPrev(); break;
+        case 'm': toggleReview(); break;
+        case 'backspace': case 'delete': e.preventDefault(); clearAnswer(); break;
+        default: return;
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [loadState, phase, showSubmitConfirm, reportQuestionId, selectOption, goNext, goPrev, toggleReview, clearAnswer]);
+
+  // ---- Screens other than the test itself ----------------------------------
+  if (!checkedSession || loadState === 'loading') {
     return (
       <div className="flex-1 flex flex-col">
         <SiteHeader />
@@ -121,63 +216,82 @@ function QuizPageInner() {
     );
   }
 
-  if (loadError && questions.length === 0) {
+  if (loadState === 'auth') {
     return (
       <div className="flex-1 flex flex-col">
         <SiteHeader />
-        <div className="text-center mt-16">
-          <p className="text-rose-600 text-sm mb-4">{loadError}</p>
+        <div className="text-center max-w-md mx-auto mt-16 px-4">
+          <h1 className="text-xl font-bold text-slate-800 mb-2">Please log in to take this test</h1>
+          <p className="text-sm text-slate-500 mb-4">Log in or create a free account. Your scores and history are saved to your account.</p>
+          <Link href="/" className="text-sm font-bold text-indigo-700 hover:underline">← Back to Home</Link>
+        </div>
+        <AuthModal initialMode="LOGIN" onClose={() => router.push('/')} onSuccess={() => { /* useAuth picks up the session */ }} />
+      </div>
+    );
+  }
+
+  if (loadState === 'finished') {
+    return (
+      <div className="flex-1 flex flex-col">
+        <SiteHeader />
+        <div className="text-center max-w-md mx-auto mt-16 px-4">
+          <h1 className="text-xl font-bold text-slate-800 mb-2">This test is already submitted</h1>
+          <p className="text-sm text-slate-500 mb-4">You can see the score in My History, or start a new test from the home page.</p>
           <Link href="/" className="text-sm font-bold text-indigo-700 hover:underline">← Back to Home</Link>
         </div>
       </div>
     );
   }
 
-  if (questions.length === 0) {
+  if (loadState === 'error' || !currentQuestion) {
     return (
       <div className="flex-1 flex flex-col">
         <SiteHeader />
-        <div className="text-center max-w-md mx-auto mt-16">
-          <div className="w-14 h-14 mx-auto bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center text-2xl mb-4 shadow-sm">🚧</div>
-          <h1 className="text-xl font-bold text-slate-800 mb-2">No questions found</h1>
-          <p className="text-sm text-slate-500 leading-relaxed mb-4">This selection doesn&apos;t have any questions yet. Check back soon.</p>
+        <div className="text-center max-w-md mx-auto mt-16 px-4">
+          <p className="text-rose-600 text-sm mb-4">{loadError || 'This selection has no questions yet.'}</p>
           <Link href="/" className="text-sm font-bold text-indigo-700 hover:underline">← Back to Home</Link>
         </div>
       </div>
     );
   }
+
+  const showSource = session?.mode === 'UNIT';
+  const referenceText = language === 'HI' && currentQuestion.layoutTextHi ? currentQuestion.layoutTextHi : currentQuestion.layoutText;
 
   return (
     <div className="flex-1 flex flex-col">
-      <SiteHeader masterSecondsRemaining={masterSecondsRemaining} />
+      <SiteHeader masterSecondsRemaining={phase === 'results' ? undefined : secondsRemaining} />
+
+      {(submitError || phase === 'submitting') && (
+        <div className={`text-center text-xs font-semibold py-2 px-4 ${submitError ? 'bg-rose-50 text-rose-700' : 'bg-indigo-50 text-indigo-700'}`} role="status">
+          {submitError ? `${submitError} Your answers are still here; please try submitting again.` : 'Submitting your test…'}
+        </div>
+      )}
 
       <div className="flex-1 w-full max-w-[1600px] mx-auto h-[calc(100vh-70px)] overflow-hidden flex flex-col md:flex-row gap-2 p-2 sm:p-4 bg-slate-100">
         <div className="flex-1 flex flex-col md:flex-row gap-2 overflow-hidden relative">
-          {currentQuestion.layoutText && (   <ReferencePanel     layoutText={       language === 'HI' && currentQuestion.layoutTextHi         ? currentQuestion.layoutTextHi         : currentQuestion.layoutText     }   /> )}
+          {referenceText && <ReferencePanel layoutText={referenceText} />}
 
           <QuestionPanel
             question={currentQuestion}
             index={currentIndex}
             total={questions.length}
+            showSource={showSource}
             timeSpentSeconds={questionTimeSpent[currentIndex] || 0}
             selectedOption={answers[currentQuestion.id] ?? null}
-            onSelect={(optIdx) => setAnswers((prev) => ({ ...prev, [currentQuestion.id]: optIdx }))}
+            onSelect={selectOption}
             language={language}
             onToggleLanguage={() => setLanguage((l) => (l === 'EN' ? 'HI' : 'EN'))}
-            isReviewed={reviewFlags[currentIndex] || false}
-            onToggleReview={() => setReviewFlags((prev) => prev.map((v, i) => (i === currentIndex ? !v : v)))}
+            isReviewed={Boolean(reviewFlags[currentQuestion.id])}
+            onToggleReview={toggleReview}
             onOpenReport={() => setReportQuestionId(currentQuestion.id)}
             onTogglePalette={() => setPaletteOpen((p) => !p)}
-            isSubmitted={phase === 'results'}
+            isSubmitted={isSubmitted}
             correctOption={submitResult?.answerKey[currentQuestion.id]?.correctOption}
             aiHint={submitResult?.answerKey[currentQuestion.id]?.aiHint}
-            onPrev={() => setCurrentIndex((i) => Math.max(i - 1, 0))}
-            onNext={() => setCurrentIndex((i) => Math.min(i + 1, questions.length - 1))}
-            onClear={() => setAnswers((prev) => {
-              const next = { ...prev };
-              delete next[currentQuestion.id];
-              return next;
-            })}
+            onPrev={goPrev}
+            onNext={goNext}
+            onClear={clearAnswer}
             canGoPrev={currentIndex > 0}
             canGoNext={currentIndex < questions.length - 1}
           />
@@ -188,17 +302,24 @@ function QuizPageInner() {
             totalQuestions={questions.length}
             currentIndex={currentIndex}
             answeredFlags={answeredFlags}
-            reviewFlags={reviewFlags}
+            reviewFlags={reviewFlagList}
             onSelect={(idx) => { setCurrentIndex(idx); setPaletteOpen(false); }}
             onClose={() => setPaletteOpen(false)}
             onSubmit={() => setShowSubmitConfirm(true)}
-            isSubmitted={phase === 'results'}
+            isSubmitted={isSubmitted || phase === 'submitting'}
+            resultStates={resultStates}
+            filter={reviewFilter}
+            onFilterChange={setReviewFilter}
           />
         </div>
       </div>
 
       {showSubmitConfirm && (
-        <SubmitConfirmModal onCancel={() => setShowSubmitConfirm(false)} onConfirm={() => executeSubmission(masterSecondsRemaining)} />
+        <SubmitConfirmModal
+          unansweredCount={questions.length - answeredFlags.filter(Boolean).length}
+          onCancel={() => setShowSubmitConfirm(false)}
+          onConfirm={executeSubmission}
+        />
       )}
 
       {reportQuestionId !== null && (
@@ -209,9 +330,11 @@ function QuizPageInner() {
         <ResultModal
           correctCount={submitResult.correctCount}
           totalQuestions={submitResult.totalQuestions}
+          droppedCount={submitResult.droppedCount || 0}
           scorePercentage={submitResult.scorePercentage}
-          timeTakenSeconds={timeTakenSeconds}
-          saveNote={submitResult.saved ? 'Saved to your attempt history.' : submitResult.loggedIn ? "Couldn't save this attempt to your history." : 'Log in to save your score history.'}
+          timeTakenSeconds={submitResult.timeTakenSeconds}
+          unitBreakdown={submitResult.unitBreakdown}
+          saved={submitResult.saved}
           onClose={() => setShowResultModal(false)}
         />
       )}

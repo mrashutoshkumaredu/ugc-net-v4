@@ -6,7 +6,7 @@ function makeQuestion(overrides: Partial<Question>): Question {
   return {
     id: 1,
     paper_id: 'P1',
-    cycle: 'DEC_2025',
+    cycle: 'December_2025',
     unit: 'Teaching Aptitude',
     question_text: 'Q?',
     question_text_hi: null,
@@ -68,6 +68,16 @@ describe('scoreSubmission', () => {
     expect(result.unitBreakdown['General']).toEqual({ total: 1, correct: 1 });
   });
 
+  it('counts a question dropped by NTA as correct for everyone', () => {
+    const questions = [
+      makeQuestion({ id: 1, correct_option: 0, is_dropped: true }),
+      makeQuestion({ id: 2, correct_option: 1 }),
+    ];
+    const result = scoreSubmission(questions, { 2: 1 });
+    expect(result.correctCount).toBe(2);
+    expect(result.marksObtained).toBe(4);
+  });
+
   it('handles an empty question set without dividing by zero', () => {
     const result = scoreSubmission([], {});
     expect(result.scorePercentage).toBe(0);
@@ -107,6 +117,10 @@ describe('normalizeUnit', () => {
 
   it('maps "Reading Comprehension" to "Comprehension"', () => {
     expect(normalizeUnit('Reading Comprehension')).toBe('Comprehension');
+  });
+
+  it('maps the short "ICT" label to the full unit name', () => {
+    expect(normalizeUnit('ICT')).toBe('Information and Communication Technology (ICT)');
   });
 
   it('falls back to "General" for missing input', () => {

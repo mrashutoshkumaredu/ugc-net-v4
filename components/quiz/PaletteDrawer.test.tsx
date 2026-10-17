@@ -90,4 +90,44 @@ describe('PaletteDrawer', () => {
     );
     expect(screen.queryByRole('button', { name: /submit final test/i })).not.toBeInTheDocument();
   });
+
+  it('after submitting, colours wrong answers red and filters to them', async () => {
+    const onFilterChange = vi.fn();
+    const { rerender } = render(
+      <PaletteDrawer
+        totalQuestions={3}
+        currentIndex={-1}
+        answeredFlags={[true, true, false]}
+        reviewFlags={[false, false, false]}
+        onSelect={() => {}}
+        onClose={() => {}}
+        onSubmit={() => {}}
+        isSubmitted={true}
+        resultStates={['correct', 'wrong', 'skipped']}
+        filter="ALL"
+        onFilterChange={onFilterChange}
+      />
+    );
+    expect(screen.getByRole('button', { name: '2' }).className).toContain('bg-rose-500');
+    await userEvent.click(screen.getByRole('button', { name: 'Wrong' }));
+    expect(onFilterChange).toHaveBeenCalledWith('WRONG');
+
+    rerender(
+      <PaletteDrawer
+        totalQuestions={3}
+        currentIndex={-1}
+        answeredFlags={[true, true, false]}
+        reviewFlags={[false, false, false]}
+        onSelect={() => {}}
+        onClose={() => {}}
+        onSubmit={() => {}}
+        isSubmitted={true}
+        resultStates={['correct', 'wrong', 'skipped']}
+        filter="WRONG"
+        onFilterChange={onFilterChange}
+      />
+    );
+    expect(screen.queryByRole('button', { name: '1' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
+  });
 });

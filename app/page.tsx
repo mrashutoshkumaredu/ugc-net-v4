@@ -6,74 +6,74 @@ import SiteHeader from '@/components/SiteHeader';
 import AuthModal from '@/components/AuthModal';
 import InstructionModal from '@/components/modals/InstructionModal';
 import { useAuth } from '@/hooks/useAuth';
-import { normalizeQuestion, UNIT_OPTIONS, getCycleDisplayName, getPaperDisplayName } from '@/lib/normalize';
-import type { NormalizedQuestion, ExamConfig } from '@/lib/types';
+import { UNIT_OPTIONS, getCycleDisplayName, getPaperDisplayName, cycleSortKey } from '@/lib/normalize';
+import { normalizeUnit } from '@/lib/scoring';
+import { getCatalog } from '@/lib/testApi';
+import { getActiveProgress, type SavedProgress } from '@/lib/progress';
+import type { Catalog, ExamConfig } from '@/lib/types';
+
+const MAX_UNIT_QUESTIONS = 50;
 
 export default function LandingPage() {
   const router = useRouter();
   const { user, checkedSession } = useAuth();
 
-  const [questions, setQuestions] = useState<NormalizedQuestion[]>([]);
+  const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [resumable, setResumable] = useState<SavedProgress | null>(null);
 
   const [selectedCycle, setSelectedCycle] = useState('ALL');
   const [selectedPaperId, setSelectedPaperId] = useState('');
   const [selectedTheme, setSelectedTheme] = useState(UNIT_OPTIONS[0].value);
-  const [questionCount, setQuestionCount] = useState(5);
+  const [questionCount, setQuestionCount] = useState(10);
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingConfig, setPendingConfig] = useState<ExamConfig | null>(null);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch('/api/questions');
-        const body = await res.json();
-        if (!res.ok) {
-          setLoadError(body.error || 'Could not load questions.');
-        } else {
-          const normalized = (body.questions as Parameters<typeof normalizeQuestion>[0][]).map(normalizeQuestion);
-          setQuestions(normalized);
-        }
-      } catch {
-        setLoadError('Could not reach the server. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    getCatalog()
+      .then(setCatalog)
+      .catch((err) => setLoadError(err instanceof Error ? err.message : 'Could not load questions.'))
+      .finally(() => setLoading(false));
+    setResumable(getActiveProgress());
   }, []);
 
-  const totalPapers = useMemo(() => new Set(questions.map((q) => q.paperId)).size, [questions]);
+  const papers = useMemo(() => catalog?.papers ?? [], [catalog]);
 
-  const cycles = useMemo(() => Array.from(new Set(questions.map((q) => q.cycle))), [questions]);
+  const cycles = useMemo(
+    () => Array.from(new Set(papers.map((p) => p.cycle || 'Unknown'))).sort((a, b) => cycleSortKey(b) - cycleSortKey(a)),
+    [papers]
+  );
 
-  const papersForCycle = useMemo(() => {
-    const matching = questions.filter((q) => selectedCycle === 'ALL' || q.cycle === selectedCycle);
-    return Array.from(new Set(matching.map((q) => q.paperId)));
-  }, [questions, selectedCycle]);
+  const papersForCycle = useMemo(
+    () => papers.filter((p) => selectedCycle === 'ALL' || (p.cycle || 'Unknown') === selectedCycle),
+    [papers, selectedCycle]
+  );
 
   useEffect(() => {
-    if (papersForCycle.length > 0 && !papersForCycle.includes(selectedPaperId)) {
-      setSelectedPaperId(papersForCycle[0]);
+    if (papersForCycle.length > 0 && !papersForCycle.some((p) => p.paper_id === selectedPaperId)) {
+      setSelectedPaperId(papersForCycle[0].paper_id);
     }
   }, [papersForCycle, selectedPaperId]);
 
-  const fullTestQuestionCount = useMemo(
-    () => questions.filter((q) => q.paperId === selectedPaperId).length,
-    [questions, selectedPaperId]
-  );
+  const fullTestQuestionCount = papers.find((p) => p.paper_id === selectedPaperId)?.question_count ?? 0;
 
-  const themeQuestionCount = useMemo(
-    () => questions.filter((q) => q.unit === selectedTheme).length,
-    [questions, selectedTheme]
-  );
+  const unitCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const u of catalog?.units ?? []) {
+      const name = normalizeUnit(u.unit);
+      counts[name] = (counts[name] || 0) + u.question_count;
+    }
+    return counts;
+  }, [catalog]);
+
+  const themeQuestionCount = unitCounts[selectedTheme] ?? 0;
+  const sliderMax = Math.max(1, Math.min(themeQuestionCount, MAX_UNIT_QUESTIONS));
 
   useEffect(() => {
-    const max = themeQuestionCount > 0 ? themeQuestionCount : 5;
-    setQuestionCount(max);
-  }, [themeQuestionCount]);
+    setQuestionCount((c) => Math.min(Math.max(c, 1), sliderMax));
+  }, [sliderMax]);
 
   const prepareTest = (mode: 'FULL' | 'UNIT') => {
     if (!user) {
@@ -81,18 +81,9 @@ export default function LandingPage() {
       return;
     }
     if (mode === 'FULL') {
-      setPendingConfig({
-        mode: 'FULL',
-        paperId: selectedPaperId,
-        durationSeconds: 3600,
-      });
+      setPendingConfig({ mode: 'FULL', paperId: selectedPaperId, durationSeconds: 3600 });
     } else {
-      setPendingConfig({
-        mode: 'UNIT',
-        theme: selectedTheme,
-        questionCount,
-        durationSeconds: questionCount * 60,
-      });
+      setPendingConfig({ mode: 'UNIT', theme: selectedTheme, questionCount, durationSeconds: questionCount * 60 });
     }
   };
 
@@ -104,7 +95,7 @@ export default function LandingPage() {
       params.set('paperId', pendingConfig.paperId || '');
     } else {
       params.set('theme', pendingConfig.theme || '');
-      params.set('count', String(pendingConfig.questionCount || 5));
+      params.set('count', String(pendingConfig.questionCount || 10));
     }
     setPendingConfig(null);
     router.push(`/quiz?${params.toString()}`);
@@ -117,19 +108,34 @@ export default function LandingPage() {
       <SiteHeader />
 
       <div className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6 overflow-y-auto">
+        {resumable && user && (
+          <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-amber-900">You have an unfinished test</p>
+              <p className="text-xs text-amber-800">{resumable.label || 'Test in progress'}. The timer has kept running while you were away.</p>
+            </div>
+            <button
+              onClick={() => router.push(`/quiz?session=${resumable.sessionId}`)}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-sm rounded-lg shrink-0"
+            >
+              Resume test
+            </button>
+          </div>
+        )}
+
         <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2 max-w-2xl">
             <span className="text-xs font-semibold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">Official NTA Pattern</span>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Let&apos;s Master UGC NET Paper 1 PYQs</h2>
-            <p className="text-xs sm:text-sm text-indigo-200 leading-relaxed">Attempt full-length 60-minute Previous Year Question Paper tests or build custom unit-wise practice sets tailored to your prep strategy.</p>
+            <p className="text-xs sm:text-sm text-indigo-200 leading-relaxed">Attempt full-length 60-minute previous year papers or build unit-wise practice sets. Each correct answer gives 2 marks, with no negative marking.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0">
             <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3.5 rounded-xl text-center">
-              <span className="block text-2xl font-black text-amber-400">{loading ? '--' : questions.length}</span>
+              <span className="block text-2xl font-black text-amber-400">{loading ? '--' : catalog?.total ?? 0}</span>
               <span className="text-[11px] text-indigo-200 uppercase font-medium">Total Questions</span>
             </div>
             <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3.5 rounded-xl text-center">
-              <span className="block text-2xl font-black text-amber-400">{loading ? '--' : totalPapers}</span>
+              <span className="block text-2xl font-black text-amber-400">{loading ? '--' : papers.length}</span>
               <span className="text-[11px] text-indigo-200 uppercase font-medium">Available Papers</span>
             </div>
           </div>
@@ -140,42 +146,42 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
             <div>
-              <div className="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold mb-4">📝</div>
-              <h3 className="text-lg font-bold text-slate-800 mb-1">Full Shift Previous Year Question Paper Test</h3>
-              <p className="text-xs text-slate-500 mb-4">Complete 50-question simulation of official shift paper under standard exam timing.</p>
+              <div className="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold mb-4" aria-hidden>📝</div>
+              <h3 className="text-lg font-bold text-slate-800 mb-1">Full Previous Year Paper</h3>
+              <p className="text-xs text-slate-500 mb-4">A complete 50-question shift paper under real exam timing.</p>
 
               <div className="space-y-3 mb-6 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Select Exam Cycle:</label>
+                <label className="block text-xs font-semibold text-slate-600">
+                  Exam cycle
                   <select
                     value={selectedCycle}
                     onChange={(e) => setSelectedCycle(e.target.value)}
-                    className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-600 font-semibold text-slate-800"
+                    className="mt-1 w-full text-xs bg-white border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-600 font-semibold text-slate-800"
                   >
-                    <option value="ALL">All Exam Cycles</option>
+                    <option value="ALL">All exam cycles</option>
                     {cycles.map((c) => <option key={c} value={c}>{getCycleDisplayName(c)}</option>)}
                   </select>
-                </div>
+                </label>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Select Paper / Shift:</label>
+                <label className="block text-xs font-semibold text-slate-600">
+                  Paper / shift
                   <select
                     value={selectedPaperId}
                     onChange={(e) => setSelectedPaperId(e.target.value)}
-                    className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-600 font-semibold text-slate-800"
+                    className="mt-1 w-full text-xs bg-white border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-600 font-semibold text-slate-800"
                   >
                     {papersForCycle.length === 0 && <option value="">No papers available for this cycle</option>}
-                    {papersForCycle.map((p) => <option key={p} value={p}>{getPaperDisplayName(p)}</option>)}
+                    {papersForCycle.map((p) => <option key={p.paper_id} value={p.paper_id}>{getPaperDisplayName(p.paper_id)}</option>)}
                   </select>
-                </div>
+                </label>
 
                 <div className="flex justify-between text-xs text-slate-600 pt-1 border-t border-slate-200">
                   <span>Questions:</span>
-                  <strong className="text-indigo-600 font-bold">{fullTestQuestionCount} Questions</strong>
+                  <strong className="text-indigo-600 font-bold">{fullTestQuestionCount}</strong>
                 </div>
                 <div className="flex justify-between text-xs text-slate-600">
                   <span>Timer:</span>
-                  <strong className="text-slate-800 font-bold">60 Minutes</strong>
+                  <strong className="text-slate-800 font-bold">60 minutes</strong>
                 </div>
               </div>
             </div>
@@ -184,40 +190,47 @@ export default function LandingPage() {
               disabled={loading || fullTestQuestionCount === 0}
               className="w-full py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition shadow-md disabled:opacity-50"
             >
-              Attempt Full Previous Year Question Paper Test
+              Start Full Paper
             </button>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
             <div>
-              <div className="w-10 h-10 bg-amber-100 text-amber-800 rounded-xl flex items-center justify-center font-bold mb-4">🎯</div>
-              <h3 className="text-lg font-bold text-slate-800 mb-1">Unit-Wise Targeted Practice</h3>
-              <p className="text-xs text-slate-500 mb-4">Select a specific theme and configure how many questions you want to solve.</p>
+              <div className="w-10 h-10 bg-amber-100 text-amber-800 rounded-xl flex items-center justify-center font-bold mb-4" aria-hidden>🎯</div>
+              <h3 className="text-lg font-bold text-slate-800 mb-1">Unit-Wise Practice</h3>
+              <p className="text-xs text-slate-500 mb-4">Pick a unit and how many questions. You get a fresh random set each time.</p>
               <div className="space-y-3 mb-6">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Select Theme / Unit:</label>
+                <label className="block text-xs font-semibold text-slate-600">
+                  Unit
                   <select
                     value={selectedTheme}
                     onChange={(e) => setSelectedTheme(e.target.value)}
-                    className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-amber-500"
+                    className="mt-1 w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-amber-500"
                   >
-                    {UNIT_OPTIONS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
+                    {UNIT_OPTIONS.map((u) => (
+                      <option key={u.value} value={u.value}>
+                        {u.label}{unitCounts[u.value] ? ` (${unitCounts[u.value]})` : ''}
+                      </option>
+                    ))}
                   </select>
-                </div>
+                </label>
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-                    <span>Number of Questions:</span>
-                    <span className="text-indigo-600 font-bold">{questionCount} Qs</span>
+                    <label htmlFor="question-count">Number of questions:</label>
+                    <span className="text-indigo-600 font-bold">{questionCount}</span>
                   </div>
                   <input
+                    id="question-count"
                     type="range"
                     min={1}
-                    max={Math.max(themeQuestionCount, 5)}
+                    max={sliderMax}
                     value={questionCount}
                     onChange={(e) => setQuestionCount(Number(e.target.value))}
                     className="w-full accent-indigo-600 cursor-pointer"
                   />
-                  <span className="text-[11px] text-slate-400 mt-1 block">Allocated Time: {questionCount} Minutes (1 min/question)</span>
+                  <span className="text-[11px] text-slate-400 mt-1 block">
+                    {questionCount} minutes (1 minute per question). Questions on the same passage or table stay together.
+                  </span>
                 </div>
               </div>
             </div>
@@ -226,7 +239,7 @@ export default function LandingPage() {
               disabled={loading || themeQuestionCount === 0}
               className="w-full py-3 bg-amber-500 text-slate-900 font-bold text-sm rounded-xl hover:bg-amber-600 transition shadow-md disabled:opacity-50"
             >
-              Start Theme Practice
+              Start Unit Practice
             </button>
           </div>
         </div>

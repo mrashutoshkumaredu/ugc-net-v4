@@ -45,17 +45,32 @@ export default function HistoryDrawer({ onClose }: { onClose: () => void }) {
             <p className="text-sm text-slate-500">No test attempts recorded yet.</p>
           )}
           {user && !loading && !error && submissions.map((item) => (
-            <div key={item.id} className="p-4 border rounded-xl bg-slate-50 flex justify-between items-center">
-              <div>
-                <span className="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">{item.test_mode}</span>
-                <p className="text-xs text-slate-500 mt-1">{new Date(item.submitted_at).toLocaleString()}</p>
+            <div key={item.id} className="p-4 border rounded-xl bg-slate-50">
+              <div className="flex justify-between items-center gap-3">
+                <div className="min-w-0">
+                  <span className="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">{item.test_mode}</span>
+                  <p className="text-xs text-slate-500 mt-1">{new Date(item.submitted_at).toLocaleString('en-IN')}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-base sm:text-lg font-bold text-slate-800">
+                    {item.correct_answers * 2}/{item.total_questions * 2} Marks
+                  </span>
+                  <span className="text-xs font-semibold block text-emerald-600">{item.score_percentage}% · {item.correct_answers}/{item.total_questions} correct</span>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="text-lg font-bold text-slate-800">
-                  {item.correct_answers * 2} Marks ({item.correct_answers}/{item.total_questions} Qs)
-                </span>
-                <span className="text-xs font-semibold block text-emerald-600">{item.score_percentage}% Score</span>
-              </div>
+              {item.unit_breakdown && Object.keys(item.unit_breakdown).length > 1 && (
+                <details className="mt-2">
+                  <summary className="text-[11px] font-semibold text-indigo-700 cursor-pointer">Unit-wise score</summary>
+                  <ul className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                    {Object.entries(item.unit_breakdown).map(([unit, u]) => (
+                      <li key={unit} className="flex justify-between text-[11px] text-slate-600">
+                        <span className="truncate pr-2">{unit}</span>
+                        <span className="font-bold text-slate-800">{u.correct}/{u.total}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
           ))}
         </div>

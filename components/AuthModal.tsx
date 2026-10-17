@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { mapAuthError } from '@/lib/authErrors';
 
 export default function AuthModal({
   initialMode,
@@ -48,7 +50,7 @@ export default function AuthModal({
         onSuccess();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed. Please try again.');
+      setError(mapAuthError(err));
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +63,7 @@ export default function AuthModal({
         <h3 className="text-lg sm:text-xl font-bold text-indigo-900 mb-1">
           {isSignUpMode ? 'Student Registration' : 'Student Login Required'}
         </h3>
-        <p className="text-xs text-slate-500 mb-4">Please log in or create an account to start your timed test.</p>
+        <p className="text-xs text-slate-500 mb-4">Please log in or create an account to take a test and save your scores.</p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {isSignUpMode && (
@@ -99,6 +101,12 @@ export default function AuthModal({
               className="w-full p-2.5 text-xs sm:text-sm border rounded-lg focus:ring-2 focus:ring-indigo-600 outline-none mt-1"
             />
           </div>
+
+          {!isSignUpMode && (
+            <div className="text-right -mt-1">
+              <Link href="/reset-password" onClick={onClose} className="text-xs text-indigo-600 hover:underline font-semibold">Forgot password?</Link>
+            </div>
+          )}
 
           {info && <p className="text-xs text-emerald-700 font-medium bg-emerald-50 p-2 rounded">{info}</p>}
           {error && <p className="text-xs text-rose-600 font-medium bg-rose-50 p-2 rounded">{error}</p>}
