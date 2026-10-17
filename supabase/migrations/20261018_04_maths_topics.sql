@@ -11,7 +11,7 @@ update public.questions set topic = case
 update public.questions set unit = 'Information and Communication Technology (ICT)', topic = null
  where id in (703, 754) and unit = 'Mathematical Reasoning and Aptitude';
 
--- Check: Mathematical Aptitude 97, Number series... 34, and 703/754 now in ICT.
+-- Check: Mathematical Aptitude 95, Number series... 34, and 703/754 now in ICT.
 select unit, topic, count(*) from public.questions
  where unit = 'Mathematical Reasoning and Aptitude' or id in (703, 754)
  group by unit, topic order by 1, 3 desc;
