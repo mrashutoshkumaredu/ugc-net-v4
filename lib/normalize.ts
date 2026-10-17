@@ -15,6 +15,7 @@ export function normalizeQuestion(q: PublicQuestion): NormalizedQuestion {
     paperId: q.paper_id,
     cycle: q.cycle || 'Unknown',
     unit: normalizeUnit(q.unit),
+    topic: q.topic ?? null,
     questionNumber: q.question_number ?? null,
     isDropped: Boolean(q.is_dropped),
     questionText: cleanNewlines(q.question_text),

@@ -12,6 +12,9 @@ export type SavedProgress = {
   currentIndex: number;
   language: 'EN' | 'HI';
   savedAt: number;
+  confidence?: Record<number, 'guess'>;
+  visited?: Record<number, boolean>;
+  timeSpent?: Record<number, number>;
 };
 
 const ACTIVE_KEY = 'ugcnet.activeSession';

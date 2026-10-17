@@ -39,6 +39,11 @@ function QuizPageInner() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [reviewFlags, setReviewFlags] = useState<Record<number, boolean>>({});
+  const [confidence, setConfidence] = useState<Record<number, 'guess'>>({});
+  const [visited, setVisited] = useState<Record<number, boolean>>({});
+  // Seconds spent per question id, carried over from a saved session.
+  const [savedTime, setSavedTime] = useState<Record<number, number>>({});
+  const timeByQuestionRef = useRef<Record<number, number>>({});
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN');
   // Phones: the palette opens as an overlay. Larger screens: it sits beside
   // the question and the ☰ button hides or shows it.
@@ -57,9 +62,10 @@ function QuizPageInner() {
   const submittingRef = useRef(false);
 
   const label = session
-    ? session.mode === 'FULL'
-      ? `Full Test (${getPaperDisplayName(session.paper_id || '')})`
-      : `${session.unit} (${questions.length} Qs)`
+    ? session.label
+      || (session.mode === 'FULL'
+        ? `Full Test (${getPaperDisplayName(session.paper_id || '')})`
+        : `${session.unit} (${questions.length} Qs)`)
     : '';
 
   // ---- Load: resume an existing session, or start a new one --------------
@@ -76,6 +82,9 @@ function QuizPageInner() {
       setReviewFlags(saved.reviewFlags || {});
       setCurrentIndex(Math.min(saved.currentIndex || 0, Math.max(s.questions.length - 1, 0)));
       setLanguage(saved.language || 'EN');
+      setConfidence(saved.confidence || {});
+      setVisited(saved.visited || {});
+      setSavedTime(saved.timeSpent || {});
     }
     setLoadState('ready');
   }, []);
@@ -102,10 +111,13 @@ function QuizPageInner() {
           applySession(s);
           return;
         }
-        const mode = searchParams.get('mode') === 'UNIT' ? 'UNIT' : 'FULL';
+        const m = searchParams.get('mode');
+        const mode = m === 'UNIT' || m === 'VAULT' || m === 'DAILY' ? m : 'FULL';
         const s = await startTest(mode, {
           paperId: searchParams.get('paperId') || undefined,
           unit: searchParams.get('theme') || undefined,
+          topic: searchParams.get('topic') || undefined,
+          folderId: searchParams.get('folder') || undefined,
           count: Number(searchParams.get('count') || '10'),
         });
         // Put the session id in the address so a refresh resumes this test.
@@ -155,6 +167,16 @@ function QuizPageInner() {
     else setPaletteOpen((p) => !p);
   }, []);
 
+  const questionTimeSpent = useStopwatch(currentIndex, loadState === 'ready' && phase === 'taking');
+  // Seconds per question id = time saved before a refresh + time this visit.
+  useEffect(() => {
+    const merged: Record<number, number> = { ...savedTime };
+    questions.forEach((q, i) => {
+      merged[q.id] = (savedTime[q.id] || 0) + (questionTimeSpent[i] || 0);
+    });
+    timeByQuestionRef.current = merged;
+  }, [questions, questionTimeSpent, savedTime]);
+
   // ---- Save progress on this device after every change --------------------
   useEffect(() => {
     if (!session || phase !== 'taking') return;
@@ -165,9 +187,20 @@ function QuizPageInner() {
       reviewFlags,
       currentIndex,
       language,
+      confidence,
+      visited,
+      timeSpent: timeByQuestionRef.current,
       savedAt: Date.now(),
     });
-  }, [session, phase, label, answers, reviewFlags, currentIndex, language]);
+    // questionTimeSpent changes every second, so time per question is kept too.
+  }, [session, phase, label, answers, reviewFlags, currentIndex, language, confidence, visited, questionTimeSpent]);
+
+  // Mark the question on screen as visited (NTA "Not Answered" once seen).
+  useEffect(() => {
+    const q = questions[currentIndex];
+    if (!q || phase !== 'taking') return;
+    setVisited((v) => (v[q.id] ? v : { ...v, [q.id]: true }));
+  }, [questions, currentIndex, phase]);
 
   // ---- Submit ---------------------------------------------------------------
   const executeSubmission = useCallback(async () => {
@@ -177,7 +210,12 @@ function QuizPageInner() {
     setSubmitError('');
     setPhase('submitting');
     try {
-      const result = await submitTest(session.session_id, answers);
+      const meta: Record<number, { conf?: 'guess'; t?: number }> = {};
+      for (const q of questions) {
+        const t = Math.round(timeByQuestionRef.current[q.id] || 0);
+        if (t > 0 || confidence[q.id]) meta[q.id] = { ...(confidence[q.id] ? { conf: 'guess' as const } : {}), ...(t > 0 ? { t } : {}) };
+      }
+      const result = await submitTest(session.session_id, answers, meta);
       clearProgress(session.session_id);
       setSubmitResult(result);
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -189,17 +227,17 @@ function QuizPageInner() {
       setPhase('taking');
       setSubmitError(err instanceof Error ? err.message : 'Could not submit the test.');
     }
-  }, [session, answers]);
+  }, [session, answers, questions, confidence]);
 
   const secondsRemaining = useCountdown(endAtMs, loadState === 'ready' && phase === 'taking', () => {
     executeSubmission();
   });
-  const questionTimeSpent = useStopwatch(currentIndex, loadState === 'ready' && phase === 'taking');
 
   const currentQuestion = questions[currentIndex];
   const isSubmitted = phase === 'results';
   const answeredFlags = useMemo(() => questions.map((q) => answers[q.id] !== undefined), [questions, answers]);
   const reviewFlagList = useMemo(() => questions.map((q) => Boolean(reviewFlags[q.id])), [questions, reviewFlags]);
+  const visitedFlagList = useMemo(() => questions.map((q) => Boolean(visited[q.id])), [questions, visited]);
   const resultStates = useMemo<ResultState[] | undefined>(() => {
     if (!submitResult) return undefined;
     return questions.map((q) => {
@@ -221,13 +259,33 @@ function QuizPageInner() {
       delete next[currentQuestion.id];
       return next;
     });
+    setConfidence((prev) => {
+      if (!prev[currentQuestion.id]) return prev;
+      const next = { ...prev };
+      delete next[currentQuestion.id];
+      return next;
+    });
   }, [currentQuestion, phase]);
   const toggleReview = useCallback(() => {
     if (!currentQuestion || phase !== 'taking') return;
     setReviewFlags((prev) => ({ ...prev, [currentQuestion.id]: !prev[currentQuestion.id] }));
   }, [currentQuestion, phase]);
+  const toggleConfidence = useCallback(() => {
+    if (!currentQuestion || phase !== 'taking' || answers[currentQuestion.id] === undefined) return;
+    setConfidence((prev) => {
+      const next = { ...prev };
+      if (next[currentQuestion.id]) delete next[currentQuestion.id];
+      else next[currentQuestion.id] = 'guess';
+      return next;
+    });
+  }, [currentQuestion, phase, answers]);
   const goPrev = useCallback(() => setCurrentIndex((i) => Math.max(i - 1, 0)), []);
   const goNext = useCallback(() => setCurrentIndex((i) => Math.min(i + 1, questions.length - 1)), [questions.length]);
+  const markAndNext = useCallback(() => {
+    if (!currentQuestion || phase !== 'taking') return;
+    setReviewFlags((prev) => ({ ...prev, [currentQuestion.id]: true }));
+    goNext();
+  }, [currentQuestion, phase, goNext]);
 
   // ---- Keyboard shortcuts while taking the test ----------------------------
   useEffect(() => {
@@ -243,13 +301,14 @@ function QuizPageInner() {
         case 'arrowright': goNext(); break;
         case 'arrowleft': goPrev(); break;
         case 'm': toggleReview(); break;
+        case 'g': toggleConfidence(); break;
         case 'backspace': case 'delete': e.preventDefault(); clearAnswer(); break;
         default: return;
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [loadState, phase, showSubmitConfirm, reportQuestionId, selectOption, goNext, goPrev, toggleReview, clearAnswer]);
+  }, [loadState, phase, showSubmitConfirm, reportQuestionId, selectOption, goNext, goPrev, toggleReview, toggleConfidence, clearAnswer]);
 
   // ---- Screens other than the test itself ----------------------------------
   if (!checkedSession || loadState === 'loading') {
@@ -329,6 +388,9 @@ function QuizPageInner() {
             onToggleLanguage={() => setLanguage((l) => (l === 'EN' ? 'HI' : 'EN'))}
             isReviewed={Boolean(reviewFlags[currentQuestion.id])}
             onToggleReview={toggleReview}
+            onMarkAndNext={markAndNext}
+            confidence={answers[currentQuestion.id] === undefined ? null : confidence[currentQuestion.id] ? 'guess' : 'sure'}
+            onToggleConfidence={toggleConfidence}
             onOpenReport={() => setReportQuestionId(currentQuestion.id)}
             onTogglePalette={togglePalette}
             paletteVisible={paletteOpen || !paletteHiddenDesktop}
@@ -354,6 +416,7 @@ function QuizPageInner() {
             currentIndex={currentIndex}
             answeredFlags={answeredFlags}
             reviewFlags={reviewFlagList}
+            visitedFlags={visitedFlagList}
             onSelect={(idx) => { setCurrentIndex(idx); setPaletteOpen(false); }}
             onClose={() => { if (isDesktop()) setPaletteHiddenDesktop(true); setPaletteOpen(false); }}
             onSubmit={() => setShowSubmitConfirm(true)}
@@ -386,6 +449,7 @@ function QuizPageInner() {
           timeTakenSeconds={submitResult.timeTakenSeconds}
           unitBreakdown={submitResult.unitBreakdown}
           saved={submitResult.saved}
+          reviewHref={submitResult.submissionId ? `/review/${submitResult.submissionId}` : undefined}
           onClose={() => setShowResultModal(false)}
         />
       )}

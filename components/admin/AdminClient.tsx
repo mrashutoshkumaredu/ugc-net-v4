@@ -11,8 +11,9 @@ import SiteHeader from '@/components/SiteHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { UNIT_OPTIONS, getPaperDisplayName } from '@/lib/normalize';
 import { cleanNewlines } from '@/lib/scoring';
-import { adminListReports, adminSetReportStatus, adminUpdateQuestion, isAdmin } from '@/lib/testApi';
-import type { AdminReport } from '@/lib/types';
+import { adminDeleteNote, adminListNotes, adminListReports, adminSaveNote, adminSetReportStatus, adminUpdateQuestion, isAdmin } from '@/lib/testApi';
+import { markdownToHtml } from '@/lib/markdown';
+import type { AdminReport, UnitNote } from '@/lib/types';
 
 const MathText = dynamic(() => import('@/components/quiz/MathText'), { ssr: false });
 
@@ -22,6 +23,7 @@ const OPTION_KEYS = ['option_a', 'option_b', 'option_c', 'option_d'] as const;
 export default function AdminClient() {
   const { user, checkedSession } = useAuth();
   const [allowed, setAllowed] = useState<boolean | null>(null);
+  const [tab, setTab] = useState<'REPORTS' | 'NOTES'>('REPORTS');
   const [filter, setFilter] = useState<StatusFilter>('Open');
   const [reports, setReports] = useState<AdminReport[]>([]);
   const [loading, setLoading] = useState(false);
@@ -75,6 +77,20 @@ export default function AdminClient() {
     <div className="flex-1 flex flex-col">
       <SiteHeader />
       <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 space-y-4">
+        <div className="flex gap-1 border-b border-slate-200" role="tablist">
+          {([['REPORTS', 'Student reports'], ['NOTES', 'Revision notes']] as const).map(([v, l]) => (
+            <button
+              key={v}
+              role="tab"
+              aria-selected={tab === v}
+              onClick={() => setTab(v)}
+              className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px ${tab === v ? 'border-indigo-600 text-indigo-900' : 'border-transparent text-slate-500'}`}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+        {tab === 'NOTES' ? <NotesEditor /> : (<>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-indigo-900">Student reports</h1>
@@ -103,6 +119,7 @@ export default function AdminClient() {
         {reports.map((r) => (
           <ReportCard key={r.id} report={r} onChanged={load} />
         ))}
+        </>)}
       </main>
     </div>
   );
@@ -238,5 +255,120 @@ function ReportCard({ report, onChanged }: { report: AdminReport; onChanged: () 
         )}
       </div>
     </article>
+  );
+}
+
+type NoteDraft = { id: string | null; unit: string; title: string; body: string; sort_order: number; status: 'draft' | 'published' };
+const EMPTY_NOTE: NoteDraft = { id: null, unit: UNIT_OPTIONS[0].value, title: '', body: '', sort_order: 0, status: 'draft' };
+
+function NotesEditor() {
+  const [notes, setNotes] = useState<UnitNote[] | null>(null);
+  const [draft, setDraft] = useState<NoteDraft>(EMPTY_NOTE);
+  const [preview, setPreview] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      setNotes(await adminListNotes());
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Could not load notes.');
+    }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const save = async (status: 'draft' | 'published') => {
+    if (!draft.title.trim() || !draft.body.trim()) { setMsg('Add a title and some text first.'); return; }
+    setBusy(true);
+    setMsg('');
+    try {
+      const id = await adminSaveNote({ ...draft, status });
+      setDraft({ ...draft, id, status });
+      setMsg(status === 'published' ? 'Published: students can see this note now.' : 'Saved as draft (students cannot see it).');
+      await load();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Could not save.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (n: UnitNote) => {
+    if (!window.confirm(`Delete the note "${n.title}"? This cannot be undone.`)) return;
+    try {
+      await adminDeleteNote(n.id);
+      if (draft.id === n.id) setDraft(EMPTY_NOTE);
+      await load();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Could not delete.');
+    }
+  };
+
+  const field = 'w-full p-2 text-sm border border-slate-300 rounded-lg';
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4">
+      <aside className="bg-white border border-slate-200 rounded-xl p-3 space-y-2 self-start">
+        <button onClick={() => { setDraft(EMPTY_NOTE); setPreview(false); }} className="w-full text-xs font-bold px-3 py-2 rounded-lg bg-indigo-600 text-white">+ New note</button>
+        {notes === null && <p className="text-xs text-slate-500">Loading…</p>}
+        {UNIT_OPTIONS.map((u) => {
+          const list = (notes ?? []).filter((n) => n.unit === u.value);
+          if (list.length === 0) return null;
+          return (
+            <div key={u.value}>
+              <p className="text-[10px] font-bold uppercase text-slate-400 mt-2 mb-1">{u.label}</p>
+              {list.map((n) => (
+                <div key={n.id} className={`flex items-center gap-1 rounded-lg ${draft.id === n.id ? 'bg-indigo-50' : ''}`}>
+                  <button onClick={() => { setDraft(n); setPreview(false); }} className="flex-1 text-left text-xs px-2 py-1.5 truncate">
+                    <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${n.status === 'published' ? 'bg-emerald-500' : 'bg-amber-400'}`} title={n.status} />
+                    {n.title}
+                  </button>
+                  <button onClick={() => remove(n)} className="text-[10px] text-slate-400 hover:text-rose-600 px-1" aria-label={`Delete ${n.title}`}>✕</button>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+        <p className="text-[10px] text-slate-400 pt-2 border-t border-slate-100">🟢 published · 🟡 draft (hidden from students)</p>
+      </aside>
+
+      <section className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_200px_90px] gap-2">
+          <label className="block text-[11px] font-semibold text-slate-600">Title
+            <input className={field} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+          </label>
+          <label className="block text-[11px] font-semibold text-slate-600">Unit
+            <select className={field} value={draft.unit} onChange={(e) => setDraft({ ...draft, unit: e.target.value })}>
+              {UNIT_OPTIONS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
+            </select>
+          </label>
+          <label className="block text-[11px] font-semibold text-slate-600">Order
+            <input type="number" className={field} value={draft.sort_order} onChange={(e) => setDraft({ ...draft, sort_order: Number(e.target.value) || 0 })} />
+          </label>
+        </div>
+        <div className="flex gap-2 text-xs">
+          <button onClick={() => setPreview(false)} aria-pressed={!preview} className={`px-3 py-1 rounded-lg border ${!preview ? 'bg-slate-800 text-white' : 'border-slate-300'}`}>Write</button>
+          <button onClick={() => setPreview(true)} aria-pressed={preview} className={`px-3 py-1 rounded-lg border ${preview ? 'bg-slate-800 text-white' : 'border-slate-300'}`}>Preview</button>
+          <span className="text-slate-400 self-center">Markdown: # heading, - bullet, **bold**, | tables |</span>
+        </div>
+        {preview ? (
+          <div className="border border-slate-200 rounded-lg p-4 min-h-[300px]">
+            <MathText html={markdownToHtml(draft.body)} className="note-body text-sm text-slate-800 leading-relaxed" />
+          </div>
+        ) : (
+          <textarea rows={16} className={`${field} font-mono text-xs`} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <button disabled={busy} onClick={() => save('draft')} className="px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 disabled:opacity-50">Save draft</button>
+          <button disabled={busy} onClick={() => save('published')} className="px-3 py-2 text-xs font-bold rounded-lg bg-emerald-600 text-white disabled:opacity-50">
+            {draft.status === 'published' ? 'Save (stays published)' : 'Approve & publish'}
+          </button>
+          {draft.status === 'published' && draft.id && (
+            <button disabled={busy} onClick={() => save('draft')} className="px-3 py-2 text-xs font-bold rounded-lg border border-amber-300 text-amber-800 disabled:opacity-50">Unpublish</button>
+          )}
+          {msg && <span className="text-xs text-slate-600">{msg}</span>}
+        </div>
+      </section>
+    </div>
   );
 }

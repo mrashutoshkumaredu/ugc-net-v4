@@ -23,6 +23,7 @@ export type Question = {
   ai_hint: string | null;
   question_number?: number | null;
   is_dropped?: boolean;
+  topic?: string | null;
 };
 
 // What `start_test` / `resume_test` return for each question — no answer key.
@@ -34,6 +35,7 @@ export type NormalizedQuestion = {
   paperId: string;
   cycle: string;
   unit: string;
+  topic: string | null;
   questionNumber: number | null;
   isDropped: boolean;
   questionText: string;
@@ -44,7 +46,7 @@ export type NormalizedQuestion = {
   optionsHi: string[] | null;
 };
 
-export type ExamMode = 'FULL' | 'UNIT';
+export type ExamMode = 'FULL' | 'UNIT' | 'VAULT' | 'DAILY';
 
 export type ExamConfig = {
   mode: ExamMode;
@@ -59,6 +61,7 @@ export type Catalog = {
   total: number;
   papers: { paper_id: string; cycle: string | null; question_count: number }[];
   units: { unit: string; question_count: number }[];
+  topics?: { unit: string; topic: string; question_count: number }[];
 };
 
 // Returned by `start_test` and `resume_test`.
@@ -67,6 +70,8 @@ export type TestSession = {
   mode: ExamMode;
   paper_id: string | null;
   unit: string | null;
+  topic?: string | null;
+  label?: string | null;
   duration_seconds: number;
   started_at: string;
   server_now: string;
@@ -92,6 +97,7 @@ export type TestSubmission = {
 
 // Returned by `submit_test`.
 export type SubmitResult = {
+  submissionId?: number;
   correctCount: number;
   totalQuestions: number;
   droppedCount: number;
@@ -134,3 +140,57 @@ export type AdminReport = {
     ai_hint: string | null;
   };
 };
+
+export type Confidence = 'sure' | 'guess';
+
+export const MISTAKE_TAGS = [
+  { value: 'concept', label: "Didn't know the concept" },
+  { value: 'careless', label: 'Careless mistake' },
+  { value: 'misread', label: 'Misread the question' },
+  { value: 'time', label: 'Ran out of time' },
+  { value: 'confused', label: 'Confused between two options' },
+] as const;
+export type MistakeTag = (typeof MISTAKE_TAGS)[number]['value'];
+
+// Returned by `get_review`.
+export type ReviewItem = {
+  question: PublicQuestion;
+  correct_option: number;
+  ai_hint: string | null;
+  chosen: number | null;
+  is_correct: boolean;
+  confidence: Confidence | null;
+  time_seconds: number | null;
+  mistake_tag: MistakeTag | null;
+  in_vault: boolean;
+};
+export type ReviewData = { submission: TestSubmission; items: ReviewItem[] };
+
+export type VaultFolder = { id: string; name: string; kind: 'custom' | 'wrong' | 'lucky'; created_at: string; item_count?: number };
+
+export type Performance = {
+  units: { unit: string; attempted: number; correct: number; accuracy: number; avg_seconds: number | null }[];
+  tags: Partial<Record<MistakeTag, number>>;
+  guesses: { total: number; correct: number };
+  trend: { id: number; test_mode: string; score_percentage: number; total_questions: number; correct_answers: number; submitted_at: string }[];
+  totals: { attempted: number; correct: number; avg_seconds: number | null };
+};
+
+export type LeaderboardRow = { rank: number; name: string; score: number; time_seconds?: number; papers?: number; is_me: boolean };
+
+export type Progress = {
+  streak: number;
+  today: string;
+  exam_date: string | null;
+  show_on_leaderboard: boolean;
+  revisions_due: number;
+  daily_done: boolean;
+};
+
+export type Trends = {
+  by_unit: { cycle: string; unit: string; questions: number; papers: number }[];
+  by_topic: { unit: string; topic: string; questions: number; papers: number; cycles: number }[];
+  papers_per_cycle: Record<string, number>;
+};
+
+export type UnitNote = { id: string; unit: string; title: string; body: string; sort_order: number; status: 'draft' | 'published'; updated_at: string };

@@ -30,6 +30,9 @@ export default function QuestionPanel({
   onToggleLanguage,
   isReviewed,
   onToggleReview,
+  onMarkAndNext,
+  confidence,
+  onToggleConfidence,
   onOpenReport,
   onTogglePalette,
   paletteVisible,
@@ -59,6 +62,10 @@ export default function QuestionPanel({
   onToggleLanguage: () => void;
   isReviewed: boolean;
   onToggleReview: () => void;
+  // NTA "Mark for Review & Next".
+  onMarkAndNext: () => void;
+  confidence: 'sure' | 'guess' | null;
+  onToggleConfidence: () => void;
   onOpenReport: () => void;
   onTogglePalette: () => void;
   paletteVisible: boolean;
@@ -192,6 +199,21 @@ export default function QuestionPanel({
           })}
         </div>
 
+        {!isSubmitted && selectedOption !== null && !question.isDropped && (
+          <div className="mb-6 -mt-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleConfidence}
+              aria-pressed={confidence === 'guess'}
+              className={`text-xs font-bold px-3 py-1.5 rounded-full border transition ${confidence === 'guess' ? 'bg-amber-100 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}
+              title="Mark this answer as a guess. If it turns out right, it goes to your Lucky guesses folder for revision."
+            >
+              {confidence === 'guess' ? '🤔 I am guessing' : '✅ I am sure'}
+            </button>
+            <span className="text-[11px] text-slate-400">Tap if you&apos;re guessing, so lucky guesses come back for revision.</span>
+          </div>
+        )}
+
         {isSubmitted && aiHint && (
           <div className="bg-amber-50 border-l-4 border-amber-500 p-3 sm:p-4 rounded-r-lg mt-6 shadow-sm">
             <h4 className="text-xs sm:text-sm font-bold text-amber-900 mb-1">Explanation</h4>
@@ -201,14 +223,14 @@ export default function QuestionPanel({
 
         {!isSubmitted && (
           <p className="hidden md:block text-[11px] text-slate-400 mt-4">
-            Keyboard: 1–4 choose an option · ← → move · M mark for review · Backspace clear
+            Keyboard: 1–4 choose an option · ← → move · M mark for review · G guessing · Backspace clear
           </p>
         )}
       </div>
 
       <div className="absolute bottom-0 left-0 w-full bg-white border-t border-slate-200 p-2 sm:p-3 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 shrink-0">
         <button onClick={onPrev} disabled={!canGoPrev} className="px-3 sm:px-5 py-2 sm:py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 text-xs sm:text-sm font-bold rounded-lg transition disabled:opacity-40">
-          <span className="hidden sm:inline">« </span>Prev
+          <span className="hidden sm:inline">« </span>Back
         </button>
         {isSubmitted ? (
           <button onClick={onNext} disabled={!canGoNext} className="px-4 sm:px-6 py-2 sm:py-2.5 bg-indigo-600 text-white hover:bg-indigo-700 text-xs sm:text-sm font-bold rounded-lg transition shadow-md disabled:opacity-40">
@@ -216,12 +238,14 @@ export default function QuestionPanel({
           </button>
         ) : (
           <div className="flex gap-1.5 sm:gap-2">
-            <button onClick={onClear} className="px-2.5 sm:px-4 py-2 sm:py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 text-xs sm:text-sm font-bold rounded-lg transition">Clear</button>
-            <button onClick={onToggleReview} aria-pressed={isReviewed} className={`px-2.5 sm:px-4 py-2 sm:py-2.5 border text-xs sm:text-sm font-bold rounded-lg transition ${isReviewed ? 'bg-amber-400 text-amber-950 border-amber-400' : 'bg-amber-100 text-amber-800 hover:bg-amber-200 border-amber-200'}`}>
-              Review
+            <button onClick={onClear} className="px-2.5 sm:px-4 py-2 sm:py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 text-xs sm:text-sm font-bold rounded-lg transition">
+              Clear<span className="hidden lg:inline"> Response</span>
             </button>
-            <button onClick={onNext} disabled={!canGoNext} className="px-3 sm:px-6 py-2 sm:py-2.5 bg-indigo-600 text-white hover:bg-indigo-700 text-xs sm:text-sm font-bold rounded-lg transition shadow-md disabled:opacity-40">
-              Save &amp; Next<span className="hidden sm:inline"> »</span>
+            <button onClick={onMarkAndNext} aria-pressed={isReviewed} className={`px-2.5 sm:px-4 py-2 sm:py-2.5 border text-xs sm:text-sm font-bold rounded-lg transition ${isReviewed ? 'bg-violet-700 text-white border-violet-700' : 'bg-violet-100 text-violet-900 hover:bg-violet-200 border-violet-200'}`}>
+              Mark<span className="hidden sm:inline"> for Review</span> &amp; Next
+            </button>
+            <button onClick={onNext} className="px-3 sm:px-6 py-2 sm:py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 text-xs sm:text-sm font-bold rounded-lg transition shadow-md">
+              Save &amp; Next
             </button>
           </div>
         )}

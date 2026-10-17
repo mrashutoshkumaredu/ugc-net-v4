@@ -3,14 +3,24 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { isAdmin } from '@/lib/testApi';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { formatTime } from '@/lib/scoring';
 import AuthModal from './AuthModal';
 import HistoryDrawer from './HistoryDrawer';
 
+const NAV = [
+  { href: '/', label: 'Practice' },
+  { href: '/vault', label: 'Revision Vault' },
+  { href: '/performance', label: 'My Performance' },
+  { href: '/leaderboard', label: 'Leaderboard' },
+  { href: '/trends', label: 'PYQ Trends' },
+  { href: '/notes', label: 'Revision Notes' },
+];
+
 export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRemaining?: number }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, signOut } = useAuth();
   const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER' | null>(null);
   const [showHistory, setShowHistory] = useState(false);
@@ -80,6 +90,23 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
             </button>
           </div>
         </div>
+        {masterSecondsRemaining === undefined && (
+          <nav aria-label="Main" className="max-w-[1600px] mx-auto mt-2.5 -mb-1 flex gap-1 overflow-x-auto text-xs font-semibold whitespace-nowrap">
+            {NAV.map((n) => {
+              const active = n.href === '/' ? pathname === '/' : pathname?.startsWith(n.href);
+              return (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={`px-3 py-1.5 rounded-md transition ${active ? 'bg-white text-indigo-900' : 'text-indigo-100 hover:bg-indigo-800'}`}
+                >
+                  {n.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
       </header>
 
       {authMode && (

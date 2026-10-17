@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import type { TestSubmission } from '@/lib/types';
@@ -57,6 +58,11 @@ export default function HistoryDrawer({ onClose }: { onClose: () => void }) {
                   </span>
                   <span className="text-xs font-semibold block text-emerald-600">{item.score_percentage}% · {item.correct_answers}/{item.total_questions} correct</span>
                 </div>
+              </div>
+              <div className="mt-2">
+                <Link href={`/review/${item.id}`} onClick={onClose} className="text-[11px] font-bold text-indigo-700 hover:underline">
+                  Deep Review →
+                </Link>
               </div>
               {item.unit_breakdown && Object.keys(item.unit_breakdown).length > 1 && (
                 <details className="mt-2">

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { CORRECT_MARKS, formatTime } from '@/lib/scoring';
 import { UNIT_OPTIONS } from '@/lib/normalize';
 import type { UnitBreakdown } from '@/lib/types';
@@ -17,6 +18,7 @@ export default function ResultModal({
   timeTakenSeconds,
   unitBreakdown,
   saved,
+  reviewHref,
   onClose,
 }: {
   correctCount: number;
@@ -26,6 +28,8 @@ export default function ResultModal({
   timeTakenSeconds: number;
   unitBreakdown: UnitBreakdown;
   saved: boolean;
+  // Deep Review page for this attempt (tag mistakes, save to vault).
+  reviewHref?: string;
   onClose: () => void;
 }) {
   const units = Object.entries(unitBreakdown || {}).sort(([a], [b]) => unitOrder(a) - unitOrder(b));
@@ -74,7 +78,14 @@ export default function ResultModal({
           </div>
         )}
 
-        <button onClick={onClose} className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition shadow-md">Review Answers &amp; Explanations</button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button onClick={onClose} className="flex-1 py-3 bg-white border border-indigo-300 text-indigo-700 font-bold rounded-xl text-xs hover:bg-indigo-50 transition">See Answers Here</button>
+          {reviewHref && (
+            <Link href={reviewHref} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition shadow-md text-center">
+              Deep Review: Tag Mistakes
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -8,9 +8,10 @@ import InstructionModal from '@/components/modals/InstructionModal';
 import { useAuth } from '@/hooks/useAuth';
 import { UNIT_OPTIONS, getCycleDisplayName, getPaperDisplayName, cycleSortKey } from '@/lib/normalize';
 import { normalizeUnit } from '@/lib/scoring';
-import { getCatalog } from '@/lib/testApi';
+import Link from 'next/link';
+import { getCatalog, getMyProgress } from '@/lib/testApi';
 import { getActiveProgress, type SavedProgress } from '@/lib/progress';
-import type { Catalog, ExamConfig } from '@/lib/types';
+import type { Catalog, ExamConfig, Progress } from '@/lib/types';
 
 const MAX_UNIT_QUESTIONS = 50;
 
@@ -22,6 +23,8 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [resumable, setResumable] = useState<SavedProgress | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState('');
 
   const [selectedCycle, setSelectedCycle] = useState('ALL');
   const [selectedPaperId, setSelectedPaperId] = useState('');
@@ -38,6 +41,11 @@ export default function LandingPage() {
       .finally(() => setLoading(false));
     setResumable(getActiveProgress());
   }, []);
+
+  useEffect(() => {
+    if (!user) { setProgress(null); return; }
+    getMyProgress().then(setProgress);
+  }, [user]);
 
   const papers = useMemo(() => catalog?.papers ?? [], [catalog]);
 
@@ -68,7 +76,15 @@ export default function LandingPage() {
     return counts;
   }, [catalog]);
 
-  const themeQuestionCount = unitCounts[selectedTheme] ?? 0;
+  const topicsForTheme = useMemo(
+    () => (catalog?.topics ?? []).filter((t) => normalizeUnit(t.unit) === selectedTheme).sort((a, b) => a.topic.localeCompare(b.topic)),
+    [catalog, selectedTheme]
+  );
+  useEffect(() => { setSelectedTopic(''); }, [selectedTheme]);
+
+  const themeQuestionCount = selectedTopic
+    ? topicsForTheme.find((t) => t.topic === selectedTopic)?.question_count ?? 0
+    : unitCounts[selectedTheme] ?? 0;
   const sliderMax = Math.max(1, Math.min(themeQuestionCount, MAX_UNIT_QUESTIONS));
 
   // Only clamp once the counts have loaded; before that sliderMax is 1 and
@@ -98,6 +114,7 @@ export default function LandingPage() {
       params.set('paperId', pendingConfig.paperId || '');
     } else {
       params.set('theme', pendingConfig.theme || '');
+      if (selectedTopic) params.set('topic', selectedTopic);
       params.set('count', String(pendingConfig.questionCount || 10));
     }
     setPendingConfig(null);
@@ -123,6 +140,45 @@ export default function LandingPage() {
             >
               Resume test
             </button>
+          </div>
+        )}
+
+        {user && progress && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3 sm:col-span-2">
+              <div>
+                <p className="text-sm font-bold text-slate-800">Daily Practice · 10 questions</p>
+                <p className="text-xs text-slate-500">
+                  {progress.revisions_due > 0
+                    ? `${progress.revisions_due} question${progress.revisions_due > 1 ? 's' : ''} you got wrong ${progress.revisions_due > 1 ? 'are' : 'is'} due for revision, plus new ones from your weakest units.`
+                    : 'New questions from your weakest units. Wrong answers come back after 1, 3 and 7 days.'}
+                </p>
+              </div>
+              <button
+                onClick={() => router.push('/quiz?mode=DAILY')}
+                className={`px-4 py-2.5 font-bold text-sm rounded-xl shrink-0 ${progress.daily_done ? 'bg-slate-100 text-slate-700 border border-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+              >
+                {progress.daily_done ? 'Done ✓ · Again' : 'Start'}
+              </button>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-around text-center gap-3">
+              <div>
+                <p className="text-2xl font-extrabold text-indigo-950">{progress.streak}🔥</p>
+                <p className="text-[11px] text-slate-500">day streak</p>
+              </div>
+              <div>
+                {progress.exam_date ? (
+                  <>
+                    <p className="text-2xl font-extrabold text-indigo-950">
+                      {Math.max(0, Math.round((Date.parse(progress.exam_date) - Date.parse(progress.today)) / 86400000))}
+                    </p>
+                    <p className="text-[11px] text-slate-500">days to exam</p>
+                  </>
+                ) : (
+                  <Link href="/performance" className="text-xs font-bold text-indigo-700 hover:underline">Set your<br />exam date</Link>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -217,6 +273,19 @@ export default function LandingPage() {
                     ))}
                   </select>
                 </label>
+                {topicsForTheme.length > 0 && (
+                  <label className="block text-xs font-semibold text-slate-600">
+                    Topic (optional)
+                    <select
+                      value={selectedTopic}
+                      onChange={(e) => setSelectedTopic(e.target.value)}
+                      className="mt-1 w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      <option value="">All topics in this unit</option>
+                      {topicsForTheme.map((t) => <option key={t.topic} value={t.topic}>{t.topic} ({t.question_count})</option>)}
+                    </select>
+                  </label>
+                )}
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
                     <label htmlFor="question-count">Number of questions:</label>

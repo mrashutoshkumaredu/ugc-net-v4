@@ -4,13 +4,14 @@ import userEvent from '@testing-library/user-event';
 import PaletteDrawer from './PaletteDrawer';
 
 describe('PaletteDrawer', () => {
-  it('marks the current question with the current-state color, not answered/review', () => {
+  it('marks the current question with a ring and keeps its NTA status colour', () => {
     render(
       <PaletteDrawer
         totalQuestions={3}
         currentIndex={1}
         answeredFlags={[true, false, false]}
         reviewFlags={[false, false, true]}
+        visitedFlags={[true, true, false]}
         onSelect={() => {}}
         onClose={() => {}}
         onSubmit={() => {}}
@@ -18,25 +19,30 @@ describe('PaletteDrawer', () => {
       />
     );
     const current = screen.getByRole('button', { name: '2' });
-    expect(current.className).toContain('bg-indigo-600');
+    expect(current.className).toContain('ring-2');
+    expect(current.className).toContain('bg-rose-600'); // visited, not answered
+    expect(screen.getByRole('button', { name: '1' }).className).toContain('bg-emerald-600');
   });
 
-  it('prioritizes review over answered styling', () => {
+  it('uses NTA colours: not visited, marked, answered & marked', () => {
     render(
       <PaletteDrawer
-        totalQuestions={1}
+        totalQuestions={3}
         currentIndex={-1}
-        answeredFlags={[true]}
-        reviewFlags={[true]}
+        answeredFlags={[false, false, true]}
+        reviewFlags={[false, true, true]}
+        visitedFlags={[false, true, true]}
         onSelect={() => {}}
         onClose={() => {}}
         onSubmit={() => {}}
         isSubmitted={false}
       />
     );
-    const btn = screen.getByRole('button', { name: '1' });
-    expect(btn.className).toContain('bg-amber-400');
-    expect(btn.className).not.toContain('bg-emerald-500');
+    expect(screen.getByRole('button', { name: '1' }).className).toContain('bg-slate-100');
+    expect(screen.getByRole('button', { name: '2' }).className).toContain('bg-violet-700');
+    const both = screen.getByRole('button', { name: '3' });
+    expect(both.className).toContain('bg-violet-700');
+    expect(both.querySelector('span')).not.toBeNull(); // green tick dot
   });
 
   it('calls onSelect with the clicked question index', async () => {
