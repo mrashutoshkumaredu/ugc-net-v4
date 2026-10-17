@@ -1,6 +1,10 @@
 -- Political Science, 15 Jun 2023, Shift 2: add the missing Q48 (daylight passage).
 -- Officially dropped by NTA. Approved by the author on 18 Oct 2026.
 --
+-- Step 0: the id counter was behind (it was at 1475, but ids already go up to 1573,
+-- because earlier papers were loaded with fixed ids). Move it past the highest id.
+select setval('public.questions_id_seq', (select max(id) from public.questions));
+
 -- Step 1: give this paper its real question numbers (1-47, 49, 50).
 -- The current id order matches the PDF order exactly (checked against the key),
 -- and Full Test sorts by question number, so Q48 will sit in its right place.
