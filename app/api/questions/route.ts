@@ -15,6 +15,7 @@ const PAGE_SIZE = 1000;
 type HindiRow = {
   english_question_ref_id: number;
   question_text: string;
+  layout_text: string | null;
   option_a: string;
   option_b: string;
   option_c: string;
@@ -64,7 +65,7 @@ export async function GET() {
       fetchAllRows<HindiRow>(
         supabase,
         'questions_hindi',
-        'english_question_ref_id, question_text, option_a, option_b, option_c, option_d'
+        'english_question_ref_id, question_text, layout_text, option_a, option_b, option_c, option_d'
       ),
     ]);
   } catch (error) {
@@ -91,6 +92,7 @@ export async function GET() {
     return {
       ...rest,
       question_text_hi: hi?.question_text ?? rest.question_text_hi ?? null,
+      layout_text_hi: hi?.layout_text ?? rest.layout_text_hi ?? null,
       option_a_hi: hi?.option_a ?? rest.option_a_hi ?? null,
       option_b_hi: hi?.option_b ?? rest.option_b_hi ?? null,
       option_c_hi: hi?.option_c ?? rest.option_c_hi ?? null,
