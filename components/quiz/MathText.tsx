@@ -28,7 +28,12 @@ export default function MathText({ html, className }: { html: string; className?
       ],
       throwOnError: false,
     });
-  });
+    // Re-run only when the underlying HTML actually changes. Without this
+    // dependency array, React reruns this effect after every re-render of
+    // the parent (e.g. the quiz page's per-second countdown timer), which
+    // repeatedly tears down and reprocesses the DOM KaTeX just rendered —
+    // visible as a flicker on any text that gets auto-render-matched.
+  }, [html]);
 
   const clean = DOMPurify.sanitize(html);
 
