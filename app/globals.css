@@ -44,3 +44,21 @@ pre {
 .layout-text th {
   background-color: #f8fafc;
 }
+
+/* Question text sizes (A- / A / A+ in the test toolbar) */
+[data-text-size] .q-text { font-size: 1rem; }
+[data-text-size] .q-option { font-size: 0.9375rem; }
+[data-text-size] .q-ref,
+[data-text-size] .q-hint { font-size: 0.875rem; }
+@media (min-width: 768px) {
+  [data-text-size] .q-text { font-size: 1.0625rem; }
+  [data-text-size] .q-option { font-size: 1rem; }
+}
+[data-text-size="sm"] .q-text { font-size: 0.875rem; }
+[data-text-size="sm"] .q-option { font-size: 0.8125rem; }
+[data-text-size="sm"] .q-ref,
+[data-text-size="sm"] .q-hint { font-size: 0.8125rem; }
+[data-text-size="lg"] .q-text { font-size: 1.3125rem; }
+[data-text-size="lg"] .q-option { font-size: 1.1875rem; }
+[data-text-size="lg"] .q-ref,
+[data-text-size="lg"] .q-hint { font-size: 1.0625rem; }

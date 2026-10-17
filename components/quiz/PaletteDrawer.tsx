@@ -49,7 +49,7 @@ export default function PaletteDrawer({
     <div className="flex md:flex flex-col h-full w-full max-w-[280px] absolute right-0 top-0 z-50 md:relative md:w-72 bg-white rounded-l-2xl md:rounded-lg shadow-2xl md:shadow-sm border-l md:border border-slate-300 overflow-hidden shrink-0">
       <div className="bg-slate-800 md:bg-slate-50 p-3 border-b border-slate-700 md:border-slate-200 flex justify-between items-center shrink-0">
         <span className="font-bold text-sm text-white md:text-slate-700 uppercase tracking-wide">Question Palette</span>
-        <button onClick={onClose} aria-label="Close palette" className="text-white md:text-slate-500 hover:text-amber-400 font-bold px-2 text-xl leading-none md:hidden">✕</button>
+        <button onClick={onClose} aria-label="Hide question palette" title="Hide question palette" className="text-white md:text-slate-500 hover:text-amber-400 font-bold px-2 text-xl leading-none">✕</button>
       </div>
 
       {showResults ? (

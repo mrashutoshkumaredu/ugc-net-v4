@@ -11,6 +11,13 @@ const MathText = dynamic(() => import('./MathText'), { ssr: false });
 
 const OPTION_LETTERS = ['1', '2', '3', '4'];
 
+export type TextSize = 'sm' | 'md' | 'lg';
+const TEXT_SIZES: { value: TextSize; label: string; title: string }[] = [
+  { value: 'sm', label: 'A-', title: 'Smaller text' },
+  { value: 'md', label: 'A', title: 'Normal text' },
+  { value: 'lg', label: 'A+', title: 'Larger text' },
+];
+
 export default function QuestionPanel({
   question,
   index,
@@ -25,6 +32,12 @@ export default function QuestionPanel({
   onToggleReview,
   onOpenReport,
   onTogglePalette,
+  paletteVisible,
+  textSize,
+  onTextSize,
+  canFullscreen,
+  isFullscreen,
+  onToggleFullscreen,
   isSubmitted,
   correctOption,
   aiHint,
@@ -48,6 +61,12 @@ export default function QuestionPanel({
   onToggleReview: () => void;
   onOpenReport: () => void;
   onTogglePalette: () => void;
+  paletteVisible: boolean;
+  textSize: TextSize;
+  onTextSize: (size: TextSize) => void;
+  canFullscreen: boolean;
+  isFullscreen: boolean;
+  onToggleFullscreen: () => void;
   isSubmitted: boolean;
   correctOption?: number;
   aiHint?: string | null;
@@ -86,13 +105,42 @@ export default function QuestionPanel({
               {language === 'EN' ? 'E / अ' : 'अ / E'}
             </button>
           )}
-          <button onClick={onTogglePalette} className="md:hidden bg-slate-800 text-white px-2.5 py-1 rounded text-sm font-black shadow-sm" aria-label="Open question palette">
+          <div className="flex rounded-md border border-indigo-200 bg-white overflow-hidden" role="group" aria-label="Text size">
+            {TEXT_SIZES.map((t) => (
+              <button
+                key={t.value}
+                onClick={() => onTextSize(t.value)}
+                title={t.title}
+                aria-pressed={textSize === t.value}
+                className={`px-1.5 sm:px-2 py-1 text-[11px] font-bold leading-none ${textSize === t.value ? 'bg-indigo-600 text-white' : 'text-indigo-800 hover:bg-indigo-50'}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          {canFullscreen && (
+            <button
+              onClick={onToggleFullscreen}
+              title={isFullscreen ? 'Exit full screen' : 'Full screen'}
+              aria-label={isFullscreen ? 'Exit full screen' : 'Full screen'}
+              className="bg-white border border-indigo-200 text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded-md text-sm font-bold leading-none"
+            >
+              {isFullscreen ? '⤡' : '⤢'}
+            </button>
+          )}
+          <button
+            onClick={onTogglePalette}
+            className="bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded text-sm font-black shadow-sm"
+            title={paletteVisible ? 'Hide question palette' : 'Show question palette'}
+            aria-label={paletteVisible ? 'Hide question palette' : 'Show question palette'}
+            aria-pressed={paletteVisible}
+          >
             ☰
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-28 bg-slate-50/50">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-28 bg-slate-50/50" data-text-size={textSize}>
         <div className="mb-6">
           <p className="text-xs font-bold text-slate-400 mb-2">
             Question {index + 1} of {total}
@@ -105,7 +153,7 @@ export default function QuestionPanel({
               This question was dropped by NTA in the official answer key. Everyone gets the 2 marks for it, whatever they answer.
             </p>
           )}
-          <MathText html={activeText} className="text-sm sm:text-base md:text-lg font-medium text-slate-900 whitespace-pre-line leading-relaxed" />
+          <MathText html={activeText} className="q-text font-medium text-slate-900 whitespace-pre-line leading-relaxed" />
         </div>
 
         <div className="space-y-2.5 sm:space-y-3 mb-6" role="radiogroup" aria-label="Answer options">
@@ -138,7 +186,7 @@ export default function QuestionPanel({
                 <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 text-[11px] font-bold ${isSelected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-400 text-slate-500'}`}>
                   {OPTION_LETTERS[optIdx]}
                 </span>
-                <MathText html={optText} className="text-sm sm:text-base flex-1" />
+                <MathText html={optText} className="q-option flex-1" />
               </div>
             );
           })}
@@ -147,7 +195,7 @@ export default function QuestionPanel({
         {isSubmitted && aiHint && (
           <div className="bg-amber-50 border-l-4 border-amber-500 p-3 sm:p-4 rounded-r-lg mt-6 shadow-sm">
             <h4 className="text-xs sm:text-sm font-bold text-amber-900 mb-1">Explanation</h4>
-            <p className="text-xs sm:text-sm text-amber-900 whitespace-pre-line leading-relaxed">{aiHint}</p>
+            <p className="q-hint text-amber-900 whitespace-pre-line leading-relaxed">{aiHint}</p>
           </div>
         )}
 

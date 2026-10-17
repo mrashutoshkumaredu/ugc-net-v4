@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
 import AuthModal from '@/components/AuthModal';
-import QuestionPanel from '@/components/quiz/QuestionPanel';
+import QuestionPanel, { type TextSize } from '@/components/quiz/QuestionPanel';
 import ReferencePanel from '@/components/quiz/ReferencePanel';
 import PaletteDrawer, { type ResultState, type ReviewFilter } from '@/components/quiz/PaletteDrawer';
 import SubmitConfirmModal from '@/components/modals/SubmitConfirmModal';
@@ -20,6 +20,8 @@ import { clearProgress, loadProgress, saveProgress } from '@/lib/progress';
 import type { NormalizedQuestion, SubmitResult, TestSession } from '@/lib/types';
 
 type LoadState = 'auth' | 'loading' | 'ready' | 'error' | 'finished';
+
+const isDesktop = () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
 
 function QuizPageInner() {
   const router = useRouter();
@@ -38,7 +40,13 @@ function QuizPageInner() {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [reviewFlags, setReviewFlags] = useState<Record<number, boolean>>({});
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN');
+  // Phones: the palette opens as an overlay. Larger screens: it sits beside
+  // the question and the ☰ button hides or shows it.
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [paletteHiddenDesktop, setPaletteHiddenDesktop] = useState(false);
+  const [textSize, setTextSizeState] = useState<TextSize>('md');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [canFullscreen, setCanFullscreen] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [reportQuestionId, setReportQuestionId] = useState<number | null>(null);
   const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
@@ -111,6 +119,42 @@ function QuizPageInner() {
     run();
   }, [checkedSession, user, sessionParam, searchParams, router, applySession]);
 
+  // ---- Text size (remembered on this device) and full screen -------------
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('ugcnet.textSize');
+      if (saved === 'sm' || saved === 'md' || saved === 'lg') setTextSizeState(saved);
+    } catch {
+      // storage unavailable
+    }
+    setCanFullscreen(Boolean(document.fullscreenEnabled));
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const setTextSize = useCallback((size: TextSize) => {
+    setTextSizeState(size);
+    try {
+      window.localStorage.setItem('ugcnet.textSize', size);
+    } catch {
+      // storage unavailable
+    }
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
+  const togglePalette = useCallback(() => {
+    if (isDesktop()) setPaletteHiddenDesktop((h) => !h);
+    else setPaletteOpen((p) => !p);
+  }, []);
+
   // ---- Save progress on this device after every change --------------------
   useEffect(() => {
     if (!session || phase !== 'taking') return;
@@ -136,6 +180,7 @@ function QuizPageInner() {
       const result = await submitTest(session.session_id, answers);
       clearProgress(session.session_id);
       setSubmitResult(result);
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
       setPhase('results');
       setShowResultModal(true);
       setCurrentIndex(0);
@@ -270,7 +315,7 @@ function QuizPageInner() {
 
       <div className="flex-1 w-full max-w-[1600px] mx-auto h-[calc(100vh-70px)] overflow-hidden flex flex-col md:flex-row gap-2 p-2 sm:p-4 bg-slate-100">
         <div className="flex-1 flex flex-col md:flex-row gap-2 overflow-hidden relative">
-          {referenceText && <ReferencePanel layoutText={referenceText} />}
+          {referenceText && <ReferencePanel layoutText={referenceText} textSize={textSize} />}
 
           <QuestionPanel
             question={currentQuestion}
@@ -285,7 +330,13 @@ function QuizPageInner() {
             isReviewed={Boolean(reviewFlags[currentQuestion.id])}
             onToggleReview={toggleReview}
             onOpenReport={() => setReportQuestionId(currentQuestion.id)}
-            onTogglePalette={() => setPaletteOpen((p) => !p)}
+            onTogglePalette={togglePalette}
+            paletteVisible={paletteOpen || !paletteHiddenDesktop}
+            textSize={textSize}
+            onTextSize={setTextSize}
+            canFullscreen={canFullscreen}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={toggleFullscreen}
             isSubmitted={isSubmitted}
             correctOption={submitResult?.answerKey[currentQuestion.id]?.correctOption}
             aiHint={submitResult?.answerKey[currentQuestion.id]?.aiHint}
@@ -297,14 +348,14 @@ function QuizPageInner() {
           />
         </div>
 
-        <div className={paletteOpen ? 'flex flex-col h-full' : 'hidden md:flex md:flex-col h-full'}>
+        <div className={paletteOpen ? 'flex flex-col h-full' : paletteHiddenDesktop ? 'hidden' : 'hidden md:flex md:flex-col h-full'}>
           <PaletteDrawer
             totalQuestions={questions.length}
             currentIndex={currentIndex}
             answeredFlags={answeredFlags}
             reviewFlags={reviewFlagList}
             onSelect={(idx) => { setCurrentIndex(idx); setPaletteOpen(false); }}
-            onClose={() => setPaletteOpen(false)}
+            onClose={() => { if (isDesktop()) setPaletteHiddenDesktop(true); setPaletteOpen(false); }}
             onSubmit={() => setShowSubmitConfirm(true)}
             isSubmitted={isSubmitted || phase === 'submitting'}
             resultStates={resultStates}
