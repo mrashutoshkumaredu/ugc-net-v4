@@ -14,6 +14,7 @@ export function normalizeQuestion(q: PublicQuestion): NormalizedQuestion {
     questionText: cleanNewlines(q.question_text),
     questionTextHi: q.question_text_hi ? cleanNewlines(q.question_text_hi) : null,
     layoutText: q.layout_text ? cleanNewlines(q.layout_text) : null,
+    layoutTextHi: q.layout_text_hi ? cleanNewlines(q.layout_text_hi) : null,
     options: [cleanNewlines(q.option_a), cleanNewlines(q.option_b), cleanNewlines(q.option_c), cleanNewlines(q.option_d)],
     optionsHi,
   };
