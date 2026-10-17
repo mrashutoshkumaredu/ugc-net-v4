@@ -19,7 +19,9 @@ function friendly(error: { message?: string } | null, fallback: string) {
   if (msg.includes('folder_not_found')) return 'This folder could not be found.';
   if (msg.includes('duplicate key') || msg.includes('unique')) return 'A folder with this name already exists.';
   if (msg.toLowerCase().includes('failed to fetch')) return "Couldn't reach the server. Check your internet connection and try again.";
-  return fallback;
+  // Unknown problem: keep the technical reason visible so it can be reported.
+  if (msg) console.error('[database]', msg);
+  return msg ? `${fallback} (${msg.slice(0, 120)})` : fallback;
 }
 
 export async function getCatalog(): Promise<Catalog> {

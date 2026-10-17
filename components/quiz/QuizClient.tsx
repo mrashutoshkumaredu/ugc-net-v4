@@ -389,6 +389,7 @@ function QuizPageInner() {
             isReviewed={Boolean(reviewFlags[currentQuestion.id])}
             onToggleReview={toggleReview}
             onMarkAndNext={markAndNext}
+            onSubmitRequest={() => setShowSubmitConfirm(true)}
             confidence={answers[currentQuestion.id] === undefined ? null : confidence[currentQuestion.id] ? 'guess' : 'sure'}
             onToggleConfidence={toggleConfidence}
             onOpenReport={() => setReportQuestionId(currentQuestion.id)}

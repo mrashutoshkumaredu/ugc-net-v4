@@ -332,11 +332,12 @@ begin
            case when (v_answers ->> q.id::text) ~ '^[0-3]$' then (v_answers ->> q.id::text)::int end as chosen,
            case when (v_meta -> q.id::text ->> 'conf') = 'guess' then 'guess'
                 when (v_answers ->> q.id::text) ~ '^[0-3]$' then 'sure' end as confidence,
-           case when (v_meta -> q.id::text ->> 't') ~ '^[0-9]{1,5}$' then (v_meta -> q.id::text ->> 't')::int end as time_seconds
+           case when (v_meta -> q.id::text ->> 't') ~ '^[0-9]{1,5}$' then (v_meta -> q.id::text ->> 't')::int end as time_seconds,
+           -- correct, or dropped by NTA (counts as correct for everyone)
+           (q.is_dropped or coalesce(case when (v_answers ->> q.id::text) ~ '^[0-3]$'
+                                          then (v_answers ->> q.id::text)::int = q.correct_option end, false)) as ok
     from unnest(v_session.question_ids) with ordinality as x(id, ord)
     join public.questions q on q.id = x.id;
-  alter table _scored add column ok boolean;
-  update _scored set ok = is_dropped or (chosen is not null and chosen = correct_option);
 
   select count(*), count(*) filter (where ok), count(*) filter (where is_dropped),
     (select jsonb_object_agg(b.unit, jsonb_build_object('total', b.t, 'correct', b.c)) from

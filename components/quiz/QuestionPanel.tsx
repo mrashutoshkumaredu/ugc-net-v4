@@ -31,6 +31,7 @@ export default function QuestionPanel({
   isReviewed,
   onToggleReview,
   onMarkAndNext,
+  onSubmitRequest,
   confidence,
   onToggleConfidence,
   onOpenReport,
@@ -64,6 +65,9 @@ export default function QuestionPanel({
   onToggleReview: () => void;
   // NTA "Mark for Review & Next".
   onMarkAndNext: () => void;
+  // On the last question "Save & Next" becomes "Save & Submit" and opens
+  // the submit confirmation.
+  onSubmitRequest: () => void;
   confidence: 'sure' | 'guess' | null;
   onToggleConfidence: () => void;
   onOpenReport: () => void;
@@ -242,11 +246,17 @@ export default function QuestionPanel({
               Clear<span className="hidden lg:inline"> Response</span>
             </button>
             <button onClick={onMarkAndNext} aria-pressed={isReviewed} className={`px-2.5 sm:px-4 py-2 sm:py-2.5 border text-xs sm:text-sm font-bold rounded-lg transition ${isReviewed ? 'bg-violet-700 text-white border-violet-700' : 'bg-violet-100 text-violet-900 hover:bg-violet-200 border-violet-200'}`}>
-              Mark<span className="hidden sm:inline"> for Review</span> &amp; Next
+              Mark<span className="hidden sm:inline"> for Review</span>{canGoNext ? <> &amp; Next</> : null}
             </button>
-            <button onClick={onNext} className="px-3 sm:px-6 py-2 sm:py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 text-xs sm:text-sm font-bold rounded-lg transition shadow-md">
-              Save &amp; Next
-            </button>
+            {canGoNext ? (
+              <button onClick={onNext} className="px-3 sm:px-6 py-2 sm:py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 text-xs sm:text-sm font-bold rounded-lg transition shadow-md">
+                Save &amp; Next
+              </button>
+            ) : (
+              <button onClick={onSubmitRequest} className="px-3 sm:px-6 py-2 sm:py-2.5 bg-indigo-700 text-white hover:bg-indigo-800 text-xs sm:text-sm font-bold rounded-lg transition shadow-md">
+                Save &amp; Submit
+              </button>
+            )}
           </div>
         )}
       </div>
