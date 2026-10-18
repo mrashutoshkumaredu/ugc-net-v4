@@ -3,6 +3,9 @@
 -- Step 1 numbers the existing questions of each paper, so the new ones sit in their right place in Full Test.
 -- (The current id order of each paper matches the PDF order, checked against the answer keys.)
 
+-- Safety: make sure the id counter is past the highest id (other sessions load papers with fixed ids).
+select setval('public.questions_id_seq', (select max(id) from public.questions));
+
 with o as (select id, row_number() over (order by id) rn from public.questions where paper_id = '09_EDUCATION_25_JUN_2025_SHIFT1')
 update public.questions x set question_number = (array[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,42,43,44,45,46,47,48,49,50])[o.rn]
   from o where x.id = o.id and x.question_number is null
