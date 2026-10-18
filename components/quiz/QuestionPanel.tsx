@@ -50,8 +50,11 @@ export default function QuestionPanel({
   onClear,
   canGoPrev,
   canGoNext,
+  hindiImage,
 }: {
   question: NormalizedQuestion;
+  // Picture of the Hindi question (original NTA image), when there is no typed Hindi text.
+  hindiImage?: string;
   index: number;
   total: number;
   // Unit practice mixes papers, so show where each question comes from.
@@ -87,9 +90,14 @@ export default function QuestionPanel({
   canGoPrev: boolean;
   canGoNext: boolean;
 }) {
-  const hasHindi = Boolean(question.questionTextHi || question.optionsHi?.some(Boolean));
+  const hasHindiText = Boolean(question.questionTextHi || question.optionsHi?.some(Boolean));
+  const hasHindi = hasHindiText || Boolean(hindiImage);
+  // Typed Hindi text wins; otherwise show the original NTA picture of the Hindi question.
+  const showHindiImage = language === 'HI' && !hasHindiText && Boolean(hindiImage);
   const activeText = language === 'HI' && question.questionTextHi ? question.questionTextHi : question.questionText;
-  const activeOptions = language === 'HI' && question.optionsHi ? question.optionsHi : question.options;
+  const activeOptions = showHindiImage
+    ? question.options.map((_, i) => `विकल्प ${i + 1}`)
+    : language === 'HI' && question.optionsHi ? question.optionsHi : question.options;
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden relative">
@@ -164,7 +172,14 @@ export default function QuestionPanel({
               This question was dropped by NTA in the official answer key. Everyone gets the 2 marks for it, whatever they answer.
             </p>
           )}
-          <MathText html={activeText} className="q-text font-medium text-slate-900 whitespace-pre-line leading-relaxed" />
+          {showHindiImage ? (
+            <div className="overflow-x-auto">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={hindiImage!} alt={`प्रश्न ${index + 1} (हिंदी)`} className="q-image max-w-none bg-white rounded" />
+            </div>
+          ) : (
+            <MathText html={activeText} className="q-text font-medium text-slate-900 whitespace-pre-line leading-relaxed" />
+          )}
         </div>
 
         <div className="space-y-2.5 sm:space-y-3 mb-6" role="radiogroup" aria-label="Answer options">
