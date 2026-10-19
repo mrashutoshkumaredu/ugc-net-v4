@@ -140,7 +140,7 @@ function Card({ tone, icon, title, text, children }: { tone: string; icon: strin
         <p className="font-black text-slate-900">{title}</p>
         <p className="text-sm text-slate-600">{text}</p>
       </div>
-      <div className="flex items-center gap-3 shrink-0">{children}</div>
+      <div className="flex items-center gap-3 shrink-0 [&_.btn-primary]:min-w-28 [&_.btn-secondary]:min-w-28">{children}</div>
     </div>
   );
 }
