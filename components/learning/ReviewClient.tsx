@@ -23,8 +23,14 @@ const FILTERS: { value: Filter; label: string }[] = [
 ];
 const OPTION_KEYS = ['option_a', 'option_b', 'option_c', 'option_d'] as const;
 
+// A dropped question we have fixed has one right answer and is shown like any other.
+// Only a dropped question with no answer (correct_option -1) is shown as "dropped".
+function noAnswer(it: ReviewItem) {
+  return Boolean(it.question.is_dropped) && !(typeof it.correct_option === 'number' && it.correct_option >= 0);
+}
+
 function itemState(it: ReviewItem) {
-  if (it.question.is_dropped) return 'dropped';
+  if (noAnswer(it)) return 'dropped';
   if (it.chosen === null || it.chosen === undefined) return 'skipped';
   return it.is_correct ? 'correct' : 'wrong';
 }
@@ -160,7 +166,7 @@ function ReviewBody() {
 
             <ol className="space-y-1.5">
               {OPTION_KEYS.map((k, i) => {
-                const isCorrect = i === it.correct_option && !q.is_dropped;
+                const isCorrect = i === it.correct_option && !noAnswer(it);
                 const isChosen = i === it.chosen;
                 const cls = isCorrect ? 'border-emerald-500 bg-emerald-50' : isChosen ? 'border-rose-500 bg-rose-50' : 'border-slate-200';
                 return (

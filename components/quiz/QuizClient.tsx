@@ -258,7 +258,7 @@ function QuizPageInner() {
     if (!submitResult) return undefined;
     return questions.map((q) => {
       const key = submitResult.answerKey[q.id];
-      if (key?.isDropped) return 'dropped';
+      if (key?.isDropped && !(key.correctOption >= 0)) return 'dropped';
       if (answers[q.id] === undefined) return 'skipped';
       return answers[q.id] === key?.correctOption ? 'correct' : 'wrong';
     });

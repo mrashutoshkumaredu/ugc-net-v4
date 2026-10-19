@@ -68,9 +68,18 @@ describe('scoreSubmission', () => {
     expect(result.unitBreakdown['General']).toEqual({ total: 1, correct: 1 });
   });
 
-  it('counts a question dropped by NTA as correct for everyone', () => {
+  it('scores a fixed dropped question normally: marks only for the marked option', () => {
     const questions = [
       makeQuestion({ id: 1, correct_option: 0, is_dropped: true }),
+      makeQuestion({ id: 2, correct_option: 1 }),
+    ];
+    expect(scoreSubmission(questions, { 1: 2, 2: 1 }).correctCount).toBe(1);
+    expect(scoreSubmission(questions, { 1: 0, 2: 1 }).correctCount).toBe(2);
+  });
+
+  it('counts a dropped question with no answer (-1) as correct for everyone', () => {
+    const questions = [
+      makeQuestion({ id: 1, correct_option: -1, is_dropped: true }),
       makeQuestion({ id: 2, correct_option: 1 }),
     ];
     const result = scoreSubmission(questions, { 2: 1 });
