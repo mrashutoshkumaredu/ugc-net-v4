@@ -79,9 +79,9 @@ export default function ResultModal({
         )}
 
         <div className="flex flex-col sm:flex-row gap-2">
-          <button onClick={onClose} className="flex-1 py-3 bg-white border border-indigo-300 text-indigo-700 font-bold rounded-xl text-xs hover:bg-indigo-50 transition">See Answers Here</button>
+          <button onClick={onClose} className="btn btn-secondary flex-1">See Answers Here</button>
           {reviewHref && (
-            <Link href={reviewHref} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 transition shadow-md text-center">
+            <Link href={reviewHref} className="btn btn-primary flex-1">
               Deep Review: Tag Mistakes
             </Link>
           )}

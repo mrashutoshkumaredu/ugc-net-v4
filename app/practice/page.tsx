@@ -144,11 +144,11 @@ export default function PracticePage() {
                 <span className="text-xs font-semibold text-amber-900">Discard this test? Answers will be lost.</span>
                 <button
                   onClick={() => { clearProgress(resumable.sessionId); setResumable(null); setConfirmDiscard(false); }}
-                  className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg"
+                  className="btn btn-danger btn-sm"
                 >
                   Yes, discard
                 </button>
-                <button onClick={() => setConfirmDiscard(false)} className="px-3 py-2 bg-white border border-amber-300 text-amber-900 font-bold text-xs rounded-lg">
+                <button onClick={() => setConfirmDiscard(false)} className="btn btn-secondary btn-sm">
                   Keep
                 </button>
               </div>
@@ -156,7 +156,7 @@ export default function PracticePage() {
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => { setStarting('Resuming your test'); router.push(`/quiz?session=${resumable.sessionId}`); }}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-sm rounded-lg"
+                  className="btn btn-primary"
                 >
                   Resume test
                 </button>
@@ -164,7 +164,7 @@ export default function PracticePage() {
                   onClick={() => setConfirmDiscard(true)}
                   aria-label="Discard unfinished test"
                   title="Discard this test"
-                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-amber-300 text-amber-900 hover:bg-amber-100 font-bold"
+                  className="btn btn-secondary px-3"
                 >
                   ✕
                 </button>
@@ -186,7 +186,7 @@ export default function PracticePage() {
               </div>
               <button
                 onClick={() => { setStarting('Starting Daily Practice'); router.push('/quiz?mode=DAILY'); }}
-                className={`px-4 py-2.5 font-bold text-sm rounded-xl shrink-0 ${progress.daily_done ? 'bg-slate-100 text-slate-700 border border-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                className={`btn shrink-0 ${progress.daily_done ? 'btn-secondary' : 'btn-primary'}`}
               >
                 {progress.daily_done ? 'Done ✓ · Again' : 'Start'}
               </button>
@@ -277,7 +277,7 @@ export default function PracticePage() {
             <button
               onClick={() => prepareTest('FULL')}
               disabled={loading || fullTestQuestionCount === 0}
-              className="w-full py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition shadow-md disabled:opacity-50"
+              className="btn btn-primary btn-lg w-full"
             >
               Start Full Paper
             </button>
@@ -339,7 +339,7 @@ export default function PracticePage() {
             <button
               onClick={() => prepareTest('UNIT')}
               disabled={loading || themeQuestionCount === 0}
-              className="w-full py-3 bg-amber-500 text-slate-900 font-bold text-sm rounded-xl hover:bg-amber-600 transition shadow-md disabled:opacity-50"
+              className="btn btn-primary btn-lg w-full"
             >
               Start Unit Practice
             </button>

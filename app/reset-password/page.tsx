@@ -85,7 +85,7 @@ export default function ResetPasswordPage() {
                   <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="student@example.com" />
                 </label>
                 {error && <p className="text-xs text-rose-600 bg-rose-50 p-2 rounded">{error}</p>}
-                <button type="submit" disabled={isLoading} className="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition text-sm disabled:opacity-50">
+                <button type="submit" disabled={isLoading} className="btn btn-primary w-full">
                   {isLoading ? 'Sending…' : 'Send reset link'}
                 </button>
               </form>
@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
                   <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
                 </label>
                 {error && <p className="text-xs text-rose-600 bg-rose-50 p-2 rounded">{error}</p>}
-                <button type="submit" disabled={isLoading} className="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition text-sm disabled:opacity-50">
+                <button type="submit" disabled={isLoading} className="btn btn-primary w-full">
                   {isLoading ? 'Saving…' : 'Update password'}
                 </button>
               </form>
@@ -123,7 +123,7 @@ export default function ResetPasswordPage() {
             <>
               <h2 className="text-xl font-bold text-emerald-700 mb-2">Password updated</h2>
               <p className="text-sm text-slate-600 mb-4">You&apos;re logged in with your new password.</p>
-              <Link href="/" className="inline-block px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition text-sm">Go to home</Link>
+              <Link href="/" className="btn btn-primary">Go to home</Link>
             </>
           )}
         </div>

@@ -21,8 +21,8 @@ export default function SubmitConfirmModal({
           </p>
         )}
         <div className="flex gap-3 mt-4">
-          <button onClick={onCancel} className="w-1/2 py-2.5 border border-slate-300 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-50 transition">Cancel</button>
-          <button onClick={onConfirm} className="w-1/2 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 transition shadow-md">Yes, Submit</button>
+          <button onClick={onCancel} className="btn btn-secondary flex-1">Cancel</button>
+          <button onClick={onConfirm} className="btn btn-primary flex-1">Yes, Submit</button>
         </div>
       </div>
     </div>

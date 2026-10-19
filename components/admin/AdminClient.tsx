@@ -243,16 +243,16 @@ function ReportCard({ report, onChanged }: { report: AdminReport; onChanged: () 
       <div className="flex flex-wrap gap-2 pt-1">
         {editing ? (
           <>
-            <button disabled={busy} onClick={save} className="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white disabled:opacity-50">Save question</button>
-            <button disabled={busy} onClick={() => { setDraft(report.question); setEditing(false); }} className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-300">Cancel</button>
+            <button disabled={busy} onClick={save} className="btn btn-primary btn-sm">Save question</button>
+            <button disabled={busy} onClick={() => { setDraft(report.question); setEditing(false); }} className="btn btn-secondary btn-sm">Cancel</button>
           </>
         ) : (
-          <button disabled={busy} onClick={() => setEditing(true)} className="px-3 py-1.5 text-xs font-bold rounded-lg border border-indigo-300 text-indigo-700">Edit question</button>
+          <button disabled={busy} onClick={() => setEditing(true)} className="btn btn-secondary btn-sm">Edit question</button>
         )}
         {report.status === 'Resolved' ? (
-          <button disabled={busy} onClick={() => setStatus('Open')} className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-300">Reopen</button>
+          <button disabled={busy} onClick={() => setStatus('Open')} className="btn btn-secondary btn-sm">Reopen</button>
         ) : (
-          <button disabled={busy} onClick={() => setStatus('Resolved')} className="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white disabled:opacity-50">Mark resolved</button>
+          <button disabled={busy} onClick={() => setStatus('Resolved')} className="btn btn-primary btn-sm">Mark resolved</button>
         )}
       </div>
     </article>
@@ -310,7 +310,7 @@ function NotesEditor() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4">
       <aside className="bg-white border border-slate-200 rounded-xl p-3 space-y-2 self-start">
-        <button onClick={() => { setDraft(EMPTY_NOTE); setPreview(false); }} className="w-full text-xs font-bold px-3 py-2 rounded-lg bg-indigo-600 text-white">+ New note</button>
+        <button onClick={() => { setDraft(EMPTY_NOTE); setPreview(false); }} className="btn btn-primary btn-sm w-full">+ New note</button>
         {notes === null && <p className="text-xs text-slate-500">Loading…</p>}
         {UNIT_OPTIONS.map((u) => {
           const list = (notes ?? []).filter((n) => n.unit === u.value);
@@ -360,12 +360,12 @@ function NotesEditor() {
           <textarea rows={16} className={`${field} font-mono text-xs`} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
         )}
         <div className="flex flex-wrap items-center gap-2">
-          <button disabled={busy} onClick={() => save('draft')} className="px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 disabled:opacity-50">Save draft</button>
-          <button disabled={busy} onClick={() => save('published')} className="px-3 py-2 text-xs font-bold rounded-lg bg-emerald-600 text-white disabled:opacity-50">
+          <button disabled={busy} onClick={() => save('draft')} className="btn btn-secondary btn-sm">Save draft</button>
+          <button disabled={busy} onClick={() => save('published')} className="btn btn-primary btn-sm">
             {draft.status === 'published' ? 'Save (stays published)' : 'Approve & publish'}
           </button>
           {draft.status === 'published' && draft.id && (
-            <button disabled={busy} onClick={() => save('draft')} className="px-3 py-2 text-xs font-bold rounded-lg border border-amber-300 text-amber-800 disabled:opacity-50">Unpublish</button>
+            <button disabled={busy} onClick={() => save('draft')} className="btn btn-secondary btn-sm">Unpublish</button>
           )}
           {msg && <span className="text-xs text-slate-600">{msg}</span>}
         </div>

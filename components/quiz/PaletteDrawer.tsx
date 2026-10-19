@@ -149,7 +149,7 @@ export default function PaletteDrawer({
 
       {!isSubmitted && (
         <div className="p-3 border-t border-slate-200 shrink-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
-          <button onClick={onSubmit} className="w-full py-3 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition shadow-md">
+          <button onClick={onSubmit} className="btn btn-primary btn-lg w-full">
             Submit Final Test
           </button>
         </div>

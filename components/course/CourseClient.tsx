@@ -158,8 +158,8 @@ function Chapter({ ch, sets, taskId, onBack, onOpenSet }: { ch: CourseChapter; s
             <p className="font-bold text-slate-900">The full lesson is for students in a class</p>
             <p className="text-sm text-slate-500 mt-1 mb-4">Ask your teacher to assign this chapter&apos;s lesson. Join their class on the Classes page with the code they give you. The practice questions are free for everyone.</p>
             <div className="flex justify-center gap-3">
-              <Link href="/classes" className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg">Join a class</Link>
-              <button onClick={() => setTab('practice')} className="px-4 py-2 border border-slate-300 text-sm font-bold rounded-lg">Go to practice</button>
+              <Link href="/classes" className="btn btn-primary">Join a class</Link>
+              <button onClick={() => setTab('practice')} className="btn btn-secondary">Go to practice</button>
             </div>
           </div>
         ) : (
@@ -174,11 +174,11 @@ function Chapter({ ch, sets, taskId, onBack, onOpenSet }: { ch: CourseChapter; s
                 <p className="text-sm font-semibold text-emerald-900">📋 This lesson is a class task. When you have read it, mark it as done.</p>
                 {doneMsg ? <p className="text-sm font-bold text-emerald-700">{doneMsg}</p> : (
                   <button onClick={() => courseApi.lessonDone(taskId).then(() => setDoneMsg('✓ Marked as read')).catch((e) => setDoneMsg(e.message))}
-                    className="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg">I have read it ✓</button>
+                    className="btn btn-primary">I have read it ✓</button>
                 )}
               </div>
             )}
-            <div className="text-center"><button onClick={() => setTab('practice')} className="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl">Now practise ▸</button></div>
+            <div className="text-center"><button onClick={() => setTab('practice')} className="btn btn-primary btn-lg">Now practise ▸</button></div>
           </div>
         )
       ) : (
@@ -315,15 +315,15 @@ function Player({ setId, taskId, onBack }: { setId: string; taskId: string | nul
             })}
           </div>
           <div className="mt-5 flex flex-wrap justify-between gap-2">
-            <button disabled={i === 0} onClick={() => setI(i - 1)} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold disabled:opacity-40">« Back</button>
+            <button disabled={i === 0} onClick={() => setI(i - 1)} className="btn btn-secondary">« Back</button>
             <div className="flex gap-2">
               {answers[q.id] !== undefined && (
-                <button onClick={() => setAnswers((a) => { const n = { ...a }; delete n[q.id]; return n; })} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold">Clear</button>
+                <button onClick={() => setAnswers((a) => { const n = { ...a }; delete n[q.id]; return n; })} className="btn btn-secondary">Clear</button>
               )}
               {i < qs.length - 1 ? (
-                <button onClick={() => setI(i + 1)} className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold">Next »</button>
+                <button onClick={() => setI(i + 1)} className="btn btn-primary">Next »</button>
               ) : (
-                <button onClick={() => setConfirm(true)} className="px-5 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">Submit</button>
+                <button onClick={() => setConfirm(true)} className="btn btn-primary">Submit</button>
               )}
             </div>
           </div>
@@ -341,12 +341,12 @@ function Player({ setId, taskId, onBack }: { setId: string; taskId: string | nul
             <div className="mt-3 text-xs space-y-2">
               <p className="font-semibold text-slate-700">Submit now? {qs.length - answered > 0 ? `${qs.length - answered} not answered.` : ''}</p>
               <div className="flex gap-2">
-                <button disabled={busy} onClick={submit} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg font-bold">{busy ? '…' : 'Yes, submit'}</button>
-                <button onClick={() => setConfirm(false)} className="flex-1 py-2 border border-slate-300 rounded-lg font-bold">Keep going</button>
+                <button disabled={busy} onClick={submit} className="btn btn-primary flex-1">{busy ? '…' : 'Yes, submit'}</button>
+                <button onClick={() => setConfirm(false)} className="btn btn-secondary flex-1">Keep going</button>
               </div>
             </div>
           ) : (
-            <button onClick={() => setConfirm(true)} className="mt-3 w-full py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold">Submit</button>
+            <button onClick={() => setConfirm(true)} className="btn btn-primary mt-3 w-full">Submit</button>
           )}
         </div>
       </div>

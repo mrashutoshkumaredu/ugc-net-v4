@@ -26,7 +26,7 @@ export default function FullscreenButton() {
       onClick={toggle}
       title={on ? 'Exit full screen' : 'Full screen'}
       aria-label={on ? 'Exit full screen' : 'Full screen'}
-      className="text-xs bg-indigo-800 hover:bg-indigo-700 text-white border border-indigo-600 px-3 py-2 rounded-lg transition font-medium shrink-0"
+      className="btn btn-light btn-sm shrink-0"
     >
       {on ? '⤓ Exit full screen' : '⤢ Full screen'}
     </button>

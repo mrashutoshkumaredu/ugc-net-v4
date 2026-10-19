@@ -86,7 +86,7 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
                   <span className="text-[11px] font-semibold text-indigo-200 uppercase tracking-wider hidden sm:inline">Time left</span>
                   <span className="text-sm font-mono font-bold text-amber-400">{formatTime(masterSecondsRemaining)}</span>
                 </div>
-                <button onClick={goHome} className="text-xs bg-indigo-800 hover:bg-indigo-700 border border-indigo-600 px-3 py-2 rounded-lg font-medium">🏠</button>
+                <button onClick={goHome} className="btn btn-light btn-sm">🏠</button>
               </>
             )}
             {user ? (
@@ -108,8 +108,8 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
               </div>
             ) : (
               <>
-                <button onClick={() => setAuthMode('LOGIN')} className="text-xs bg-indigo-800 hover:bg-indigo-700 border border-indigo-600 px-3 py-2 rounded-lg font-medium">Login</button>
-                <button onClick={() => setAuthMode('REGISTER')} className="text-xs bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-2 rounded-lg">Register</button>
+                <button onClick={() => setAuthMode('LOGIN')} className="btn btn-light btn-sm">Login</button>
+                <button onClick={() => setAuthMode('REGISTER')} className="btn btn-sm bg-white text-indigo-900 hover:bg-indigo-50">Register</button>
               </>
             )}
           </div>

@@ -87,7 +87,7 @@ export default function SaveToVault({
               aria-label="New folder name"
               className="flex-1 min-w-0 text-xs border border-slate-300 rounded-lg px-2 py-1"
             />
-            <button disabled={busy || !newName.trim()} onClick={createAndSave} className="text-xs font-bold px-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">
+            <button disabled={busy || !newName.trim()} onClick={createAndSave} className="btn btn-primary btn-sm">
               Add
             </button>
           </div>

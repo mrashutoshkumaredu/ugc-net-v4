@@ -114,7 +114,7 @@ export default function AuthModal({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition text-xs sm:text-sm disabled:opacity-50"
+            className="btn btn-primary w-full"
           >
             {isLoading ? 'Processing…' : isSignUpMode ? 'Sign Up' : 'Login'}
           </button>

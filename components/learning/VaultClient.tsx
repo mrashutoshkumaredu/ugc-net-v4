@@ -143,7 +143,7 @@ function VaultBody() {
             aria-label="New folder name"
             className="flex-1 min-w-0 text-xs border border-slate-300 rounded-lg px-2 py-1.5"
           />
-          <button onClick={create} disabled={busy || !newName.trim()} className="text-xs font-bold px-2.5 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Add</button>
+          <button onClick={create} disabled={busy || !newName.trim()} className="btn btn-primary btn-sm">Add</button>
         </div>
       </aside>
 
@@ -159,13 +159,13 @@ function VaultBody() {
                 <p className="text-xs text-slate-500">{KIND_NOTE[active.kind]} {active.item_count ?? 0} question(s).</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button onClick={retest} disabled={!active.item_count} className="text-xs font-bold px-3 py-2 rounded-lg bg-emerald-600 text-white disabled:opacity-50">
+                <button onClick={retest} disabled={!active.item_count} className="btn btn-primary btn-sm">
                   Retest this folder
                 </button>
                 {active.kind === 'custom' && (
-                  <button onClick={rename} className="text-xs font-bold px-3 py-2 rounded-lg border border-slate-300">Rename</button>
+                  <button onClick={rename} className="btn btn-secondary btn-sm">Rename</button>
                 )}
-                <button onClick={remove} className="text-xs font-bold px-3 py-2 rounded-lg border border-rose-300 text-rose-700">Delete</button>
+                <button onClick={remove} className="btn btn-sm bg-white text-rose-700 border-rose-200 hover:bg-rose-50">Delete</button>
               </div>
             </div>
 

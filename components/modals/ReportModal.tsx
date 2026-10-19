@@ -73,7 +73,7 @@ export default function ReportModal({ questionId, onClose }: { questionId: numbe
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full py-2.5 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-700 transition text-xs sm:text-sm shadow-md disabled:opacity-50"
+              className="btn btn-primary w-full"
             >
               {submitting ? 'Submitting…' : 'Submit Feedback'}
             </button>

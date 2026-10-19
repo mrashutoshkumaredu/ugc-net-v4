@@ -99,7 +99,7 @@ function StudentView() {
           <div className="flex gap-2">
             <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Class code, e.g. 7K3QF9" maxLength={8}
               className="flex-1 min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold tracking-widest uppercase" />
-            <button onClick={join} disabled={code.trim().length < 4} className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">Join</button>
+            <button onClick={join} disabled={code.trim().length < 4} className="btn btn-primary">Join</button>
           </div>
           {msg && <p className="text-xs text-emerald-700 mt-2">{msg}</p>}
           {err && <p className="text-xs text-rose-600 mt-2">{err}</p>}
@@ -126,8 +126,8 @@ function StudentView() {
             <div key={i.class_id} className="flex items-center justify-between gap-2 text-sm">
               <span><strong>{i.name}</strong> · {i.teacher}</span>
               <span className="flex gap-2">
-                <button onClick={() => classesApi.answerInvite(i.class_id, true).then(load)} className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg">Accept</button>
-                <button onClick={() => classesApi.answerInvite(i.class_id, false).then(load)} className="px-3 py-1.5 bg-white border border-amber-300 text-xs font-bold rounded-lg">Decline</button>
+                <button onClick={() => classesApi.answerInvite(i.class_id, true).then(load)} className="btn btn-primary btn-sm">Accept</button>
+                <button onClick={() => classesApi.answerInvite(i.class_id, false).then(load)} className="btn btn-secondary btn-sm">Decline</button>
               </span>
             </div>
           ))}
@@ -148,7 +148,7 @@ function StudentView() {
                   </div>
                   <p className="text-xs text-slate-500">{t.class_name} · {describe(t)}</p>
                   {t.result && t.kind === 'SPEED' && <p className="text-xs text-amber-700">Best so far: {resultText(t, t.result)}</p>}
-                  <Link href={taskHref(t)} className="self-start mt-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg">Start ▸</Link>
+                  <Link href={taskHref(t)} className="btn btn-primary self-start mt-1">Start ▸</Link>
                 </div>
               );
             })}
@@ -192,7 +192,7 @@ function TeacherView({ role, onRequested }: { role: ClassRole | null; onRequeste
         {role.teacher_status === 'pending' ? (
           <p className="text-sm font-bold text-amber-700">Your request has been sent. The site admin will approve it soon.</p>
         ) : (
-          <button onClick={() => classesApi.requestTeacher().then(onRequested).catch((e) => setErr(e.message))} className="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl">
+          <button onClick={() => classesApi.requestTeacher().then(onRequested).catch((e) => setErr(e.message))} className="btn btn-primary btn-lg">
             {role.teacher_status === 'rejected' ? 'Ask again' : 'Request teacher access'}
           </button>
         )}
@@ -209,7 +209,7 @@ function TeacherView({ role, onRequested }: { role: ClassRole | null; onRequeste
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New class name, e.g. NET Batch Dec 2026" maxLength={80}
           className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
         <button disabled={!name.trim()} onClick={() => classesApi.createClass(name).then((id) => { setName(''); setSelected(id); }).catch((e) => setErr(e.message))}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">+ Create class</button>
+          className="btn btn-primary">+ Create class</button>
       </div>
       {err && <p className="text-xs text-rose-600">{err}</p>}
       {classes.length === 0 ? <p className="text-sm text-slate-500">No classes yet. Create your first one above.</p> : (
@@ -261,8 +261,8 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
         {confirmDel ? (
           <span className="flex items-center gap-2 text-xs">
             <span className="text-rose-700 font-semibold">Delete this class and all its tasks?</span>
-            <button onClick={() => classesApi.deleteClass(classId).then(onBack)} className="px-2 py-1 bg-rose-600 text-white rounded font-bold">Yes, delete</button>
-            <button onClick={() => setConfirmDel(false)} className="px-2 py-1 border border-slate-300 rounded font-bold">Keep</button>
+            <button onClick={() => classesApi.deleteClass(classId).then(onBack)} className="btn btn-danger btn-sm">Yes, delete</button>
+            <button onClick={() => setConfirmDel(false)} className="btn btn-secondary btn-sm">Keep</button>
           </span>
         ) : (
           <button onClick={() => setConfirmDel(true)} className="text-xs text-slate-400 hover:text-rose-600">Delete class</button>
@@ -280,8 +280,8 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
           <p className="text-3xl font-black tracking-[0.3em]">{d.class.join_code}</p>
         </div>
         <div className="flex flex-col gap-2">
-          <button onClick={() => copy(joinLink)} className="px-3 py-2 bg-white/15 hover:bg-white/25 rounded-lg text-sm font-bold">🔗 Copy join link</button>
-          <button onClick={() => copy(`Join my UGC NET class "${d.class.name}": ${joinLink} (code ${d.class.join_code})`)} className="px-3 py-2 bg-white/15 hover:bg-white/25 rounded-lg text-sm font-bold">💬 Copy message for WhatsApp</button>
+          <button onClick={() => copy(joinLink)} className="btn btn-light">🔗 Copy join link</button>
+          <button onClick={() => copy(`Join my UGC NET class "${d.class.name}": ${joinLink} (code ${d.class.join_code})`)} className="btn btn-light">💬 Copy message for WhatsApp</button>
         </div>
       </div>
       {note && <p className="text-xs text-emerald-700">{note}</p>}
@@ -290,7 +290,7 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-black text-indigo-950">Tasks</h2>
-          <button onClick={() => setShowForm((v) => !v)} className="px-3 py-1.5 bg-indigo-600 text-white text-sm font-bold rounded-lg">{showForm ? 'Close' : '+ New task'}</button>
+          <button onClick={() => setShowForm((v) => !v)} className="btn btn-primary">{showForm ? 'Close' : '+ New task'}</button>
         </div>
         {showForm && <TaskForm classId={classId} onCreated={() => { setShowForm(false); load(); }} />}
         {d.tasks.length === 0 ? <p className="text-sm text-slate-500">No tasks yet.</p> : (
@@ -371,7 +371,7 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
           <textarea value={emails} onChange={(e) => setEmails(e.target.value)} rows={3} placeholder="student1@gmail.com, student2@gmail.com"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm" />
           <button disabled={!emails.trim()} onClick={() => classesApi.invite(classId, emails.split(/[\s,;]+/).filter(Boolean)).then((n) => { setEmails(''); setNote(`${n} invite${n === 1 ? '' : 's'} added.`); load(); }).catch((e) => setNote(e.message))}
-            className="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">Add</button>
+            className="btn btn-primary mt-2">Add</button>
           {d.invites.length > 0 && (
             <div className="mt-3">
               <p className="text-xs font-bold text-slate-600 mb-1">Waiting to accept ({d.invites.length})</p>
@@ -504,7 +504,7 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
         </label>
       </div>
       {err && <p className="text-xs text-rose-600">{err}</p>}
-      <button onClick={save} disabled={(kind === 'FULL' && !paper) || (kind === 'CHAPTER' && !setId)} className="px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">Assign to class</button>
+      <button onClick={save} disabled={(kind === 'FULL' && !paper) || (kind === 'CHAPTER' && !setId)} className="btn btn-primary btn-lg">Assign to class</button>
     </div>
   );
 }

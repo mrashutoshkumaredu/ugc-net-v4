@@ -101,3 +101,22 @@ pre {
 @media (prefers-reduced-motion: reduce) {
   .sm-pop, .sm-shake, .sm-float, .sm-pulse, .sm-glow { animation: none; }
 }
+
+/* ---------- One button system for the whole site ----------
+   .btn + one colour (primary / secondary / ghost / danger / light) + optional size (btn-sm / btn-lg).
+   Layout utilities (w-full, flex-1) can be added next to them. */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-transparent
+      text-sm font-bold leading-tight text-center whitespace-nowrap transition cursor-pointer select-none
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2
+      disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary { @apply bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 active:bg-indigo-800; }
+  .btn-secondary { @apply bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300; }
+  .btn-ghost { @apply bg-transparent text-indigo-700 hover:bg-indigo-50; }
+  .btn-danger { @apply bg-rose-600 text-white shadow-sm hover:bg-rose-700; }
+  .btn-light { @apply bg-white/15 text-white border-white/20 hover:bg-white/25; }
+  .btn-sm { @apply px-3 py-1.5 text-xs rounded-lg; }
+  .btn-lg { @apply px-6 py-3 text-base; }
+}

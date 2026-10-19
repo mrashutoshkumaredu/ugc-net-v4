@@ -256,27 +256,27 @@ export default function QuestionPanel({
       </div>
 
       <div className="absolute bottom-0 left-0 w-full bg-white border-t border-slate-200 p-2 sm:p-3 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 shrink-0">
-        <button onClick={onPrev} disabled={!canGoPrev} className="px-3 sm:px-5 py-2 sm:py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 text-xs sm:text-sm font-bold rounded-lg transition disabled:opacity-40">
+        <button onClick={onPrev} disabled={!canGoPrev} className="btn btn-secondary px-3 sm:px-5 text-xs sm:text-sm">
           <span className="hidden sm:inline">« </span>Back
         </button>
         {isSubmitted ? (
-          <button onClick={onNext} disabled={!canGoNext} className="px-4 sm:px-6 py-2 sm:py-2.5 bg-indigo-600 text-white hover:bg-indigo-700 text-xs sm:text-sm font-bold rounded-lg transition shadow-md disabled:opacity-40">
+          <button onClick={onNext} disabled={!canGoNext} className="btn btn-primary px-4 sm:px-6 text-xs sm:text-sm">
             Next<span className="hidden sm:inline"> »</span>
           </button>
         ) : (
           <div className="flex gap-1.5 sm:gap-2">
-            <button onClick={onClear} className="px-2.5 sm:px-4 py-2 sm:py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 text-xs sm:text-sm font-bold rounded-lg transition">
+            <button onClick={onClear} className="btn btn-secondary px-2.5 sm:px-4 text-xs sm:text-sm">
               Clear<span className="hidden lg:inline"> Response</span>
             </button>
             <button onClick={onMarkAndNext} aria-pressed={isReviewed} className={`px-2.5 sm:px-4 py-2 sm:py-2.5 border text-xs sm:text-sm font-bold rounded-lg transition ${isReviewed ? 'bg-violet-700 text-white border-violet-700' : 'bg-violet-100 text-violet-900 hover:bg-violet-200 border-violet-200'}`}>
               Mark<span className="hidden sm:inline"> for Review</span>{canGoNext ? <> &amp; Next</> : null}
             </button>
             {canGoNext ? (
-              <button onClick={onNext} className="px-3 sm:px-6 py-2 sm:py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 text-xs sm:text-sm font-bold rounded-lg transition shadow-md">
+              <button onClick={onNext} className="btn btn-primary px-3 sm:px-6 text-xs sm:text-sm">
                 Save &amp; Next
               </button>
             ) : (
-              <button onClick={onSubmitRequest} className="px-3 sm:px-6 py-2 sm:py-2.5 bg-indigo-700 text-white hover:bg-indigo-800 text-xs sm:text-sm font-bold rounded-lg transition shadow-md">
+              <button onClick={onSubmitRequest} className="btn btn-primary px-3 sm:px-6 text-xs sm:text-sm">
                 Save &amp; Submit
               </button>
             )}

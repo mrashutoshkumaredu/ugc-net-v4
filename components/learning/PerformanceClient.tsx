@@ -211,7 +211,7 @@ function SettingsCard({ progress, onSaved }: { progress: Progress; onSaved: (p: 
         Show me on the leaderboard (as first name + initial)
       </label>
       <div className="flex items-center gap-3">
-        <button onClick={save} className="text-xs font-bold px-3 py-2 rounded-lg bg-indigo-600 text-white">Save settings</button>
+        <button onClick={save} className="btn btn-primary btn-sm">Save settings</button>
         {msg && <span className="text-xs text-slate-600">{msg}</span>}
       </div>
     </section>

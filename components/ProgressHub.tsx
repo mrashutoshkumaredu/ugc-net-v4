@@ -14,7 +14,7 @@ export default function ProgressHub() {
         { href: '/vault', icon: '🔁', title: 'Revision Vault', text: 'Every question you got wrong, saved to practise again.', gradient: 'from-rose-500 to-pink-600' },
         { href: '/leaderboard', icon: '🏆', title: 'Leaderboard', text: 'See where you stand, overall and cycle by cycle.', gradient: 'from-indigo-500 to-violet-600' },
       ]} />
-      <button onClick={() => setHistory(true)} className="w-full sm:w-auto px-5 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 hover:shadow-md transition">🕘 Open my test history</button>
+      <button onClick={() => setHistory(true)} className="btn btn-secondary btn-lg w-full sm:w-auto">🕘 Open my test history</button>
       {history && <HistoryDrawer onClose={() => setHistory(false)} />}
     </PageShell>
   );

@@ -25,8 +25,8 @@ export default function InstructionModal({
           <p>• <strong>If the page closes:</strong> Your answers are saved on this device. Open the site again and press <strong>Resume test</strong>. The timer keeps running while you are away, as in the real exam.</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="w-1/2 py-2.5 border border-slate-300 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-50 transition">Cancel</button>
-          <button onClick={onStart} className="w-1/2 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 transition shadow-md">I Am Ready to Begin</button>
+          <button onClick={onCancel} className="btn btn-secondary flex-1">Cancel</button>
+          <button onClick={onStart} className="btn btn-primary flex-1">I Am Ready to Begin</button>
         </div>
       </div>
     </div>

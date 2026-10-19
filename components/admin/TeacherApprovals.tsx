@@ -27,8 +27,8 @@ export default function TeacherApprovals() {
                 <span className={`ml-2 text-[11px] font-bold rounded-full px-2 py-0.5 ${r.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : r.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>{r.status}</span>
               </span>
               <span className="flex gap-2">
-                {r.status !== 'approved' && <button onClick={() => set(r.user_id, true)} className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg">Approve</button>}
-                {r.status !== 'rejected' && <button onClick={() => set(r.user_id, false)} className="px-3 py-1.5 border border-slate-300 text-xs font-bold rounded-lg">{r.status === 'approved' ? 'Remove access' : 'Refuse'}</button>}
+                {r.status !== 'approved' && <button onClick={() => set(r.user_id, true)} className="btn btn-primary btn-sm">Approve</button>}
+                {r.status !== 'rejected' && <button onClick={() => set(r.user_id, false)} className="btn btn-secondary btn-sm">{r.status === 'approved' ? 'Remove access' : 'Refuse'}</button>}
               </span>
             </li>
           ))}
