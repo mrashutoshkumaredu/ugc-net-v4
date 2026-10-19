@@ -65,6 +65,15 @@ create table if not exists public.task_results (
   primary key (task_id, user_id)
 );
 
+-- Upgrade: if an earlier version of this file was already run, add the new columns and task types.
+alter table public.class_tasks add column if not exists chapter_no integer;
+alter table public.class_tasks add column if not exists set_id text;
+alter table public.class_tasks add column if not exists question_ids integer[];
+alter table public.class_tasks drop constraint if exists class_tasks_kind_check;
+alter table public.class_tasks add constraint class_tasks_kind_check check (kind in ('FULL', 'UNIT', 'SPEED', 'LESSON', 'CHAPTER'));
+-- The earlier create_task had fewer arguments. Remove it so only the new one exists.
+drop function if exists public.create_task(uuid, text, text, text, text, text, integer, text, integer, date);
+
 alter table public.teachers enable row level security;
 alter table public.classes enable row level security;
 alter table public.class_members enable row level security;
