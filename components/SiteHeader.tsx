@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import FullscreenButton from '@/components/FullscreenButton';
 import Link from 'next/link';
 import { isAdmin } from '@/lib/testApi';
 import { usePathname, useRouter } from 'next/navigation';
@@ -14,6 +15,7 @@ const NAV = [
   { href: '/vault', label: 'Revision Vault' },
   { href: '/performance', label: 'My Performance' },
   { href: '/leaderboard', label: 'Leaderboard' },
+  { href: '/speed-math', label: 'Speed Math' },
   { href: '/trends', label: 'PYQ Trends' },
   { href: '/notes', label: 'Revision Notes' },
 ];
@@ -84,6 +86,8 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
                 Admin
               </Link>
             )}
+
+            {masterSecondsRemaining === undefined && <FullscreenButton />}
 
             <button onClick={() => setShowHistory(true)} className="text-xs bg-indigo-800 hover:bg-indigo-700 text-white border border-indigo-600 px-3 py-2 rounded-lg transition font-medium shrink-0">
               My History
