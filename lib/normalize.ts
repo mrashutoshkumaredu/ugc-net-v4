@@ -48,14 +48,14 @@ const CYCLE_DISPLAY_NAMES: Record<string, string> = {
 
 export function getCycleDisplayName(cycleId: string) {
   if (CYCLE_DISPLAY_NAMES[cycleId]) return CYCLE_DISPLAY_NAMES[cycleId];
-  const [month, year] = cycleId.split('_');
+  const [month, year] = cycleId.split(/[_\s]+/);
   if (month && year) return `${month} ${year} Cycle`;
   return cycleId.replace(/_/g, ' ');
 }
 
 // Sort cycles newest first ("December_2025" before "June_2025").
 export function cycleSortKey(cycleId: string) {
-  const [month, year] = cycleId.split('_');
+  const [month, year] = cycleId.split(/[_\s]+/);
   const m = month?.toLowerCase().startsWith('dec') ? 12 : month?.toLowerCase().startsWith('jun') ? 6 : 0;
   return Number(year || 0) * 100 + m;
 }
