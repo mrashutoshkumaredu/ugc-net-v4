@@ -75,3 +75,12 @@ pre {
 .note-body table { width: 100%; border-collapse: collapse; margin: 0.6rem 0; font-size: 0.85rem; display: block; overflow-x: auto; }
 .note-body th, .note-body td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; vertical-align: top; }
 .note-body th { background: #f8fafc; }
+
+/* Top loading bar shown while moving between pages (components/NavProgress.tsx). */
+@keyframes nav-progress-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.nav-progress-bar {
+  animation: nav-progress-slide 1.1s ease-in-out infinite;
+}

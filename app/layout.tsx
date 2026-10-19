@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import NavProgress from "@/components/NavProgress";
 
 export const metadata: Metadata = {
   title: "UGC NET Paper 1 Portal",
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-slate-100 font-sans text-slate-800">
+        <NavProgress />
         {children}
       </body>
     </html>
