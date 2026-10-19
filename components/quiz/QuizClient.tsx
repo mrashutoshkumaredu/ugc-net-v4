@@ -16,6 +16,7 @@ import { useCountdown } from '@/hooks/useCountdown';
 import { useStopwatch } from '@/hooks/useStopwatch';
 import { normalizeQuestion, getPaperDisplayName } from '@/lib/normalize';
 import { testTitle } from '@/lib/testTitle';
+import { useHindiImages } from '@/lib/hindiImages';
 import { startTest, resumeTest, submitTest } from '@/lib/testApi';
 import { clearProgress, loadProgress, saveProgress } from '@/lib/progress';
 import type { NormalizedQuestion, SubmitResult, TestSession } from '@/lib/types';
@@ -69,6 +70,7 @@ function QuizPageInner() {
         : `${session.unit} (${questions.length} Qs)`)
     : '';
   const title = testTitle(session, questions.length);
+  const hindiImages = useHindiImages();
 
   // ---- Load: resume an existing session, or start a new one --------------
   const applySession = useCallback((s: TestSession) => {
@@ -363,6 +365,10 @@ function QuizPageInner() {
 
   const showSource = session?.mode === 'UNIT';
   const referenceText = language === 'HI' && currentQuestion.layoutTextHi ? currentQuestion.layoutTextHi : currentQuestion.layoutText;
+  // Hindi picture of the question / table / passage, used only when there is no typed Hindi text.
+  const hindiImage = hindiImages[String(currentQuestion.id)];
+  const hasHindiText = Boolean(currentQuestion.questionTextHi || currentQuestion.optionsHi?.some(Boolean));
+  const hindiRefImage = language === 'HI' && !hasHindiText && !currentQuestion.layoutTextHi ? hindiImage?.ref : undefined;
 
   return (
     <div className="flex-1 flex flex-col">
@@ -382,7 +388,7 @@ function QuizPageInner() {
         )}
         <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-2 overflow-hidden">
         <div className="flex-1 flex flex-col md:flex-row gap-2 overflow-hidden relative">
-          {referenceText && <ReferencePanel layoutText={referenceText} textSize={textSize} />}
+          {referenceText && <ReferencePanel layoutText={referenceText} imageSrc={hindiRefImage} textSize={textSize} />}
 
           <QuestionPanel
             question={currentQuestion}
@@ -414,6 +420,7 @@ function QuizPageInner() {
             onPrev={goPrev}
             onNext={goNext}
             onClear={clearAnswer}
+            hindiImage={hindiImage?.q}
             canGoPrev={currentIndex > 0}
             canGoNext={currentIndex < questions.length - 1}
           />

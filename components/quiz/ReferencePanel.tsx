@@ -16,7 +16,7 @@ export default function ReferencePanel({ layoutText, imageSrc, textSize = 'md' }
         {imageSrc ? (
           // Original NTA picture of the Hindi table / passage.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageSrc} alt="संदर्भ सामग्री (हिंदी)" className="q-image max-w-none" />
+          <img src={imageSrc} alt="संदर्भ सामग्री (हिंदी)" className="q-image" />
         ) : (
           <MathText html={layoutText} className="layout-text q-ref text-slate-800 leading-relaxed overflow-x-auto" />
         )}

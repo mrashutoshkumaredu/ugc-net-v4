@@ -175,7 +175,7 @@ export default function QuestionPanel({
           {showHindiImage ? (
             <div className="overflow-x-auto">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={hindiImage!} alt={`प्रश्न ${index + 1} (हिंदी)`} className="q-image max-w-none bg-white rounded" />
+              <img src={hindiImage!} alt={`प्रश्न ${index + 1} (हिंदी)`} className="q-image bg-white rounded" />
             </div>
           ) : (
             <MathText html={activeText} className="q-text font-medium text-slate-900 whitespace-pre-line leading-relaxed" />
