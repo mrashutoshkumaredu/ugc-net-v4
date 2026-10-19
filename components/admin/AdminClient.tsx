@@ -5,6 +5,7 @@
 // so the check here only decides what to show.
 
 import { useCallback, useEffect, useState } from 'react';
+import TeacherApprovals from '@/components/admin/TeacherApprovals';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import SiteHeader from '@/components/SiteHeader';
@@ -23,7 +24,7 @@ const OPTION_KEYS = ['option_a', 'option_b', 'option_c', 'option_d'] as const;
 export default function AdminClient() {
   const { user, checkedSession } = useAuth();
   const [allowed, setAllowed] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<'REPORTS' | 'NOTES'>('REPORTS');
+  const [tab, setTab] = useState<'REPORTS' | 'NOTES' | 'TEACHERS'>('REPORTS');
   const [filter, setFilter] = useState<StatusFilter>('Open');
   const [reports, setReports] = useState<AdminReport[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,7 +79,7 @@ export default function AdminClient() {
       <SiteHeader />
       <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 space-y-4">
         <div className="flex gap-1 border-b border-slate-200" role="tablist">
-          {([['REPORTS', 'Student reports'], ['NOTES', 'Revision notes']] as const).map(([v, l]) => (
+          {([['REPORTS', 'Student reports'], ['NOTES', 'Revision notes'], ['TEACHERS', 'Teachers']] as const).map(([v, l]) => (
             <button
               key={v}
               role="tab"
@@ -90,7 +91,7 @@ export default function AdminClient() {
             </button>
           ))}
         </div>
-        {tab === 'NOTES' ? <NotesEditor /> : (<>
+        {tab === 'TEACHERS' ? <TeacherApprovals /> : tab === 'NOTES' ? <NotesEditor /> : (<>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-indigo-900">Student reports</h1>
