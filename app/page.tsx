@@ -11,10 +11,9 @@ import { UNIT_OPTIONS, getCycleDisplayName, getPaperDisplayName, cycleSortKey } 
 import { normalizeUnit } from '@/lib/scoring';
 import Link from 'next/link';
 import { getCatalog, getMyProgress } from '@/lib/testApi';
-import { getActiveProgress, type SavedProgress } from '@/lib/progress';
+import { clearProgress, getActiveProgress, type SavedProgress } from '@/lib/progress';
 import type { Catalog, ExamConfig, Progress } from '@/lib/types';
 
-const MAX_UNIT_QUESTIONS = 50;
 
 export default function LandingPage() {
   const router = useRouter();
@@ -24,6 +23,7 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [resumable, setResumable] = useState<SavedProgress | null>(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [selectedTopic, setSelectedTopic] = useState('');
 
@@ -88,7 +88,8 @@ export default function LandingPage() {
   const themeQuestionCount = selectedTopic
     ? topicsForTheme.find((t) => t.topic === selectedTopic)?.question_count ?? 0
     : unitCounts[selectedTheme] ?? 0;
-  const sliderMax = Math.max(1, Math.min(themeQuestionCount, MAX_UNIT_QUESTIONS));
+  // Up to every question in the unit (or topic). The server allows up to 1000 per test.
+  const sliderMax = Math.max(1, Math.min(themeQuestionCount, 1000));
 
   // Only clamp once the counts have loaded; before that sliderMax is 1 and
   // would wrongly pull the default of 10 down to 1.
@@ -138,12 +139,37 @@ export default function LandingPage() {
               <p className="text-sm font-bold text-amber-900">You have an unfinished test</p>
               <p className="text-xs text-amber-800">{resumable.label || 'Test in progress'}. The timer has kept running while you were away.</p>
             </div>
-            <button
-              onClick={() => { setStarting('Resuming your test'); router.push(`/quiz?session=${resumable.sessionId}`); }}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-sm rounded-lg shrink-0"
-            >
-              Resume test
-            </button>
+            {confirmDiscard ? (
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-semibold text-amber-900">Discard this test? Answers will be lost.</span>
+                <button
+                  onClick={() => { clearProgress(resumable.sessionId); setResumable(null); setConfirmDiscard(false); }}
+                  className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg"
+                >
+                  Yes, discard
+                </button>
+                <button onClick={() => setConfirmDiscard(false)} className="px-3 py-2 bg-white border border-amber-300 text-amber-900 font-bold text-xs rounded-lg">
+                  Keep
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => { setStarting('Resuming your test'); router.push(`/quiz?session=${resumable.sessionId}`); }}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-sm rounded-lg"
+                >
+                  Resume test
+                </button>
+                <button
+                  onClick={() => setConfirmDiscard(true)}
+                  aria-label="Discard unfinished test"
+                  title="Discard this test"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-amber-300 text-amber-900 hover:bg-amber-100 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
         )}
 
