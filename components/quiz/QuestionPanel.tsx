@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { formatTime } from '@/lib/scoring';
 import { getPaperDisplayName } from '@/lib/normalize';
 import type { NormalizedQuestion } from '@/lib/types';
+import HindiImage from './HindiImage';
 
 // dompurify (used inside MathText) needs a real browser window, so this is
 // loaded client-only — see the comment in MathText.tsx for why.
@@ -173,10 +174,7 @@ export default function QuestionPanel({
             </p>
           )}
           {showHindiImage ? (
-            <div className="overflow-x-auto">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={hindiImage!} alt={`प्रश्न ${index + 1} (हिंदी)`} className="q-image bg-white rounded" />
-            </div>
+            <HindiImage key={hindiImage} src={hindiImage!} alt={`प्रश्न ${index + 1} (हिंदी)`} textSize={textSize} />
           ) : (
             <MathText html={activeText} className="q-text font-medium text-slate-900 whitespace-pre-line leading-relaxed" />
           )}

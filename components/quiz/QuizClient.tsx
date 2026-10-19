@@ -17,6 +17,7 @@ import { useStopwatch } from '@/hooks/useStopwatch';
 import { normalizeQuestion, getPaperDisplayName } from '@/lib/normalize';
 import { testTitle } from '@/lib/testTitle';
 import { useHindiImages } from '@/lib/hindiImages';
+import { preloadImages } from '@/components/quiz/HindiImage';
 import { startTest, resumeTest, submitTest } from '@/lib/testApi';
 import { clearProgress, loadProgress, saveProgress } from '@/lib/progress';
 import type { NormalizedQuestion, SubmitResult, TestSession } from '@/lib/types';
@@ -71,6 +72,17 @@ function QuizPageInner() {
     : '';
   const title = testTitle(session, questions.length);
   const hindiImages = useHindiImages();
+  // When the student switches to Hindi, fetch all of this test's Hindi pictures in the
+  // background, so moving to the next question shows its picture straight away.
+  useEffect(() => {
+    if (language !== 'HI' || questions.length === 0) return;
+    const srcs = new Set<string>();
+    for (const q of questions) {
+      const img = hindiImages[String(q.id)];
+      if (img) { srcs.add(img.q); if (img.ref) srcs.add(img.ref); }
+    }
+    preloadImages([...srcs]);
+  }, [language, questions, hindiImages]);
 
   // ---- Load: resume an existing session, or start a new one --------------
   const applySession = useCallback((s: TestSession) => {
@@ -371,7 +383,7 @@ function QuizPageInner() {
   const hindiRefImage = language === 'HI' && !hasHindiText && !currentQuestion.layoutTextHi ? hindiImage?.ref : undefined;
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="h-[100dvh] flex flex-col overflow-hidden">
       <SiteHeader masterSecondsRemaining={phase === 'results' ? undefined : secondsRemaining} />
 
       {(submitError || phase === 'submitting') && (
@@ -380,7 +392,7 @@ function QuizPageInner() {
         </div>
       )}
 
-      <div className="flex-1 w-full max-w-[1600px] mx-auto h-[calc(100vh-70px)] overflow-hidden flex flex-col gap-2 p-2 sm:p-4 bg-slate-100">
+      <div className="flex-1 min-h-0 w-full max-w-[1600px] mx-auto overflow-hidden flex flex-col gap-2 p-2 sm:p-4 bg-slate-100">
         {title && (
           <div className="shrink-0 bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold text-indigo-900 truncate" title={title}>
             {title}

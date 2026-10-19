@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from 'next/dynamic';
+import HindiImage from './HindiImage';
 
 // dompurify (used inside MathText) needs a real browser window, so this is
 // loaded client-only — see the comment in MathText.tsx for why.
@@ -15,8 +16,7 @@ export default function ReferencePanel({ layoutText, imageSrc, textSize = 'md' }
       <div className="flex-1 overflow-auto p-4 bg-white" data-text-size={textSize}>
         {imageSrc ? (
           // Original NTA picture of the Hindi table / passage.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageSrc} alt="संदर्भ सामग्री (हिंदी)" className="q-image" />
+          <HindiImage key={imageSrc} src={imageSrc} alt="संदर्भ सामग्री (हिंदी)" textSize={textSize} />
         ) : (
           <MathText html={layoutText} className="layout-text q-ref text-slate-800 leading-relaxed overflow-x-auto" />
         )}
