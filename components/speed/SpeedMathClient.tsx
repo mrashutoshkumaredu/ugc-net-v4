@@ -6,6 +6,7 @@ import {
   alphabet, arithmetic, coding, estimation, formulas, fractions, isCorrect, miniDI, percent, series, syllogism, tables,
   type AlphaKind, type ArithOp, type Digits, type DrillId, type DrillQuestion, type TableKind,
 } from '@/lib/drills';
+import { isMuted, setMuted, sounds } from '@/lib/sound';
 
 // ---------------------------------------------------------------------------
 // Catalogue: three "worlds", each with its own colour.
@@ -170,6 +171,9 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
   const [timeLeft, setTimeLeft] = useState(60);
   const [popup, setPopup] = useState<null | { text: string; id: number }>(null);
   const [result, setResult] = useState<null | { stars: number; record: boolean; best: number }>(null);
+  const [muted, setMutedState] = useState(false);
+  useEffect(() => { setMutedState(isMuted()); }, []);
+  const toggleMute = () => { const v = !muted; setMuted(v); setMutedState(v); if (!v) { sounds.unlock(); sounds.correct(); } };
   const inputRef = useRef<HTMLInputElement>(null);
   const nextT = useRef<number | null>(null);
 
@@ -187,6 +191,8 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
   }, [qKey, phase]);
 
   const start = () => {
+    sounds.unlock();
+    sounds.start();
     setSt({ answered: 0, correct: 0, streak: 0, bestStreak: 0, points: 0 });
     setResult(null);
     setTimeLeft(seconds);
@@ -207,9 +213,11 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
       const record = st.points > prev.points;
       writeRecord(drill.id, { points: Math.max(prev.points, st.points), stars: Math.max(prev.stars, stars) });
       setResult({ stars, record, best: Math.max(prev.points, st.points) });
+      sounds.end(record);
       setPhase('over');
       return;
     }
+    if (timeLeft <= 5) sounds.tick();
     const t = window.setTimeout(() => setTimeLeft((v) => v - 1), 1000);
     return () => window.clearTimeout(t);
   }, [phase, mode, timeLeft, st.correct, st.points, seconds, drill.id, drill.pace]);
@@ -219,6 +227,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
   const answer = useCallback((given: string) => {
     if (!canAnswer || !q || !given.trim()) return;
     const ok = isCorrect(q, given);
+    if (ok) sounds.correct(st.streak + 1); else sounds.wrong();
     setFb({ ok, given });
     setSt((p) => {
       const streak = ok ? p.streak + 1 : 0;
@@ -228,7 +237,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
     });
     if (ok) nextT.current = window.setTimeout(next, 450);
     else if (mode === 'game') nextT.current = window.setTimeout(next, 1500);
-  }, [canAnswer, q, mode, next]);
+  }, [canAnswer, q, mode, next, st.streak]);
 
   // Keyboard: 1-4 or A-D for options, N or Enter for next after a wrong answer in classic.
   useEffect(() => {
@@ -301,7 +310,8 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
       {/* Top bar */}
       <div className={`shrink-0 bg-gradient-to-r ${world.gradient} px-4 py-2.5 flex items-center justify-between gap-3`}>
         <button onClick={onExit} className="text-sm font-bold bg-black/20 hover:bg-black/30 rounded-lg px-3 py-1.5">← All games</button>
-        <p className="font-black text-lg truncate">{drill.icon} {drill.label}</p>
+        <p className="font-black text-lg truncate flex-1 text-center">{drill.icon} {drill.label}</p>
+        <button onClick={toggleMute} aria-label={muted ? 'Sound on' : 'Sound off'} title={muted ? 'Sound on' : 'Sound off'} className="text-lg bg-black/20 hover:bg-black/30 rounded-lg w-9 h-9 flex items-center justify-center">{muted ? '🔇' : '🔊'}</button>
         <div className="text-right">
           <p className="text-[10px] uppercase tracking-widest text-white/80 font-bold">Score</p>
           <p className="text-xl font-black tabular-nums leading-none">{st.points}</p>
