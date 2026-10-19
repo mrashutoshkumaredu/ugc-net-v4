@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
+import LoadingScreen from '@/components/LoadingScreen';
 import { useRouter } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
 import AuthModal from '@/components/AuthModal';
@@ -33,6 +34,8 @@ export default function LandingPage() {
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingConfig, setPendingConfig] = useState<ExamConfig | null>(null);
+  // Shown from the moment a test is started until the test page takes over.
+  const [starting, setStarting] = useState<string | null>(null);
 
   useEffect(() => {
     getCatalog()
@@ -118,6 +121,7 @@ export default function LandingPage() {
       params.set('count', String(pendingConfig.questionCount || 10));
     }
     setPendingConfig(null);
+    setStarting('Starting your test');
     router.push(`/quiz?${params.toString()}`);
   };
 
@@ -135,7 +139,7 @@ export default function LandingPage() {
               <p className="text-xs text-amber-800">{resumable.label || 'Test in progress'}. The timer has kept running while you were away.</p>
             </div>
             <button
-              onClick={() => router.push(`/quiz?session=${resumable.sessionId}`)}
+              onClick={() => { setStarting('Resuming your test'); router.push(`/quiz?session=${resumable.sessionId}`); }}
               className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-sm rounded-lg shrink-0"
             >
               Resume test
@@ -155,7 +159,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <button
-                onClick={() => router.push('/quiz?mode=DAILY')}
+                onClick={() => { setStarting('Starting Daily Practice'); router.push('/quiz?mode=DAILY'); }}
                 className={`px-4 py-2.5 font-bold text-sm rounded-xl shrink-0 ${progress.daily_done ? 'bg-slate-100 text-slate-700 border border-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
               >
                 {progress.daily_done ? 'Done ✓ · Again' : 'Start'}
@@ -320,6 +324,8 @@ export default function LandingPage() {
       {checkedSession && showAuthModal && (
         <AuthModal initialMode="LOGIN" onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} />
       )}
+
+      {starting && <LoadingScreen message={starting} />}
 
       {pendingConfig && (
         <InstructionModal

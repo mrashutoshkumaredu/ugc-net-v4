@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import LoadingScreen from '@/components/LoadingScreen';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
@@ -336,7 +337,7 @@ function QuizPageInner() {
     return (
       <div className="flex-1 flex flex-col">
         <SiteHeader />
-        <p className="text-center text-slate-500 text-sm mt-16">Loading test…</p>
+        <LoadingScreen />
       </div>
     );
   }
