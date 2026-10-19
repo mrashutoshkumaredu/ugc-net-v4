@@ -179,8 +179,12 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
     setQKey((k) => k + 1);
     setTyped('');
     setFb(null);
-    window.setTimeout(() => inputRef.current?.focus(), 0);
   }, [drill.id, s]);
+
+  // Keep the cursor in the answer box: after every new question it goes straight back there.
+  useEffect(() => {
+    if (phase === 'playing') inputRef.current?.focus({ preventScroll: true });
+  }, [qKey, phase]);
 
   const start = () => {
     setSt({ answered: 0, correct: 0, streak: 0, bestStreak: 0, points: 0 });
@@ -407,7 +411,8 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
                   inputMode={q.input === 'number' ? 'numeric' : 'text'}
                   maxLength={q.input === 'text' ? Math.max(1, q.answer.length) : 12}
                   autoComplete="off"
-                  disabled={!canAnswer}
+                  autoFocus
+                  readOnly={!canAnswer}
                   aria-label="Your answer"
                   placeholder="?"
                   className={`flex-1 min-w-0 text-center text-3xl font-black rounded-2xl px-4 py-3 bg-white/10 border-2 outline-none placeholder:text-white/30 uppercase ${fb ? (fb.ok ? 'border-emerald-400 bg-emerald-500/20' : 'border-red-400 bg-red-500/20') : 'border-white/30 focus:border-amber-300'}`}
