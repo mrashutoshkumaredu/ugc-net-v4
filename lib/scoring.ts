@@ -5,8 +5,9 @@ export const CORRECT_MARKS = 2;
 /**
  * Pure scoring function. The live site scores inside the `submit_test`
  * database function; this mirrors the same rules (2 marks per correct
- * answer, no negative marking, a question dropped by NTA counts as correct
- * for everyone) so the rules stay documented and unit tested.
+ * answer, no negative marking). A question dropped by NTA that we have fixed
+ * (correct_option 0-3) is scored normally. Only a dropped question with no
+ * answer (correct_option -1) counts as correct for everyone. so the rules stay documented and unit tested.
  */
 export function scoreSubmission(questions: Question[], answers: Record<number, number>) {
   let correctCount = 0;
@@ -17,7 +18,8 @@ export function scoreSubmission(questions: Question[], answers: Record<number, n
     if (!unitBreakdown[unit]) unitBreakdown[unit] = { total: 0, correct: 0 };
     unitBreakdown[unit].total += 1;
 
-    if (q.is_dropped || answers[q.id] === q.correct_option) {
+    const noAnswer = Boolean(q.is_dropped) && !(q.correct_option >= 0 && q.correct_option <= 3);
+    if (noAnswer || answers[q.id] === q.correct_option) {
       correctCount += 1;
       unitBreakdown[unit].correct += 1;
     }

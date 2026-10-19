@@ -171,8 +171,8 @@ export default function QuestionPanel({
           {question.isDropped && (
             <p className="mb-3 text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-300 rounded-lg p-2.5">
               {language === 'HI'
-                ? 'यह प्रश्न NTA द्वारा आधिकारिक उत्तर कुंजी में हटा दिया गया था। सभी को इसके 2 अंक मिलते हैं, उत्तर चाहे जो भी हो।'
-                : 'This question was dropped by NTA in the official answer key. Everyone gets the 2 marks for it, whatever they answer.'}
+                ? 'यह प्रश्न NTA द्वारा आधिकारिक उत्तर कुंजी में हटा दिया गया था।'
+                : 'This question was dropped by NTA in the official answer key.'}
             </p>
           )}
           {showHindiImage ? (
@@ -186,7 +186,7 @@ export default function QuestionPanel({
           {activeOptions.map((optText, optIdx) => {
             const isSelected = selectedOption === optIdx;
             let borderClass = isSelected ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 hover:border-slate-300 bg-white';
-            if (isSubmitted && !question.isDropped) {
+            if (isSubmitted && correctOption !== undefined && correctOption !== null && correctOption >= 0) {
               if (optIdx === correctOption) borderClass = 'border-emerald-600 bg-emerald-50 text-emerald-900 font-semibold';
               else if (isSelected) borderClass = 'border-rose-600 bg-rose-50 text-rose-900';
             }
@@ -218,7 +218,7 @@ export default function QuestionPanel({
           })}
         </div>
 
-        {!isSubmitted && selectedOption !== null && !question.isDropped && (
+        {!isSubmitted && selectedOption !== null && (
           <div className="mb-6 -mt-2 flex flex-wrap items-center gap-2">
             <button
               type="button"
