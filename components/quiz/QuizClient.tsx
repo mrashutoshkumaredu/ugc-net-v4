@@ -381,6 +381,7 @@ function QuizPageInner() {
   const hindiImage = hindiImages[String(currentQuestion.id)];
   const hasHindiText = Boolean(currentQuestion.questionTextHi || currentQuestion.optionsHi?.some(Boolean));
   const hindiRefImage = language === 'HI' && !hasHindiText && !currentQuestion.layoutTextHi ? hindiImage?.ref : undefined;
+  const showingHindiPicture = language === 'HI' && !hasHindiText && Boolean(hindiImage);
 
   return (
     <div className="h-[100dvh] flex flex-col overflow-hidden">
@@ -400,7 +401,11 @@ function QuizPageInner() {
         )}
         <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-2 overflow-hidden">
         <div className="flex-1 flex flex-col md:flex-row gap-2 overflow-hidden relative">
-          {referenceText && <ReferencePanel layoutText={referenceText} imageSrc={hindiRefImage} textSize={textSize} />}
+          {/* In Hindi-picture mode the picture already holds the lists and options (match-the-list),
+              so the English reference table is shown only when there is a Hindi table/passage picture. */}
+          {referenceText && !(showingHindiPicture && !hindiRefImage) && (
+            <ReferencePanel layoutText={referenceText} imageSrc={hindiRefImage} textSize={textSize} />
+          )}
 
           <QuestionPanel
             question={currentQuestion}

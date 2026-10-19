@@ -170,7 +170,9 @@ export default function QuestionPanel({
           </p>
           {question.isDropped && (
             <p className="mb-3 text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-300 rounded-lg p-2.5">
-              This question was dropped by NTA in the official answer key. Everyone gets the 2 marks for it, whatever they answer.
+              {language === 'HI'
+                ? 'यह प्रश्न NTA द्वारा आधिकारिक उत्तर कुंजी में हटा दिया गया था। सभी को इसके 2 अंक मिलते हैं, उत्तर चाहे जो भी हो।'
+                : 'This question was dropped by NTA in the official answer key. Everyone gets the 2 marks for it, whatever they answer.'}
             </p>
           )}
           {showHindiImage ? (
