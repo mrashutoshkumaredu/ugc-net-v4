@@ -303,14 +303,19 @@ function QuizPageInner() {
     goNext();
   }, [currentQuestion, phase, goNext]);
 
-  // ---- Keyboard shortcuts while taking the test ----------------------------
+  // ---- Keyboard shortcuts: all while taking the test, only ← → when viewing answers ----
   useEffect(() => {
-    if (loadState !== 'ready' || phase !== 'taking') return;
+    if (loadState !== 'ready' || (phase !== 'taking' && phase !== 'results')) return;
     const onKey = (e: KeyboardEvent) => {
       if (showSubmitConfirm || reportQuestionId !== null) return;
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (phase === 'results') {
+        if (e.key === 'ArrowRight') goNext();
+        else if (e.key === 'ArrowLeft') goPrev();
+        return;
+      }
       switch (e.key.toLowerCase()) {
         case '1': case '2': case '3': case '4':
           selectOption(Number(e.key) - 1); break;
