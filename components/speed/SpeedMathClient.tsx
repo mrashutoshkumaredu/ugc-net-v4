@@ -107,7 +107,7 @@ function SpeedMathBody() {
 
   if (active) {
     const d = ALL.find((x) => x.id === active)!;
-    return <Arena drill={d} world={d.world} onExit={() => { setActive(null); loadRecords(); }} />;
+    return <Arena drill={d} world={d.world} onExit={() => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); setActive(null); loadRecords(); }} />;
   }
 
   const totalStars = ALL.reduce((s, d) => s + (records[d.id]?.stars || 0), 0);
@@ -133,7 +133,7 @@ function SpeedMathBody() {
               return (
                 <button
                   key={d.id}
-                  onClick={() => setActive(d.id)}
+                  onClick={() => { setActive(d.id); document.documentElement.requestFullscreen?.().catch(() => {}); }}
                   className={`group relative overflow-hidden text-left rounded-2xl p-4 text-white bg-gradient-to-br ${w.gradient} shadow-md hover:shadow-xl hover:-translate-y-1 active:translate-y-0 transition-all`}
                 >
                   <span className="absolute -right-3 -bottom-4 text-6xl opacity-20 group-hover:scale-110 transition-transform" aria-hidden>{d.icon}</span>
@@ -229,6 +229,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
   // Keyboard: 1-4 or A-D for options, N or Enter for next after a wrong answer in classic.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onExit(); return; }
       if (phase !== 'playing' || !q) return;
       if (q.input === 'choice' && q.choices && !fb) {
         const i = '1234'.indexOf(e.key) >= 0 ? '1234'.indexOf(e.key) : 'abcd'.indexOf(e.key.toLowerCase());
@@ -239,7 +240,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [phase, q, fb, mode, answer, next]);
+  }, [phase, q, fb, mode, answer, next, onExit]);
 
   const frac = mode === 'game' ? Math.max(0, timeLeft / seconds) : 1;
   // Green (120°) → yellow (55°) → red (0°) as time runs out.
@@ -292,9 +293,9 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
   ), [drill.id, s, mode, seconds, sel]);
 
   return (
-    <div className="rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 text-white">
+    <div className="fixed inset-0 z-[60] h-[100dvh] flex flex-col bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 text-white">
       {/* Top bar */}
-      <div className={`bg-gradient-to-r ${world.gradient} px-4 py-3 flex items-center justify-between gap-3`}>
+      <div className={`shrink-0 bg-gradient-to-r ${world.gradient} px-4 py-2.5 flex items-center justify-between gap-3`}>
         <button onClick={onExit} className="text-sm font-bold bg-black/20 hover:bg-black/30 rounded-lg px-3 py-1.5">← All games</button>
         <p className="font-black text-lg truncate">{drill.icon} {drill.label}</p>
         <div className="text-right">
@@ -305,7 +306,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
 
       {/* Timer bar: shrinks and turns from green to yellow to red */}
       {mode === 'game' && (
-        <div className="px-4 pt-4">
+        <div className="shrink-0 px-4 pt-3">
           <div className="flex justify-between text-xs font-bold mb-1">
             <span className={urgent ? 'text-red-400 sm-pulse' : 'text-white/80'}>⏱ {phase === 'playing' ? `${timeLeft}s` : `${seconds}s`}</span>
             <span className="text-white/70">🔥 Combo ×{st.streak}</span>
@@ -319,7 +320,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
         </div>
       )}
 
-      <div className="relative px-4 sm:px-8 py-8 min-h-[420px] flex flex-col items-center justify-center">
+      <div className="relative flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 py-4 flex flex-col items-center justify-center">
         {phase === 'ready' && (
           <div className="text-center space-y-5 sm-pop">
             <p className="text-6xl" aria-hidden>{drill.icon}</p>
@@ -350,29 +351,32 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
         )}
 
         {phase === 'playing' && q && (
-          <div key={qKey} className="w-full max-w-2xl text-center">
+          <div key={qKey} className={`w-full text-center ${q.table ? 'max-w-5xl lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center' : 'max-w-2xl'}`}>
             {popup && <span key={popup.id} className="sm-float absolute left-1/2 top-6 -translate-x-1/2 text-2xl font-black text-emerald-300 pointer-events-none">{popup.text}</span>}
 
+            <div>
             {q.table && (
-              <table className="mx-auto mb-5 text-sm bg-white/5 rounded-xl overflow-hidden sm-pop">
+              <table className="mx-auto mb-3 text-sm bg-white/5 rounded-xl overflow-hidden sm-pop">
                 <thead className="bg-white/10">
-                  <tr>{q.table.headers.map((h) => <th key={h} className="px-4 py-2 font-bold text-sky-200">{h}</th>)}</tr>
+                  <tr>{q.table.headers.map((h) => <th key={h} className="px-4 py-1.5 font-bold text-sky-200">{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {q.table.rows.map((row, i) => (
-                    <tr key={i} className="border-t border-white/10">{row.map((c, j) => <td key={j} className="px-4 py-1.5 tabular-nums">{c}</td>)}</tr>
+                    <tr key={i} className="border-t border-white/10">{row.map((c, j) => <td key={j} className="px-4 py-1 tabular-nums">{c}</td>)}</tr>
                   ))}
                 </tbody>
               </table>
             )}
 
-            <div className={`rounded-3xl border-2 border-white/15 bg-white/5 px-5 py-7 sm-pop ${fb && !fb.ok ? 'sm-shake border-red-400/60' : ''} ${fb?.ok ? 'border-emerald-400/70' : ''}`}>
+            <div className={`rounded-3xl border-2 border-white/15 bg-white/5 px-5 py-5 sm-pop ${fb && !fb.ok ? 'sm-shake border-red-400/60' : ''} ${fb?.ok ? 'border-emerald-400/70' : ''}`}>
               <p className={`font-black tracking-wide ${q.prompt.length > 50 ? 'text-xl sm:text-2xl' : q.prompt.length > 22 ? 'text-2xl sm:text-4xl' : 'text-5xl sm:text-6xl'}`}>{q.prompt}</p>
               {q.hint && <p className={`mt-3 ${drill.id === 'syllogism' ? 'text-lg font-bold text-amber-200' : 'text-sm text-white/60'}`}>{q.hint}</p>}
             </div>
+            </div>
+            <div>
 
             {q.input === 'choice' ? (
-              <div className={`grid ${q.choices!.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'} gap-3 mt-6`}>
+              <div className={`grid ${q.choices!.length === 2 ? 'grid-cols-2' : q.table ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'} gap-3 mt-4 ${q.table ? 'lg:mt-0' : ''}`}>
                 {q.choices!.map((c, i) => {
                   let look = 'from-indigo-700 to-violet-800 border-indigo-300/50 hover:from-indigo-600 hover:to-violet-700';
                   if (fb) {
@@ -386,7 +390,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
                       disabled={!canAnswer}
                       onClick={() => answer(c)}
                       style={{ animationDelay: `${i * 70}ms` }}
-                      className={`sm-pop sm-kbc relative flex items-center gap-3 bg-gradient-to-r ${look} border-2 px-6 py-4 text-left text-lg font-bold transition-all hover:scale-[1.02] active:scale-95 disabled:hover:scale-100`}
+                      className={`sm-pop sm-kbc relative flex items-center gap-3 bg-gradient-to-r ${look} border-2 px-6 py-3 text-left text-lg font-bold transition-all hover:scale-[1.02] active:scale-95 disabled:hover:scale-100`}
                     >
                       <span className="text-amber-300 font-black">{letters[i]}:</span>
                       <span className="flex-1">{c}</span>
@@ -395,7 +399,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
                 })}
               </div>
             ) : (
-              <form onSubmit={(e) => { e.preventDefault(); answer(typed); }} className="flex gap-3 max-w-md mx-auto mt-6">
+              <form onSubmit={(e) => { e.preventDefault(); answer(typed); }} className="flex gap-3 max-w-md mx-auto mt-4">
                 <input
                   ref={inputRef}
                   value={typed}
@@ -412,7 +416,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
               </form>
             )}
 
-            <div className="min-h-[4.5rem] mt-5">
+            <div className="min-h-[4rem] mt-3">
               {fb && !fb.ok && (
                 <div className="sm-pop text-sm">
                   <p className="font-black text-red-300 text-base">Answer: {q.answer}</p>
@@ -422,14 +426,15 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
               )}
               {fb?.ok && <p className="font-black text-emerald-300 text-lg sm-pop">✓ Correct!</p>}
             </div>
+            </div>
           </div>
         )}
       </div>
 
       {/* Bottom stats */}
-      <div className="grid grid-cols-4 text-center border-t border-white/10 bg-black/20">
+      <div className="shrink-0 grid grid-cols-4 text-center border-t border-white/10 bg-black/20">
         {[['✅', 'Correct', `${st.correct}`], ['🎯', 'Accuracy', `${accuracy}%`], ['🔥', 'Combo', `×${st.streak}`], ['🏅', 'Best combo', `×${st.bestStreak}`]].map(([icon, label, v]) => (
-          <div key={label} className="py-3">
+          <div key={label} className="py-2">
             <p className="text-lg font-black tabular-nums">{icon} {v}</p>
             <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold">{label}</p>
           </div>
