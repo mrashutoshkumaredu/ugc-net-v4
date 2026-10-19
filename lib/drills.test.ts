@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alphabet, arithmetic, estimation, fractions, isCorrect, series, tables, type DrillQuestion } from './drills';
+import { alphabet, arithmetic, coding, estimation, formulas, fractions, isCorrect, miniDI, percent, series, syllogism, syllogismFollows, tables, type DrillQuestion } from './drills';
 
 // Small seeded random source so the tests are repeatable.
 function seeded(seed: number) {
@@ -101,5 +101,40 @@ describe('isCorrect', () => {
     expect(isCorrect({ prompt: '', answer: '1234', input: 'number' }, '1,234')).toBe(true);
     expect(isCorrect({ prompt: '', answer: 'Z', input: 'text' }, 'z')).toBe(true);
     expect(isCorrect({ prompt: '', answer: '5', input: 'number' }, '')).toBe(false);
+  });
+});
+
+describe('batch 2 drills', () => {
+  it('multiple-choice drills always have four different options including the answer', () => {
+    const r = seeded(7);
+    for (let i = 0; i < 1500; i++) {
+      checkChoice(percent(r));
+      checkChoice(formulas(r));
+      checkChoice(miniDI(r));
+    }
+  });
+
+  it('coding answers are capital letters of the right length', () => {
+    const r = seeded(8);
+    for (let i = 0; i < 500; i++) {
+      const q = coding(r);
+      expect(q.answer).toMatch(/^[A-Z]+$/);
+    }
+  });
+
+  it('syllogism checks known cases', () => {
+    // All A are B, All B are C -> All A are C (follows)
+    expect(syllogismFollows([{ t: 'all', x: 0, y: 1 }, { t: 'all', x: 1, y: 2 }], { t: 'all', x: 0, y: 2 })).toBe(true);
+    // Some A are B, No B are C -> Some A are not C (follows)
+    expect(syllogismFollows([{ t: 'some', x: 0, y: 1 }, { t: 'no', x: 1, y: 2 }], { t: 'somenot', x: 0, y: 2 })).toBe(true);
+    // All A are B, Some B are C -> Some A are C (does not follow)
+    expect(syllogismFollows([{ t: 'all', x: 0, y: 1 }, { t: 'some', x: 1, y: 2 }], { t: 'some', x: 0, y: 2 })).toBe(false);
+    // All A are B, No B are C -> No A are C (follows)
+    expect(syllogismFollows([{ t: 'all', x: 0, y: 1 }, { t: 'no', x: 1, y: 2 }], { t: 'no', x: 0, y: 2 })).toBe(true);
+    const r = seeded(9);
+    for (let i = 0; i < 300; i++) {
+      const q = syllogism(r);
+      expect(q.choices).toContain(q.answer);
+    }
   });
 });
