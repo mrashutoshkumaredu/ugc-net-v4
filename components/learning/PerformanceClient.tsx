@@ -43,7 +43,7 @@ function PerformanceBody() {
       <div className="space-y-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-6 text-sm text-slate-600">
           Nothing to show yet. Take a full paper, a unit practice or today&apos;s Daily Practice, and your strengths and weak spots will appear here.{' '}
-          <Link href="/" className="font-bold text-indigo-700 hover:underline">Start a test</Link>
+          <Link href="/practice" className="font-bold text-indigo-700 hover:underline">Start a test</Link>
         </div>
         {progress && <SettingsCard progress={progress} onSaved={setProgress} />}
       </div>
