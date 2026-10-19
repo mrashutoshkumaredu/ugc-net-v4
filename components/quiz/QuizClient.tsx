@@ -438,6 +438,7 @@ function QuizPageInner() {
             onNext={goNext}
             onClear={clearAnswer}
             hindiImage={hindiImage?.q}
+                hindiNote={hindiImage?.note}
             canGoPrev={currentIndex > 0}
             canGoNext={currentIndex < questions.length - 1}
           />

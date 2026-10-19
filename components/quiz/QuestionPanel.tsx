@@ -52,10 +52,13 @@ export default function QuestionPanel({
   canGoPrev,
   canGoNext,
   hindiImage,
+  hindiNote,
 }: {
   question: NormalizedQuestion;
   // Picture of the Hindi question (original NTA image), when there is no typed Hindi text.
   hindiImage?: string;
+  // Hindi note shown under the picture, e.g. when we corrected an option the picture still shows wrongly.
+  hindiNote?: string;
   index: number;
   total: number;
   // Unit practice mixes papers, so show where each question comes from.
@@ -176,7 +179,12 @@ export default function QuestionPanel({
             </p>
           )}
           {showHindiImage ? (
-            <HindiImage key={hindiImage} src={hindiImage!} alt={`प्रश्न ${index + 1} (हिंदी)`} textSize={textSize} />
+            <>
+              <HindiImage key={hindiImage} src={hindiImage!} alt={`प्रश्न ${index + 1} (हिंदी)`} textSize={textSize} />
+              {hindiNote && (
+                <p className="mt-3 text-sm bg-amber-50 border border-amber-200 text-amber-900 rounded p-2">{hindiNote}</p>
+              )}
+            </>
           ) : (
             <MathText html={activeText} className="q-text font-medium text-slate-900 whitespace-pre-line leading-relaxed" />
           )}
