@@ -7,19 +7,44 @@ import {
   type AlphaKind, type ArithOp, type Digits, type DrillId, type DrillQuestion, type TableKind,
 } from '@/lib/drills';
 
-const DRILLS: { id: DrillId; label: string; unit: string; blurb: string }[] = [
-  { id: 'arithmetic', label: 'Arithmetic', unit: 'Maths', blurb: 'Add, subtract, multiply and divide in your head.' },
-  { id: 'tables', label: 'Tables & Powers', unit: 'Maths', blurb: 'Tables to 20, squares to 30, cubes to 20, square and cube roots.' },
-  { id: 'fractions', label: 'Fraction ↔ %', unit: 'Data Interpretation', blurb: 'Know 1/8 = 12.5% at a glance. The key skill for DI questions.' },
-  { id: 'estimation', label: 'Estimation', unit: 'Data Interpretation', blurb: 'Pick the closest value quickly, without exact working.' },
-  { id: 'series', label: 'Number Series', unit: 'Maths reasoning', blurb: 'Spot the rule and find the next or missing number.' },
-  { id: 'alphabet', label: 'Alphabet Grid', unit: 'Logical reasoning', blurb: 'Letter positions and opposites, for coding-decoding and letter series.' },
-  { id: 'coding', label: 'Coding & Letter Series', unit: 'Maths reasoning', blurb: 'Crack the code (TABLE → UBCMF) and find the next letter in a series.' },
-  { id: 'syllogism', label: 'Syllogism', unit: 'Logical reasoning', blurb: 'Two statements, one conclusion: does it follow? Checked against every possible Venn diagram.' },
-  { id: 'percent', label: '% Change', unit: 'Data Interpretation', blurb: 'Increase, decrease, "X is what % more than Y", successive changes.' },
-  { id: 'formulas', label: 'Quick Formulas', unit: 'Maths', blurb: 'Simple and compound interest, profit and loss, average speed, successive discounts.' },
-  { id: 'minidi', label: 'Mini DI', unit: 'Data Interpretation', blurb: 'A small table and one question at a time, like the real Q1–5.' },
+// ---------------------------------------------------------------------------
+// Catalogue: three "worlds", each with its own colour.
+// `pace` is how many correct answers per minute earn three stars.
+type Drill = { id: DrillId; label: string; icon: string; blurb: string; pace: number };
+type World = { id: string; title: string; icon: string; tagline: string; gradient: string; ring: string; drills: Drill[] };
+
+const WORLDS: World[] = [
+  {
+    id: 'calc', title: 'Calculation', icon: '🧮', tagline: 'Mental maths for Mathematical Aptitude',
+    gradient: 'from-orange-500 to-rose-500', ring: 'ring-orange-300',
+    drills: [
+      { id: 'arithmetic', label: 'Arithmetic', icon: '➕', blurb: 'Add, subtract, multiply, divide', pace: 20 },
+      { id: 'tables', label: 'Tables & Powers', icon: '✖️', blurb: 'Tables, squares, cubes, roots', pace: 22 },
+      { id: 'formulas', label: 'Quick Formulas', icon: '💰', blurb: 'Interest, profit, speed, discounts', pace: 8 },
+    ],
+  },
+  {
+    id: 'di', title: 'Data Interpretation', icon: '📊', tagline: 'The skills behind Q1–5 of every paper',
+    gradient: 'from-sky-500 to-indigo-600', ring: 'ring-sky-300',
+    drills: [
+      { id: 'fractions', label: 'Fraction ↔ %', icon: '🔢', blurb: '1/8 = 12.5% at a glance', pace: 18 },
+      { id: 'estimation', label: 'Estimation', icon: '🎯', blurb: 'Pick the closest value fast', pace: 12 },
+      { id: 'percent', label: '% Change', icon: '📈', blurb: 'Rise, fall, more than, less than', pace: 10 },
+      { id: 'minidi', label: 'Mini DI', icon: '🗂️', blurb: 'Read a table, answer quickly', pace: 6 },
+    ],
+  },
+  {
+    id: 'logic', title: 'Reasoning', icon: '🧩', tagline: 'Patterns for Mathematical and Logical Reasoning',
+    gradient: 'from-emerald-500 to-teal-600', ring: 'ring-emerald-300',
+    drills: [
+      { id: 'series', label: 'Number Series', icon: '🔁', blurb: 'Next or missing number', pace: 10 },
+      { id: 'coding', label: 'Coding & Letters', icon: '🔤', blurb: 'TABLE → UBCMF, letter series', pace: 6 },
+      { id: 'alphabet', label: 'Alphabet Grid', icon: '🅰️', blurb: 'Positions and opposites', pace: 24 },
+      { id: 'syllogism', label: 'Syllogism', icon: '⭕', blurb: 'Does the conclusion follow?', pace: 10 },
+    ],
+  },
 ];
+const ALL = WORLDS.flatMap((w) => w.drills.map((d) => ({ ...d, world: w })));
 
 type Settings = { op: ArithOp; digits: Digits; table: TableKind; base: number | 'random'; alpha: AlphaKind };
 const DEFAULT_SETTINGS: Settings = { op: 'mixed', digits: '2', table: 'tables', base: 'random', alpha: 'letterToNum' };
@@ -41,249 +66,336 @@ function makeQuestion(drill: DrillId, s: Settings): DrillQuestion {
   }
 }
 
-function settingsKey(drill: DrillId, s: Settings) {
-  if (drill === 'arithmetic') return `${s.op}-${s.digits}`;
-  if (drill === 'tables') return `${s.table}-${s.table === 'tables' ? s.base : ''}`;
-  if (drill === 'alphabet') return s.alpha;
-  return 'all';
+// Saved in this browser only. Every read/write is guarded: storage can be blocked.
+type Record_ = { points: number; stars: number };
+const recordKey = (id: DrillId) => `speedmath:record:${id}`;
+function readRecord(id: DrillId): Record_ {
+  try { return JSON.parse(window.localStorage.getItem(recordKey(id)) || '') as Record_; } catch { return { points: 0, stars: 0 }; }
+}
+function writeRecord(id: DrillId, r: Record_) {
+  try { window.localStorage.setItem(recordKey(id), JSON.stringify(r)); } catch { /* ignore */ }
 }
 
-// Personal bests live only in this browser (wrapped in try/catch: storage can be blocked).
-function readBest(key: string) {
-  try { return Number(window.localStorage.getItem(key) || 0); } catch { return 0; }
-}
-function writeBest(key: string, v: number) {
-  try { window.localStorage.setItem(key, String(v)); } catch { /* ignore */ }
-}
+const starsFor = (correct: number, seconds: number, pace: number) => {
+  const perMin = (correct / seconds) * 60;
+  return perMin >= pace ? 3 : perMin >= pace * 0.6 ? 2 : perMin >= pace * 0.3 ? 1 : 0;
+};
+const Stars = ({ n, size = 'text-base' }: { n: number; size?: string }) => (
+  <span className={`${size} tracking-tight`} aria-label={`${n} of 3 stars`}>
+    {[0, 1, 2].map((i) => <span key={i} className={i < n ? 'text-amber-400' : 'text-white/25'}>★</span>)}
+  </span>
+);
 
 export default function SpeedMathClient() {
   return (
-    <PageShell
-      title="⚡ Speed Math & Logic"
-      subtitle="Short drills for the calculation and pattern skills Paper 1 tests in Mathematical Reasoning, Logical Reasoning and Data Interpretation. Classic mode has no clock. Game mode races the clock."
-      wide
-    >
+    <PageShell title="⚡ Speed Math & Logic" subtitle="Quick-fire games for the calculation and pattern skills Paper 1 tests. Beat the clock, build combos, collect stars." wide>
       <SpeedMathBody />
     </PageShell>
   );
 }
 
 function SpeedMathBody() {
-  const [drill, setDrill] = useState<DrillId>('arithmetic');
+  const [active, setActive] = useState<DrillId | null>(null);
+  const [records, setRecords] = useState<Partial<Record<DrillId, Record_>>>({});
+
+  const loadRecords = useCallback(() => {
+    const r: Partial<Record<DrillId, Record_>> = {};
+    for (const d of ALL) r[d.id] = readRecord(d.id);
+    setRecords(r);
+  }, []);
+  useEffect(() => { loadRecords(); }, [loadRecords]);
+
+  if (active) {
+    const d = ALL.find((x) => x.id === active)!;
+    return <Arena drill={d} world={d.world} onExit={() => { setActive(null); loadRecords(); }} />;
+  }
+
+  const totalStars = ALL.reduce((s, d) => s + (records[d.id]?.stars || 0), 0);
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl bg-gradient-to-r from-indigo-950 via-violet-900 to-fuchsia-900 text-white p-5 flex items-center justify-between gap-4 shadow-lg">
+        <div>
+          <p className="text-xs uppercase tracking-widest text-violet-200 font-bold">Your collection</p>
+          <p className="text-3xl font-black mt-1">{totalStars} <span className="text-amber-400">★</span> <span className="text-base font-semibold text-violet-200">of {ALL.length * 3}</span></p>
+        </div>
+        <p className="text-xs text-violet-100 max-w-xs text-right hidden sm:block">Play a timed round in any game. The faster and more accurately you answer, the more stars you earn.</p>
+      </div>
+
+      {WORLDS.map((w) => (
+        <section key={w.id}>
+          <div className="flex items-baseline gap-2 mb-3">
+            <h2 className="text-lg font-black text-indigo-950">{w.icon} {w.title}</h2>
+            <p className="text-xs text-slate-500">{w.tagline}</p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {w.drills.map((d) => {
+              const rec = records[d.id];
+              return (
+                <button
+                  key={d.id}
+                  onClick={() => setActive(d.id)}
+                  className={`group relative overflow-hidden text-left rounded-2xl p-4 text-white bg-gradient-to-br ${w.gradient} shadow-md hover:shadow-xl hover:-translate-y-1 active:translate-y-0 transition-all`}
+                >
+                  <span className="absolute -right-3 -bottom-4 text-6xl opacity-20 group-hover:scale-110 transition-transform" aria-hidden>{d.icon}</span>
+                  <span className="block text-2xl mb-1" aria-hidden>{d.icon}</span>
+                  <span className="block font-extrabold leading-tight">{d.label}</span>
+                  <span className="block text-[11px] text-white/80 mt-0.5">{d.blurb}</span>
+                  <span className="mt-3 flex items-center justify-between">
+                    <Stars n={rec?.stars || 0} />
+                    <span className="text-[11px] font-bold bg-black/20 rounded-full px-2 py-0.5">{rec?.points ? `Best ${rec.points}` : 'Play ▸'}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+type Phase = 'ready' | 'playing' | 'over';
+
+function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: () => void }) {
   const [s, setS] = useState<Settings>(DEFAULT_SETTINGS);
-  const [mode, setMode] = useState<'classic' | 'game'>('classic');
-  const [gameSeconds, setGameSeconds] = useState(60);
+  const [mode, setMode] = useState<'game' | 'classic'>('game');
+  const [seconds, setSeconds] = useState(60);
+  const [phase, setPhase] = useState<Phase>('ready');
   const [q, setQ] = useState<DrillQuestion | null>(null);
+  const [qKey, setQKey] = useState(0);
   const [typed, setTyped] = useState('');
-  const [feedback, setFeedback] = useState<null | { ok: boolean; given: string }>(null);
-  const [stats, setStats] = useState({ attempted: 0, correct: 0, streak: 0, totalMs: 0 });
-  const [running, setRunning] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [finished, setFinished] = useState<null | { score: number; best: number; newBest: boolean }>(null);
-  const shownAt = useRef(Date.now());
+  const [fb, setFb] = useState<null | { ok: boolean; given: string }>(null);
+  const [st, setSt] = useState({ answered: 0, correct: 0, streak: 0, bestStreak: 0, points: 0 });
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [popup, setPopup] = useState<null | { text: string; id: number }>(null);
+  const [result, setResult] = useState<null | { stars: number; record: boolean; best: number }>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const nextTimer = useRef<number | null>(null);
+  const nextT = useRef<number | null>(null);
 
-  const bestKey = `speedmath:best:${drill}:${settingsKey(drill, s)}:${gameSeconds}`;
-  const info = useMemo(() => DRILLS.find((d) => d.id === drill)!, [drill]);
-
-  const newQuestion = useCallback(() => {
-    if (nextTimer.current) window.clearTimeout(nextTimer.current);
-    setQ(makeQuestion(drill, s));
+  const next = useCallback(() => {
+    if (nextT.current) window.clearTimeout(nextT.current);
+    setQ(makeQuestion(drill.id, s));
+    setQKey((k) => k + 1);
     setTyped('');
-    setFeedback(null);
-    shownAt.current = Date.now();
+    setFb(null);
     window.setTimeout(() => inputRef.current?.focus(), 0);
-  }, [drill, s]);
+  }, [drill.id, s]);
 
-  // Any change of drill, settings or mode starts afresh.
-  useEffect(() => {
-    setStats({ attempted: 0, correct: 0, streak: 0, totalMs: 0 });
-    setRunning(false);
-    setFinished(null);
-    newQuestion();
-  }, [newQuestion, mode, gameSeconds]);
+  const start = () => {
+    setSt({ answered: 0, correct: 0, streak: 0, bestStreak: 0, points: 0 });
+    setResult(null);
+    setTimeLeft(seconds);
+    setPhase('playing');
+    next();
+  };
 
-  // Game clock.
+  // Settings changed: back to the start screen.
+  useEffect(() => { setPhase('ready'); setResult(null); }, [s, mode, seconds]);
+
+  // Countdown (game mode only).
   useEffect(() => {
-    if (!running) return;
+    if (phase !== 'playing' || mode !== 'game') return;
     if (timeLeft <= 0) {
-      setRunning(false);
-      const score = stats.correct;
-      const best = readBest(bestKey);
-      const newBest = score > best;
-      if (newBest) writeBest(bestKey, score);
-      setFinished({ score, best: Math.max(best, score), newBest });
+      if (nextT.current) window.clearTimeout(nextT.current);
+      const stars = starsFor(st.correct, seconds, drill.pace);
+      const prev = readRecord(drill.id);
+      const record = st.points > prev.points;
+      writeRecord(drill.id, { points: Math.max(prev.points, st.points), stars: Math.max(prev.stars, stars) });
+      setResult({ stars, record, best: Math.max(prev.points, st.points) });
+      setPhase('over');
       return;
     }
     const t = window.setTimeout(() => setTimeLeft((v) => v - 1), 1000);
     return () => window.clearTimeout(t);
-  }, [running, timeLeft, stats.correct, bestKey]);
+  }, [phase, mode, timeLeft, st.correct, st.points, seconds, drill.id, drill.pace]);
 
-  const startGame = () => {
-    setStats({ attempted: 0, correct: 0, streak: 0, totalMs: 0 });
-    setFinished(null);
-    setTimeLeft(gameSeconds);
-    setRunning(true);
-    newQuestion();
-  };
+  const canAnswer = phase === 'playing' && q && !fb;
 
-  const canAnswer = q && !feedback && (mode === 'classic' || running);
-
-  const submit = (given: string) => {
-    if (!q || !canAnswer || !given.trim()) return;
+  const answer = useCallback((given: string) => {
+    if (!canAnswer || !q || !given.trim()) return;
     const ok = isCorrect(q, given);
-    const ms = Date.now() - shownAt.current;
-    setStats((st) => ({ attempted: st.attempted + 1, correct: st.correct + (ok ? 1 : 0), streak: ok ? st.streak + 1 : 0, totalMs: st.totalMs + ms }));
-    setFeedback({ ok, given });
-    // Right answers move on by themselves. In game mode wrong ones do too, after a short look.
-    if (ok) nextTimer.current = window.setTimeout(newQuestion, 350);
-    else if (mode === 'game') nextTimer.current = window.setTimeout(newQuestion, 1400);
-  };
+    setFb({ ok, given });
+    setSt((p) => {
+      const streak = ok ? p.streak + 1 : 0;
+      const gain = ok ? 10 + Math.min(streak - 1, 10) * 2 : 0;
+      if (ok) setPopup({ text: `+${gain}${streak >= 3 ? `  🔥×${streak}` : ''}`, id: Date.now() });
+      return { answered: p.answered + 1, correct: p.correct + (ok ? 1 : 0), streak, bestStreak: Math.max(p.bestStreak, streak), points: p.points + gain };
+    });
+    if (ok) nextT.current = window.setTimeout(next, 450);
+    else if (mode === 'game') nextT.current = window.setTimeout(next, 1500);
+  }, [canAnswer, q, mode, next]);
 
-  const accuracy = stats.attempted ? Math.round((stats.correct / stats.attempted) * 100) : 0;
-  const avgSec = stats.attempted ? (stats.totalMs / stats.attempted / 1000).toFixed(1) : '–';
-  const best = typeof window === 'undefined' ? 0 : readBest(bestKey);
+  // Keyboard: 1-4 or A-D for options, N or Enter for next after a wrong answer in classic.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (phase !== 'playing' || !q) return;
+      if (q.input === 'choice' && q.choices && !fb) {
+        const i = '1234'.indexOf(e.key) >= 0 ? '1234'.indexOf(e.key) : 'abcd'.indexOf(e.key.toLowerCase());
+        if (i >= 0 && i < q.choices.length) { e.preventDefault(); answer(q.choices[i]); }
+      } else if (fb && !fb.ok && mode === 'classic' && (e.key === 'Enter' || e.key.toLowerCase() === 'n')) {
+        e.preventDefault(); next();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [phase, q, fb, mode, answer, next]);
 
-  const sel = 'text-xs border border-slate-300 rounded-lg p-2 bg-white font-semibold text-slate-700';
+  const frac = mode === 'game' ? Math.max(0, timeLeft / seconds) : 1;
+  // Green (120°) → yellow (55°) → red (0°) as time runs out.
+  const hue = Math.round(120 * frac);
+  const urgent = mode === 'game' && phase === 'playing' && timeLeft <= 5;
+  const accuracy = st.answered ? Math.round((st.correct / st.answered) * 100) : 0;
+  const sel = 'text-xs rounded-lg px-2.5 py-2 bg-white/10 border border-white/20 text-white font-semibold [&>option]:text-slate-900';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  const settings = useMemo(() => (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      {drill.id === 'arithmetic' && (
+        <>
+          <select aria-label="Operation" className={sel} value={s.op} onChange={(e) => setS({ ...s, op: e.target.value as ArithOp })}>
+            <option value="mixed">Mixed operations</option><option value="add">Addition</option><option value="sub">Subtraction</option><option value="mul">Multiplication</option><option value="div">Division</option>
+          </select>
+          <select aria-label="Digits" className={sel} value={s.digits} onChange={(e) => setS({ ...s, digits: e.target.value as Digits })}>
+            <option value="1">1-digit</option><option value="2">2-digit</option><option value="3">3-digit</option><option value="mixed">Mixed digits</option>
+          </select>
+        </>
+      )}
+      {drill.id === 'tables' && (
+        <>
+          <select aria-label="Type" className={sel} value={s.table} onChange={(e) => setS({ ...s, table: e.target.value as TableKind })}>
+            <option value="tables">Tables (2–20)</option><option value="squares">Squares (11–30)</option><option value="cubes">Cubes (2–20)</option><option value="roots">Square and cube roots</option>
+          </select>
+          {s.table === 'tables' && (
+            <select aria-label="Table of" className={sel} value={String(s.base)} onChange={(e) => setS({ ...s, base: e.target.value === 'random' ? 'random' : Number(e.target.value) })}>
+              <option value="random">All tables</option>
+              {Array.from({ length: 19 }, (_, i) => i + 2).map((n) => <option key={n} value={n}>Table of {n}</option>)}
+            </select>
+          )}
+        </>
+      )}
+      {drill.id === 'alphabet' && (
+        <select aria-label="Alphabet drill" className={sel} value={s.alpha} onChange={(e) => setS({ ...s, alpha: e.target.value as AlphaKind })}>
+          <option value="letterToNum">Letter → number</option><option value="numToLetter">Number → letter</option><option value="opposite">Opposite letter</option>
+        </select>
+      )}
+      <div className="flex rounded-lg bg-white/10 p-1">
+        <button onClick={() => setMode('game')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${mode === 'game' ? 'bg-amber-400 text-slate-900' : 'text-white/70'}`}>⏱️ Timed</button>
+        <button onClick={() => setMode('classic')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${mode === 'classic' ? 'bg-white text-slate-900' : 'text-white/70'}`}>🧘 Practice</button>
+      </div>
+      {mode === 'game' && (
+        <select aria-label="Round length" className={sel} value={seconds} onChange={(e) => setSeconds(Number(e.target.value))}>
+          <option value={30}>30 s</option><option value={60}>60 s</option><option value={120}>2 min</option>
+        </select>
+      )}
+    </div>
+  ), [drill.id, s, mode, seconds, sel]);
 
   return (
-    <div className="space-y-4">
-      {/* Drill tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-        {DRILLS.map((d) => (
-          <button
-            key={d.id}
-            onClick={() => setDrill(d.id)}
-            className={`text-left rounded-xl border p-3 transition ${drill === d.id ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-slate-200 hover:border-indigo-300'}`}
-          >
-            <span className="block text-sm font-bold">{d.label}</span>
-            <span className={`block text-[11px] ${drill === d.id ? 'text-indigo-100' : 'text-slate-500'}`}>{d.unit}</span>
-          </button>
-        ))}
+    <div className="rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 text-white">
+      {/* Top bar */}
+      <div className={`bg-gradient-to-r ${world.gradient} px-4 py-3 flex items-center justify-between gap-3`}>
+        <button onClick={onExit} className="text-sm font-bold bg-black/20 hover:bg-black/30 rounded-lg px-3 py-1.5">← All games</button>
+        <p className="font-black text-lg truncate">{drill.icon} {drill.label}</p>
+        <div className="text-right">
+          <p className="text-[10px] uppercase tracking-widest text-white/80 font-bold">Score</p>
+          <p className="text-xl font-black tabular-nums leading-none">{st.points}</p>
+        </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
-          <p className="text-xs text-slate-500">{info.blurb}</p>
-          <div className="flex flex-wrap items-center gap-2">
-            {drill === 'arithmetic' && (
-              <>
-                <select aria-label="Operation" className={sel} value={s.op} onChange={(e) => setS({ ...s, op: e.target.value as ArithOp })}>
-                  <option value="mixed">Mixed operations</option>
-                  <option value="add">Addition</option>
-                  <option value="sub">Subtraction</option>
-                  <option value="mul">Multiplication</option>
-                  <option value="div">Division</option>
-                </select>
-                <select aria-label="Digits" className={sel} value={s.digits} onChange={(e) => setS({ ...s, digits: e.target.value as Digits })}>
-                  <option value="1">1-digit</option>
-                  <option value="2">2-digit</option>
-                  <option value="3">3-digit</option>
-                  <option value="mixed">Mixed digits</option>
-                </select>
-              </>
-            )}
-            {drill === 'tables' && (
-              <>
-                <select aria-label="Type" className={sel} value={s.table} onChange={(e) => setS({ ...s, table: e.target.value as TableKind })}>
-                  <option value="tables">Tables (2–20)</option>
-                  <option value="squares">Squares (11–30)</option>
-                  <option value="cubes">Cubes (2–20)</option>
-                  <option value="roots">Square and cube roots</option>
-                </select>
-                {s.table === 'tables' && (
-                  <select aria-label="Table of" className={sel} value={String(s.base)} onChange={(e) => setS({ ...s, base: e.target.value === 'random' ? 'random' : Number(e.target.value) })}>
-                    <option value="random">All tables, mixed</option>
-                    {Array.from({ length: 19 }, (_, i) => i + 2).map((n) => <option key={n} value={n}>Table of {n}</option>)}
-                  </select>
-                )}
-              </>
-            )}
-            {drill === 'alphabet' && (
-              <select aria-label="Alphabet drill" className={sel} value={s.alpha} onChange={(e) => setS({ ...s, alpha: e.target.value as AlphaKind })}>
-                <option value="letterToNum">Letter → number</option>
-                <option value="numToLetter">Number → letter</option>
-                <option value="opposite">Opposite letter</option>
-              </select>
-            )}
-            <div className="flex rounded-lg bg-slate-100 p-1">
-              <button onClick={() => setMode('classic')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${mode === 'classic' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500'}`}>Classic</button>
-              <button onClick={() => setMode('game')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${mode === 'game' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500'}`}>⏱️ Game</button>
-            </div>
-            {mode === 'game' && (
-              <select aria-label="Game length" className={sel} value={gameSeconds} onChange={(e) => setGameSeconds(Number(e.target.value))}>
-                <option value={30}>30 seconds</option>
-                <option value={60}>60 seconds</option>
-                <option value={120}>2 minutes</option>
-              </select>
-            )}
+      {/* Timer bar: shrinks and turns from green to yellow to red */}
+      {mode === 'game' && (
+        <div className="px-4 pt-4">
+          <div className="flex justify-between text-xs font-bold mb-1">
+            <span className={urgent ? 'text-red-400 sm-pulse' : 'text-white/80'}>⏱ {phase === 'playing' ? `${timeLeft}s` : `${seconds}s`}</span>
+            <span className="text-white/70">🔥 Combo ×{st.streak}</span>
+          </div>
+          <div className="h-3 rounded-full bg-white/10 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${urgent ? 'sm-pulse' : ''}`}
+              style={{ width: `${phase === 'playing' ? frac * 100 : 100}%`, backgroundColor: `hsl(${hue} 85% 50%)`, boxShadow: `0 0 12px hsl(${hue} 85% 50% / 0.7)` }}
+            />
           </div>
         </div>
+      )}
 
-        {mode === 'game' && (
-          <div className="mb-4">
-            <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-              <span>{running ? `${timeLeft}s left` : `${gameSeconds}s round`}</span>
-              <span>Best: {best} correct</span>
+      <div className="relative px-4 sm:px-8 py-8 min-h-[420px] flex flex-col items-center justify-center">
+        {phase === 'ready' && (
+          <div className="text-center space-y-5 sm-pop">
+            <p className="text-6xl" aria-hidden>{drill.icon}</p>
+            <div>
+              <p className="text-2xl font-black">{drill.label}</p>
+              <p className="text-sm text-white/70 mt-1">{drill.blurb}</p>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-amber-500 transition-all duration-1000 ease-linear" style={{ width: `${running ? (timeLeft / gameSeconds) * 100 : 100}%` }} />
+            {settings}
+            <button onClick={start} className="px-10 py-4 rounded-2xl text-xl font-black text-slate-900 bg-gradient-to-r from-amber-300 to-amber-500 shadow-[0_0_30px_rgba(251,191,36,0.5)] hover:scale-105 active:scale-95 transition-transform">
+              ▶ {mode === 'game' ? 'Start round' : 'Start practice'}
+            </button>
+            {mode === 'game' && <p className="text-xs text-white/60">Three stars at about {drill.pace} correct answers a minute.</p>}
+          </div>
+        )}
+
+        {phase === 'over' && result && (
+          <div className="text-center space-y-4 sm-pop">
+            <p className="text-sm uppercase tracking-widest text-white/60 font-bold">Time&apos;s up!</p>
+            <Stars n={result.stars} size="text-6xl" />
+            {result.record && <p className="text-amber-300 font-black text-lg sm-pulse">🏆 New record!</p>}
+            <p className="text-5xl font-black tabular-nums">{st.points}</p>
+            <p className="text-sm text-white/70">{st.correct} correct · {accuracy}% accuracy · best combo ×{st.bestStreak} · your best {result.best}</p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button onClick={start} className="px-8 py-3 rounded-2xl font-black text-slate-900 bg-gradient-to-r from-amber-300 to-amber-500 hover:scale-105 transition-transform">↻ Play again</button>
+              <button onClick={() => setPhase('ready')} className="px-6 py-3 rounded-2xl font-bold bg-white/10 hover:bg-white/20">Settings</button>
             </div>
           </div>
         )}
 
-        {mode === 'game' && !running ? (
-          <div className="text-center py-10">
-            {finished ? (
-              <>
-                <p className="text-sm text-slate-500">Time&apos;s up!</p>
-                <p className="text-4xl font-extrabold text-indigo-950 my-2">{finished.score} correct</p>
-                <p className="text-sm text-slate-600 mb-5">
-                  {finished.newBest ? '🎉 New personal best!' : `Your best: ${finished.best}`} · {stats.attempted} answered · {accuracy}% accuracy
-                </p>
-              </>
-            ) : (
-              <p className="text-sm text-slate-600 mb-5">Answer as many as you can in {gameSeconds} seconds.</p>
-            )}
-            <button onClick={startGame} className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md">
-              {finished ? 'Play again' : 'Start'}
-            </button>
-          </div>
-        ) : q && (
-          <div className="text-center py-4">
+        {phase === 'playing' && q && (
+          <div key={qKey} className="w-full max-w-2xl text-center">
+            {popup && <span key={popup.id} className="sm-float absolute left-1/2 top-6 -translate-x-1/2 text-2xl font-black text-emerald-300 pointer-events-none">{popup.text}</span>}
+
             {q.table && (
-              <table className="mx-auto mb-4 text-sm border border-slate-300">
-                <thead className="bg-slate-50">
-                  <tr>{q.table.headers.map((h) => <th key={h} className="border border-slate-300 px-3 py-1.5 font-semibold">{h}</th>)}</tr>
+              <table className="mx-auto mb-5 text-sm bg-white/5 rounded-xl overflow-hidden sm-pop">
+                <thead className="bg-white/10">
+                  <tr>{q.table.headers.map((h) => <th key={h} className="px-4 py-2 font-bold text-sky-200">{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {q.table.rows.map((row, i) => (
-                    <tr key={i}>{row.map((c, j) => <td key={j} className="border border-slate-300 px-3 py-1.5">{c}</td>)}</tr>
+                    <tr key={i} className="border-t border-white/10">{row.map((c, j) => <td key={j} className="px-4 py-1.5 tabular-nums">{c}</td>)}</tr>
                   ))}
                 </tbody>
               </table>
             )}
-            <p className={`font-extrabold text-indigo-950 tracking-wide ${q.prompt.length > 50 ? 'text-lg sm:text-xl' : q.prompt.length > 22 ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'}`}>{q.prompt}</p>
-            {q.hint && <p className={`mt-2 ${drill === 'syllogism' ? 'text-base font-semibold text-slate-700' : 'text-xs text-slate-500'}`}>{q.hint}</p>}
+
+            <div className={`rounded-3xl border-2 border-white/15 bg-white/5 px-5 py-7 sm-pop ${fb && !fb.ok ? 'sm-shake border-red-400/60' : ''} ${fb?.ok ? 'border-emerald-400/70' : ''}`}>
+              <p className={`font-black tracking-wide ${q.prompt.length > 50 ? 'text-xl sm:text-2xl' : q.prompt.length > 22 ? 'text-2xl sm:text-4xl' : 'text-5xl sm:text-6xl'}`}>{q.prompt}</p>
+              {q.hint && <p className={`mt-3 ${drill.id === 'syllogism' ? 'text-lg font-bold text-amber-200' : 'text-sm text-white/60'}`}>{q.hint}</p>}
+            </div>
 
             {q.input === 'choice' ? (
-              <div className="grid grid-cols-2 gap-3 max-w-md mx-auto mt-6">
-                {q.choices!.map((c) => {
-                  let cls = 'bg-white border-slate-300 hover:border-indigo-400';
-                  if (feedback) {
-                    if (c === q.answer) cls = 'bg-emerald-50 border-emerald-500 text-emerald-900';
-                    else if (c === feedback.given) cls = 'bg-rose-50 border-rose-500 text-rose-900';
+              <div className={`grid ${q.choices!.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'} gap-3 mt-6`}>
+                {q.choices!.map((c, i) => {
+                  let look = 'from-indigo-700 to-violet-800 border-indigo-300/50 hover:from-indigo-600 hover:to-violet-700';
+                  if (fb) {
+                    if (c === q.answer) look = 'from-emerald-500 to-emerald-700 border-emerald-200 sm-glow';
+                    else if (c === fb.given) look = 'from-red-500 to-red-700 border-red-200';
+                    else look = 'from-indigo-900 to-violet-950 border-white/10 opacity-50';
                   }
                   return (
-                    <button key={c} disabled={!canAnswer} onClick={() => submit(c)} className={`py-3 rounded-xl border-2 text-lg font-bold transition ${cls}`}>
-                      {c}
+                    <button
+                      key={c}
+                      disabled={!canAnswer}
+                      onClick={() => answer(c)}
+                      style={{ animationDelay: `${i * 70}ms` }}
+                      className={`sm-pop sm-kbc relative flex items-center gap-3 bg-gradient-to-r ${look} border-2 px-6 py-4 text-left text-lg font-bold transition-all hover:scale-[1.02] active:scale-95 disabled:hover:scale-100`}
+                    >
+                      <span className="text-amber-300 font-black">{letters[i]}:</span>
+                      <span className="flex-1">{c}</span>
                     </button>
                   );
                 })}
               </div>
             ) : (
-              <form onSubmit={(e) => { e.preventDefault(); submit(typed); }} className="flex gap-2 max-w-sm mx-auto mt-6">
+              <form onSubmit={(e) => { e.preventDefault(); answer(typed); }} className="flex gap-3 max-w-md mx-auto mt-6">
                 <input
                   ref={inputRef}
                   value={typed}
@@ -293,40 +405,35 @@ function SpeedMathBody() {
                   autoComplete="off"
                   disabled={!canAnswer}
                   aria-label="Your answer"
-                  className={`flex-1 text-center text-2xl font-bold border-2 rounded-xl p-3 outline-none ${feedback ? (feedback.ok ? 'border-emerald-500 bg-emerald-50' : 'border-rose-500 bg-rose-50') : 'border-slate-300 focus:border-indigo-500'}`}
+                  placeholder="?"
+                  className={`flex-1 min-w-0 text-center text-3xl font-black rounded-2xl px-4 py-3 bg-white/10 border-2 outline-none placeholder:text-white/30 uppercase ${fb ? (fb.ok ? 'border-emerald-400 bg-emerald-500/20' : 'border-red-400 bg-red-500/20') : 'border-white/30 focus:border-amber-300'}`}
                 />
-                <button type="submit" disabled={!canAnswer} className="px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl disabled:opacity-50">Check</button>
+                <button type="submit" disabled={!canAnswer} className="px-6 rounded-2xl font-black text-slate-900 bg-gradient-to-r from-amber-300 to-amber-500 disabled:opacity-40">Go</button>
               </form>
             )}
 
-            <div className="min-h-[3.5rem] mt-4">
-              {feedback && !feedback.ok && (
-                <div className="max-w-md mx-auto text-sm">
-                  <p className="font-bold text-rose-700">Answer: {q.answer}</p>
-                  {q.explain && <p className="text-slate-600 mt-1">{q.explain}</p>}
-                  {mode === 'classic' && (
-                    <button onClick={newQuestion} className="mt-3 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg">Next →</button>
-                  )}
+            <div className="min-h-[4.5rem] mt-5">
+              {fb && !fb.ok && (
+                <div className="sm-pop text-sm">
+                  <p className="font-black text-red-300 text-base">Answer: {q.answer}</p>
+                  {q.explain && <p className="text-white/70 mt-1">{q.explain}</p>}
+                  {mode === 'classic' && <button onClick={next} className="mt-3 px-6 py-2 rounded-xl font-bold bg-white/15 hover:bg-white/25">Next ▸</button>}
                 </div>
               )}
-              {feedback?.ok && <p className="font-bold text-emerald-700">✓ Correct</p>}
+              {fb?.ok && <p className="font-black text-emerald-300 text-lg sm-pop">✓ Correct!</p>}
             </div>
           </div>
         )}
+      </div>
 
-        <div className="grid grid-cols-4 gap-2 text-center border-t border-slate-100 pt-4 mt-2">
-          {[
-            ['Correct', `${stats.correct}/${stats.attempted}`],
-            ['Accuracy', `${accuracy}%`],
-            ['Streak', `${stats.streak}`],
-            ['Avg time', avgSec === '–' ? '–' : `${avgSec}s`],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <p className="text-lg font-extrabold text-indigo-950">{value}</p>
-              <p className="text-[11px] text-slate-500">{label}</p>
-            </div>
-          ))}
-        </div>
+      {/* Bottom stats */}
+      <div className="grid grid-cols-4 text-center border-t border-white/10 bg-black/20">
+        {[['✅', 'Correct', `${st.correct}`], ['🎯', 'Accuracy', `${accuracy}%`], ['🔥', 'Combo', `×${st.streak}`], ['🏅', 'Best combo', `×${st.bestStreak}`]].map(([icon, label, v]) => (
+          <div key={label} className="py-3">
+            <p className="text-lg font-black tabular-nums">{icon} {v}</p>
+            <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold">{label}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
