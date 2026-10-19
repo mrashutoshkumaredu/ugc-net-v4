@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import {
-  alphabet, arithmetic, estimation, fractions, isCorrect, series, tables,
+  alphabet, arithmetic, coding, estimation, formulas, fractions, isCorrect, miniDI, percent, series, syllogism, tables,
   type AlphaKind, type ArithOp, type Digits, type DrillId, type DrillQuestion, type TableKind,
 } from '@/lib/drills';
 
@@ -14,6 +14,11 @@ const DRILLS: { id: DrillId; label: string; unit: string; blurb: string }[] = [
   { id: 'estimation', label: 'Estimation', unit: 'Data Interpretation', blurb: 'Pick the closest value quickly, without exact working.' },
   { id: 'series', label: 'Number Series', unit: 'Maths reasoning', blurb: 'Spot the rule and find the next or missing number.' },
   { id: 'alphabet', label: 'Alphabet Grid', unit: 'Logical reasoning', blurb: 'Letter positions and opposites, for coding-decoding and letter series.' },
+  { id: 'coding', label: 'Coding & Letter Series', unit: 'Maths reasoning', blurb: 'Crack the code (TABLE → UBCMF) and find the next letter in a series.' },
+  { id: 'syllogism', label: 'Syllogism', unit: 'Logical reasoning', blurb: 'Two statements, one conclusion: does it follow? Checked against every possible Venn diagram.' },
+  { id: 'percent', label: '% Change', unit: 'Data Interpretation', blurb: 'Increase, decrease, "X is what % more than Y", successive changes.' },
+  { id: 'formulas', label: 'Quick Formulas', unit: 'Maths', blurb: 'Simple and compound interest, profit and loss, average speed, successive discounts.' },
+  { id: 'minidi', label: 'Mini DI', unit: 'Data Interpretation', blurb: 'A small table and one question at a time, like the real Q1–5.' },
 ];
 
 type Settings = { op: ArithOp; digits: Digits; table: TableKind; base: number | 'random'; alpha: AlphaKind };
@@ -28,6 +33,11 @@ function makeQuestion(drill: DrillId, s: Settings): DrillQuestion {
     case 'fractions': return fractions(r);
     case 'series': return series(r);
     case 'estimation': return estimation(r);
+    case 'coding': return coding(r);
+    case 'syllogism': return syllogism(r);
+    case 'percent': return percent(r);
+    case 'formulas': return formulas(r);
+    case 'minidi': return miniDI(r);
   }
 }
 
@@ -140,7 +150,7 @@ function SpeedMathBody() {
   return (
     <div className="space-y-4">
       {/* Drill tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
         {DRILLS.map((d) => (
           <button
             key={d.id}
@@ -242,8 +252,20 @@ function SpeedMathBody() {
           </div>
         ) : q && (
           <div className="text-center py-4">
-            <p className={`font-extrabold text-indigo-950 tracking-wide ${q.prompt.length > 22 ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'}`}>{q.prompt}</p>
-            {q.hint && <p className="text-xs text-slate-500 mt-2">{q.hint}</p>}
+            {q.table && (
+              <table className="mx-auto mb-4 text-sm border border-slate-300">
+                <thead className="bg-slate-50">
+                  <tr>{q.table.headers.map((h) => <th key={h} className="border border-slate-300 px-3 py-1.5 font-semibold">{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {q.table.rows.map((row, i) => (
+                    <tr key={i}>{row.map((c, j) => <td key={j} className="border border-slate-300 px-3 py-1.5">{c}</td>)}</tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <p className={`font-extrabold text-indigo-950 tracking-wide ${q.prompt.length > 50 ? 'text-lg sm:text-xl' : q.prompt.length > 22 ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'}`}>{q.prompt}</p>
+            {q.hint && <p className={`mt-2 ${drill === 'syllogism' ? 'text-base font-semibold text-slate-700' : 'text-xs text-slate-500'}`}>{q.hint}</p>}
 
             {q.input === 'choice' ? (
               <div className="grid grid-cols-2 gap-3 max-w-md mx-auto mt-6">
@@ -267,7 +289,7 @@ function SpeedMathBody() {
                   value={typed}
                   onChange={(e) => setTyped(e.target.value)}
                   inputMode={q.input === 'number' ? 'numeric' : 'text'}
-                  maxLength={q.input === 'text' ? 1 : 12}
+                  maxLength={q.input === 'text' ? Math.max(1, q.answer.length) : 12}
                   autoComplete="off"
                   disabled={!canAnswer}
                   aria-label="Your answer"
