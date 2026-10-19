@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getCatalog } from '@/lib/testApi';
 import { UNIT_OPTIONS } from '@/lib/normalize';
 import { formatPaperTitle } from '@/lib/testTitle';
+import { courseApi, type CourseChapter, type CourseSet } from '@/lib/courseApi';
 import { classesApi, taskHref, type ClassRole, type ClassTask, type TaskKind, type TaskResult } from '@/lib/classesApi';
 import type { Catalog } from '@/lib/types';
 
@@ -18,12 +19,14 @@ const DRILLS: [string, string][] = [
 const drillName = (d: string | null) => DRILLS.find(([id]) => id === d)?.[1] || d || '';
 
 function describe(t: ClassTask) {
+  if (t.kind === 'LESSON') return `Read lesson · Maths Course chapter ${t.chapter_no}`;
+  if (t.kind === 'CHAPTER') return `Chapter practice · ${t.question_count ? `${t.question_count} questions` : 'practice set'}`;
   if (t.kind === 'FULL') return `Full paper · ${formatPaperTitle(t.paper_id || '')}`;
   if (t.kind === 'UNIT') return `${t.question_count} questions · ${t.topic ? `${t.topic} (${t.unit})` : t.unit}`;
   return `Speed Math · ${drillName(t.drill)} · target ${'★'.repeat(t.target_stars || 1)}`;
 }
 const resultText = (t: ClassTask, r: TaskResult) =>
-  t.kind === 'SPEED' ? `${'★'.repeat(r.stars || 0)}${'☆'.repeat(3 - (r.stars || 0))} · ${r.points} pts` : `${r.score_percentage}% · ${r.correct}/${r.total}`;
+  t.kind === 'LESSON' ? 'Read ✓' : t.kind === 'SPEED' ? `${'★'.repeat(r.stars || 0)}${'☆'.repeat(3 - (r.stars || 0))} · ${r.points} pts` : `${r.score_percentage}% · ${r.correct}/${r.total}`;
 const taskDone = (t: ClassTask, r: TaskResult | null | undefined) => Boolean(r) && (t.kind !== 'SPEED' || (r!.stars || 0) >= (t.target_stars || 1));
 const fmtDate = (d: string | null) => (d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '');
 const today = () => new Date().toISOString().slice(0, 10);
@@ -329,6 +332,7 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
                           );
                         })}
                       </ul>
+                      {t.kind === 'CHAPTER' && <QuestionStats taskId={t.id} />}
                       <button onClick={() => classesApi.deleteTask(t.id).then(load)} className="mt-2 text-xs text-slate-400 hover:text-rose-600">Delete task</button>
                     </div>
                   )}
@@ -387,6 +391,9 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
 
 function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => void }) {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [course, setCourse] = useState<{ chapters: CourseChapter[]; sets: CourseSet[] } | null>(null);
+  const [chapter, setChapter] = useState(1);
+  const [setId, setSetId] = useState('');
   const [kind, setKind] = useState<TaskKind>('FULL');
   const [paper, setPaper] = useState('');
   const [unit, setUnit] = useState(UNIT_OPTIONS[0].value);
@@ -398,9 +405,16 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
   const [title, setTitle] = useState('');
   const [err, setErr] = useState('');
   useEffect(() => { getCatalog().then((c) => { setCatalog(c); setPaper(c.papers[0]?.paper_id || ''); }).catch(() => {}); }, []);
+  useEffect(() => { courseApi.catalog().then(setCourse).catch(() => {}); }, []);
+  const chapterSets = (course?.sets || []).filter((x) => x.chapter_no === chapter || (chapter === 0 && !x.chapter_no));
+  useEffect(() => { setSetId(chapterSets[0]?.id || ''); }, [chapter, course]); // eslint-disable-line react-hooks/exhaustive-deps
+  const chTitle = (no: number) => course?.chapters.find((c) => c.no === no)?.title || `Chapter ${no}`;
+  const setInfo = course?.sets.find((x) => x.id === setId);
 
   const topics = (catalog?.topics || []).filter((t) => t.unit === unit);
-  const autoTitle = kind === 'FULL' ? `Full paper: ${formatPaperTitle(paper)}` : kind === 'UNIT' ? `${count} Qs: ${topic || unit}` : `Speed Math: ${drillName(drill)} ${'★'.repeat(stars)}`;
+  const autoTitle = kind === 'FULL' ? `Full paper: ${formatPaperTitle(paper)}` : kind === 'UNIT' ? `${count} Qs: ${topic || unit}`
+    : kind === 'LESSON' ? `Read: Chapter ${chapter} ${chTitle(chapter)}` : kind === 'CHAPTER' ? (setInfo?.title || 'Chapter practice')
+    : `Speed Math: ${drillName(drill)} ${'★'.repeat(stars)}`;
   const sel = 'w-full border border-slate-300 rounded-lg p-2 text-sm bg-white';
 
   const save = async () => {
@@ -409,8 +423,10 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
       await classesApi.createTask(classId, {
         title: title.trim() || autoTitle, kind,
         paper_id: kind === 'FULL' ? paper : null, unit: kind === 'UNIT' ? unit : null, topic: kind === 'UNIT' ? topic || null : null,
-        question_count: kind === 'UNIT' ? count : null, drill: kind === 'SPEED' ? drill : null, target_stars: kind === 'SPEED' ? stars : null,
+        question_count: kind === 'UNIT' ? count : kind === 'CHAPTER' ? setInfo?.questions ?? null : null,
+        drill: kind === 'SPEED' ? drill : null, target_stars: kind === 'SPEED' ? stars : null,
         due_on: due || null,
+        chapter_no: kind === 'LESSON' || kind === 'CHAPTER' ? (chapter || null) : null, set_id: kind === 'CHAPTER' ? setId : null,
       });
       onCreated();
     } catch (e) { setErr((e as Error).message); }
@@ -419,7 +435,7 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
   return (
     <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 space-y-3">
       <div className="flex rounded-lg bg-white p-1 w-fit border border-indigo-200">
-        {([['FULL', '📄 Full paper'], ['UNIT', '🎯 Unit practice'], ['SPEED', '⚡ Speed Math']] as const).map(([v, l]) => (
+        {([['FULL', '📄 Full paper'], ['UNIT', '🎯 Unit practice'], ['LESSON', '📖 Read lesson'], ['CHAPTER', '📝 Chapter practice'], ['SPEED', '⚡ Speed Math']] as const).map(([v, l]) => (
           <button key={v} onClick={() => setKind(v)} className={`px-3 py-1.5 text-xs font-bold rounded-md ${kind === v ? 'bg-indigo-600 text-white' : 'text-slate-600'}`}>{l}</button>
         ))}
       </div>
@@ -449,6 +465,23 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
             </label>
           </>
         )}
+        {(kind === 'LESSON' || kind === 'CHAPTER') && (
+          <label className="text-xs font-semibold text-slate-600">Maths Course chapter
+            <select className={sel} value={chapter} onChange={(e) => setChapter(Number(e.target.value))}>
+              {(course?.chapters || []).map((c) => <option key={c.no} value={c.no}>Chapter {c.no}: {c.title}</option>)}
+              {kind === 'CHAPTER' && <option value={0}>Tests and mocks</option>}
+            </select>
+          </label>
+        )}
+        {kind === 'CHAPTER' && (
+          <label className="text-xs font-semibold text-slate-600">Practice set
+            <select className={sel} value={setId} onChange={(e) => setSetId(e.target.value)}>
+              {chapterSets.map((x) => <option key={x.id} value={x.id}>{x.title} ({x.questions} Qs, {x.minutes} min)</option>)}
+            </select>
+          </label>
+        )}
+        {kind === 'LESSON' && <p className="text-xs text-slate-500 sm:col-span-2">Your students can read this chapter&apos;s full lesson once you assign it.</p>}
+        {kind === 'UNIT' && <p className="text-xs text-slate-500 sm:col-span-2">The questions are picked once now, so every student in the class gets the same set in the same order.</p>}
         {kind === 'SPEED' && (
           <>
             <label className="text-xs font-semibold text-slate-600">Game
@@ -471,7 +504,34 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
         </label>
       </div>
       {err && <p className="text-xs text-rose-600">{err}</p>}
-      <button onClick={save} disabled={kind === 'FULL' && !paper} className="px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">Assign to class</button>
+      <button onClick={save} disabled={(kind === 'FULL' && !paper) || (kind === 'CHAPTER' && !setId)} className="px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">Assign to class</button>
+    </div>
+  );
+}
+
+// Teacher: which questions of a chapter-practice task most students got wrong.
+function QuestionStats({ taskId }: { taskId: string }) {
+  const [rows, setRows] = useState<Awaited<ReturnType<typeof courseApi.taskStats>> | null>(null);
+  useEffect(() => { courseApi.taskStats(taskId).then(setRows).catch(() => setRows([])); }, [taskId]);
+  if (!rows) return <p className="text-xs text-slate-400 mt-2">Loading question stats…</p>;
+  const any = rows.some((r) => r.answered > 0);
+  if (!any) return <p className="text-xs text-slate-400 mt-2">Question stats appear when students submit.</p>;
+  const sorted = [...rows].sort((a, b) => b.wrong / Math.max(1, b.answered) - a.wrong / Math.max(1, a.answered));
+  return (
+    <div className="mt-3">
+      <p className="text-xs font-bold text-slate-600 mb-1">Questions most got wrong</p>
+      <ul className="space-y-1">
+        {sorted.slice(0, 10).map((r) => {
+          const pct = r.answered ? Math.round((r.wrong / r.answered) * 100) : 0;
+          return (
+            <li key={r.position} className="flex items-center gap-2 text-xs">
+              <span className="w-8 font-bold text-slate-600">Q{r.position}</span>
+              <span className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><span className={`block h-full ${pct >= 50 ? 'bg-rose-500' : 'bg-amber-400'}`} style={{ width: `${pct}%` }} /></span>
+              <span className="w-24 text-right font-semibold text-slate-600">{pct}% wrong ({r.wrong}/{r.answered})</span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

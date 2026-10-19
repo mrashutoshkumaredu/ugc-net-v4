@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 // Wrappers for the class and task functions (supabase/migrations/20261019_08_classes_and_tasks.sql).
 
-export type TaskKind = 'FULL' | 'UNIT' | 'SPEED';
+export type TaskKind = 'FULL' | 'UNIT' | 'SPEED' | 'LESSON' | 'CHAPTER';
 export type TaskResult = {
   user_id?: string;
   score_percentage: number | null;
@@ -23,6 +23,8 @@ export type ClassTask = {
   drill: string | null;
   target_stars: number | null;
   due_on: string | null;
+  chapter_no: number | null;
+  set_id: string | null;
 };
 export type Person = { user_id: string; email: string; name: string };
 export type ClassRole = { teacher_status: 'pending' | 'approved' | 'rejected' | null; is_admin: boolean };
@@ -34,6 +36,7 @@ function friendly(error: { message?: string } | null, fallback: string) {
   if (m.includes('not_teacher')) return 'Only approved teachers can do this.';
   if (m.includes('not_admin')) return 'Only admins can do this.';
   if (m.includes('not_found')) return 'This could not be found.';
+  if (m.includes('no_questions')) return 'No questions are available for this selection.';
   if (m.toLowerCase().includes('failed to fetch')) return "Couldn't reach the server. Check your internet connection.";
   return m ? `${fallback} (${m.slice(0, 120)})` : fallback;
 }
@@ -64,6 +67,7 @@ export const classesApi = {
   createTask: (id: string, t: Omit<ClassTask, 'id'>) => call<string>('create_task', {
     p_class: id, p_title: t.title, p_kind: t.kind, p_paper_id: t.paper_id, p_unit: t.unit, p_topic: t.topic,
     p_count: t.question_count, p_drill: t.drill, p_target_stars: t.target_stars, p_due_on: t.due_on,
+    p_chapter: t.chapter_no, p_set: t.set_id,
   }, 'Could not create the task.'),
   deleteTask: (taskId: string) => call<void>('delete_task', { p_task: taskId }, 'Could not delete the task.'),
 
@@ -76,14 +80,11 @@ export const classesApi = {
   completeSpeedTask: (taskId: string, stars: number, points: number) => call<void>('complete_speed_task', { p_task: taskId, p_stars: stars, p_points: points }, 'Could not record the task.'),
 };
 
-// Link to start a task.
+// Link to start a task. Full papers and unit practice start the class's fixed question set.
 export function taskHref(t: ClassTask) {
-  if (t.kind === 'FULL') return `/quiz?mode=FULL&paperId=${encodeURIComponent(t.paper_id || '')}&task=${t.id}`;
-  if (t.kind === 'UNIT') {
-    const p = new URLSearchParams({ mode: 'UNIT', theme: t.unit || '', count: String(t.question_count || 10), task: t.id });
-    if (t.topic) p.set('topic', t.topic);
-    return `/quiz?${p.toString()}`;
-  }
+  if (t.kind === 'FULL' || t.kind === 'UNIT') return `/quiz?task=${t.id}`;
+  if (t.kind === 'LESSON') return `/course?ch=${t.chapter_no}&task=${t.id}`;
+  if (t.kind === 'CHAPTER') return `/course?set=${encodeURIComponent(t.set_id || '')}&task=${t.id}`;
   return `/speed-math?drill=${encodeURIComponent(t.drill || '')}&task=${t.id}`;
 }
 

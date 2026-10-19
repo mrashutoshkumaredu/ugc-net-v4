@@ -37,13 +37,17 @@ create table if not exists public.class_tasks (
   id uuid primary key default gen_random_uuid(),
   class_id uuid not null references public.classes(id) on delete cascade,
   title text not null,
-  kind text not null check (kind in ('FULL', 'UNIT', 'SPEED')),
+  kind text not null check (kind in ('FULL', 'UNIT', 'SPEED', 'LESSON', 'CHAPTER')),
   paper_id text,
   unit text,
   topic text,
   question_count integer,
   drill text,
   target_stars integer,
+  chapter_no integer,
+  set_id text,
+  -- Unit practice: the questions are picked once when the task is created, so the whole class gets the same set.
+  question_ids integer[],
   due_on date,
   created_at timestamptz not null default now()
 );
@@ -161,6 +165,7 @@ begin
     'tasks', (select coalesce(jsonb_agg(jsonb_build_object(
                  'id', t.id, 'title', t.title, 'kind', t.kind, 'paper_id', t.paper_id, 'unit', t.unit, 'topic', t.topic,
                  'question_count', t.question_count, 'drill', t.drill, 'target_stars', t.target_stars, 'due_on', t.due_on,
+                 'chapter_no', t.chapter_no, 'set_id', t.set_id,
                  'results', (select coalesce(jsonb_agg(jsonb_build_object('user_id', r.user_id, 'score_percentage', r.score_percentage,
                                  'correct', r.correct, 'total', r.total, 'stars', r.stars, 'points', r.points, 'completed_at', r.completed_at)), '[]'::jsonb)
                              from public.task_results r where r.task_id = t.id)
@@ -190,16 +195,46 @@ begin
 end $$;
 
 create or replace function public.create_task(p_class uuid, p_title text, p_kind text, p_paper_id text, p_unit text,
-  p_topic text, p_count integer, p_drill text, p_target_stars integer, p_due_on date) returns uuid
+  p_topic text, p_count integer, p_drill text, p_target_stars integer, p_due_on date, p_chapter integer, p_set text) returns uuid
 language plpgsql security definer set search_path to '' as $$
-declare v_id uuid;
+declare v_id uuid; v_ids integer[]; v_count integer := greatest(1, least(coalesce(p_count, 10), 1000));
 begin
   if not public._owns_class(p_class) then raise exception 'not_found'; end if;
-  insert into public.class_tasks(class_id, title, kind, paper_id, unit, topic, question_count, drill, target_stars, due_on)
+  if p_kind = 'UNIT' then
+    -- Same questions for every student: pick them now and keep them with the task.
+    v_ids := public._pick_grouped((select coalesce(array_agg(id), '{}') from public.questions
+               where unit = p_unit and not is_dropped and (nullif(p_topic, '') is null or topic = p_topic)), v_count);
+    if coalesce(array_length(v_ids, 1), 0) = 0 then raise exception 'no_questions'; end if;
+  end if;
+  insert into public.class_tasks(class_id, title, kind, paper_id, unit, topic, question_count, drill, target_stars, due_on, chapter_no, set_id, question_ids)
   values (p_class, coalesce(nullif(trim(p_title), ''), 'Task'), p_kind, p_paper_id, p_unit, nullif(p_topic, ''),
-          greatest(1, least(coalesce(p_count, 10), 1000)), p_drill, greatest(1, least(coalesce(p_target_stars, 2), 3)), p_due_on)
+          case when p_kind = 'UNIT' then coalesce(array_length(v_ids, 1), v_count) else v_count end, p_drill,
+          greatest(1, least(coalesce(p_target_stars, 2), 3)), p_due_on, p_chapter, p_set, v_ids)
   returning id into v_id;
   return v_id;
+end $$;
+
+-- Start a class test task. Unit practice uses the stored set, so every student sees the same questions in the same order.
+create or replace function public.start_task_test(p_task uuid) returns jsonb
+language plpgsql security definer set search_path to '' as $$
+declare v_t public.class_tasks; v_ids integer[]; v_session public.test_sessions;
+begin
+  if auth.uid() is null then raise exception 'login_required'; end if;
+  select t.* into v_t from public.class_tasks t join public.class_members m on m.class_id = t.class_id
+   where t.id = p_task and m.user_id = auth.uid() and t.kind in ('FULL', 'UNIT');
+  if not found then raise exception 'not_found'; end if;
+  if v_t.kind = 'FULL' then
+    select coalesce(array_agg(id order by question_number nulls last, id), '{}') into v_ids from public.questions where paper_id = v_t.paper_id;
+  else
+    v_ids := v_t.question_ids;
+  end if;
+  if coalesce(array_length(v_ids, 1), 0) = 0 then raise exception 'no_questions'; end if;
+  insert into public.test_sessions(user_id, mode, paper_id, unit, topic, label, question_ids, duration_seconds)
+  values (auth.uid(), v_t.kind, case when v_t.kind = 'FULL' then v_t.paper_id end, case when v_t.kind = 'UNIT' then v_t.unit end,
+          case when v_t.kind = 'UNIT' then v_t.topic end, v_t.title, v_ids,
+          case when v_t.kind = 'FULL' then 3600 else array_length(v_ids, 1) * 60 end)
+  returning * into v_session;
+  return public._session_json(v_session);
 end $$;
 
 create or replace function public.delete_task(p_task uuid) returns void
@@ -254,6 +289,7 @@ language sql stable security definer set search_path to '' as $$
     'tasks', (select coalesce(jsonb_agg(jsonb_build_object(
                 'id', t.id, 'class_name', c.name, 'title', t.title, 'kind', t.kind, 'paper_id', t.paper_id, 'unit', t.unit,
                 'topic', t.topic, 'question_count', t.question_count, 'drill', t.drill, 'target_stars', t.target_stars, 'due_on', t.due_on,
+                'chapter_no', t.chapter_no, 'set_id', t.set_id,
                 'result', (select jsonb_build_object('score_percentage', r.score_percentage, 'correct', r.correct, 'total', r.total,
                                   'stars', r.stars, 'points', r.points, 'completed_at', r.completed_at)
                            from public.task_results r where r.task_id = t.id and r.user_id = auth.uid())
@@ -298,7 +334,8 @@ begin
     '_is_teacher()', '_owns_class(uuid)', '_user_label(uuid)', 'my_class_role()', 'request_teacher()', 'admin_list_teachers()',
     'admin_set_teacher(uuid, boolean)', 'create_class(text)', 'delete_class(uuid)', 'teacher_classes()', 'class_detail(uuid)',
     'invite_students(uuid, text[])', 'remove_from_class(uuid, uuid, text)',
-    'create_task(uuid, text, text, text, text, text, integer, text, integer, date)', 'delete_task(uuid)', 'join_class(text)',
+    'create_task(uuid, text, text, text, text, text, integer, text, integer, date, integer, text)', 'start_task_test(uuid)',
+    'delete_task(uuid)', 'join_class(text)',
     'my_invites()', 'answer_invite(uuid, boolean)', 'leave_class(uuid)', 'my_classes_and_tasks()',
     'complete_test_task(uuid, integer)', 'complete_speed_task(uuid, integer, integer)']
   loop

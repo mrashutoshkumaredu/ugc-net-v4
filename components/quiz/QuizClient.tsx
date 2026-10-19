@@ -19,7 +19,7 @@ import { normalizeQuestion, getPaperDisplayName } from '@/lib/normalize';
 import { testTitle } from '@/lib/testTitle';
 import { useHindiImages } from '@/lib/hindiImages';
 import { preloadImages } from '@/components/quiz/HindiImage';
-import { startTest, resumeTest, submitTest } from '@/lib/testApi';
+import { startTest, startTaskTest, resumeTest, submitTest } from '@/lib/testApi';
 import { classesApi, rememberTaskForSession, taskForSession } from '@/lib/classesApi';
 import { clearProgress, loadProgress, saveProgress } from '@/lib/progress';
 import type { NormalizedQuestion, SubmitResult, TestSession } from '@/lib/types';
@@ -131,7 +131,8 @@ function QuizPageInner() {
         }
         const m = searchParams.get('mode');
         const mode = m === 'UNIT' || m === 'VAULT' || m === 'DAILY' ? m : 'FULL';
-        const s = await startTest(mode, {
+        const taskParam = searchParams.get('task');
+        const s = taskParam ? await startTaskTest(taskParam) : await startTest(mode, {
           paperId: searchParams.get('paperId') || undefined,
           unit: searchParams.get('theme') || undefined,
           topic: searchParams.get('topic') || undefined,

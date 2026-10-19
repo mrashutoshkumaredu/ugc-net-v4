@@ -15,6 +15,7 @@ const NAV = [
   { href: '/vault', label: 'Revision Vault' },
   { href: '/performance', label: 'My Performance' },
   { href: '/leaderboard', label: 'Leaderboard' },
+  { href: '/course', label: 'Maths Course' },
   { href: '/speed-math', label: 'Speed Math' },
   { href: '/classes', label: 'Classes' },
   { href: '/trends', label: 'PYQ Trends' },
