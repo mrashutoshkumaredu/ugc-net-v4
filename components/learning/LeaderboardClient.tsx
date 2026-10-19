@@ -66,7 +66,7 @@ function LeaderboardBody() {
       {rows && rows.length === 0 && (
         <p className="text-sm text-slate-500 bg-white border border-slate-200 rounded-2xl p-6 text-center">
           {overall ? 'No one has finished 3 full papers yet.' : 'No first attempts on this paper yet.'}{' '}
-          <Link href="/" className="font-bold text-indigo-700 hover:underline">Take a full paper</Link>
+          <Link href="/practice" className="font-bold text-indigo-700 hover:underline">Take a full paper</Link>
         </p>
       )}
       {rows && rows.length > 0 && (

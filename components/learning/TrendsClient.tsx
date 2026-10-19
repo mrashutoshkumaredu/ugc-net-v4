@@ -76,7 +76,7 @@ function TrendsBody() {
       </section>
 
       <p className="text-xs text-slate-500">
-        Want to practise a weak topic? <Link href="/" className="font-bold text-indigo-700 hover:underline">Start unit-wise practice</Link>.
+        Want to practise a weak topic? <Link href="/practice" className="font-bold text-indigo-700 hover:underline">Start unit-wise practice</Link>.
       </p>
     </div>
   );
