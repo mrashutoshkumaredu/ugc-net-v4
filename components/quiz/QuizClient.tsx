@@ -19,7 +19,8 @@ import { normalizeQuestion, getPaperDisplayName } from '@/lib/normalize';
 import { testTitle } from '@/lib/testTitle';
 import { useHindiImages } from '@/lib/hindiImages';
 import { preloadImages } from '@/components/quiz/HindiImage';
-import { startTest, resumeTest, submitTest } from '@/lib/testApi';
+import { startTest, startTaskTest, resumeTest, submitTest } from '@/lib/testApi';
+import { classesApi, rememberTaskForSession, taskForSession } from '@/lib/classesApi';
 import { clearProgress, loadProgress, saveProgress } from '@/lib/progress';
 import type { NormalizedQuestion, SubmitResult, TestSession } from '@/lib/types';
 
@@ -130,13 +131,16 @@ function QuizPageInner() {
         }
         const m = searchParams.get('mode');
         const mode = m === 'UNIT' || m === 'VAULT' || m === 'DAILY' ? m : 'FULL';
-        const s = await startTest(mode, {
+        const taskParam = searchParams.get('task');
+        const s = taskParam ? await startTaskTest(taskParam) : await startTest(mode, {
           paperId: searchParams.get('paperId') || undefined,
           unit: searchParams.get('theme') || undefined,
           topic: searchParams.get('topic') || undefined,
           folderId: searchParams.get('folder') || undefined,
           count: Number(searchParams.get('count') || '10'),
         });
+        const taskId = searchParams.get('task');
+        if (taskId) rememberTaskForSession(s.session_id, taskId);
         // Put the session id in the address so a refresh resumes this test.
         router.replace(`/quiz?session=${s.session_id}`);
         applySession(s);
@@ -234,6 +238,9 @@ function QuizPageInner() {
       }
       const result = await submitTest(session.session_id, answers, meta);
       clearProgress(session.session_id);
+      // Test started from a class task: record it for the teacher.
+      const taskId = taskForSession(session.session_id);
+      if (taskId && result.submissionId) classesApi.completeTestTask(taskId, result.submissionId).catch(() => {});
       setSubmitResult(result);
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
       setPhase('results');

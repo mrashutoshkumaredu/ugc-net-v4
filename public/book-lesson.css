@@ -1,0 +1,94 @@
+/* Book lesson styles (generated from the book source), scoped to .book-lesson */
+.book-lesson * { box-sizing: border-box; }
+.book-lesson { font-family: 'Caladea','Cambria',serif; font-size: 10.4pt; line-height: 1.45; color: #1B2A2F; margin: 0; }
+.book-lesson h1, .book-lesson h2, .book-lesson h3, .book-lesson .lev, .book-lesson .slev { font-family: 'Carlito','Calibri',sans-serif; color: #17423B; }
+.book-lesson .opener { background: #17423B; color: #fff; padding: 20px 20px 16px; border-radius: 6px; margin-bottom: 12px; }
+.book-lesson .opener .k { font-family: 'Carlito',sans-serif; letter-spacing: 2px; font-size: 8.5pt; color: #F2A541; text-transform: uppercase; }
+.book-lesson .opener h1 { color: #fff; font-size: 30pt; margin: 4px 0 2px; }
+.book-lesson .opener .sub { font-family: 'Carlito',sans-serif; font-size: 10pt; color: #FBE7C6; }
+.book-lesson .series { font-family: 'Carlito',sans-serif; font-size: 8.5pt; color: #FBE7C6; margin-top: 6px; }
+.book-lesson h2 { font-size: 15pt; margin: 14px 0 6px;  border-bottom: 2px solid #F2A541; padding-bottom: 2px; }
+.book-lesson h2 .n { color: #F2A541; margin-right: 6px; }
+.book-lesson p { margin: 4px 0 6px; }
+.book-lesson ul, .book-lesson ol { margin: 4px 0 6px; padding-left: 18px; }
+.book-lesson li { margin: 2px 0; }
+.book-lesson .page {  }
+.book-lesson .fig { margin: 8px 0 6px;  }
+.book-lesson .cap { font-family: 'Carlito',sans-serif; font-size: 8.5pt; color: #5b6b6f; text-align: center; margin-top: -2px; }
+.book-lesson .rule { background: #17423B; color: #fff; border-radius: 6px; padding: 7px 12px; margin: 8px 0; text-align: center; font-family: 'Carlito',sans-serif; font-size: 11.5pt;  }
+.book-lesson .rule small { display: block; color: #FBE7C6; font-size: 9pt; }
+.book-lesson .think { background: #EEF4F2; border-left: 4px solid #17423B; border-radius: 4px; padding: 6px 10px; margin: 8px 0;  }
+.book-lesson .trap { background: #FBEAE4; border-left: 4px solid #D95D39; border-radius: 4px; padding: 6px 10px; margin: 8px 0;  }
+.book-lesson .trap b { color: #D95D39; font-family: 'Carlito',sans-serif; }
+.book-lesson .think b { color: #17423B; font-family: 'Carlito',sans-serif; }
+.book-lesson .ex { border: 1px solid #CFDCD8; border-radius: 6px; padding: 7px 11px; margin: 8px 0;  }
+.book-lesson .ex .t { font-family: 'Carlito',sans-serif; font-weight: 700; color: #17423B; }
+.book-lesson .yt { border: 2px dashed #F2A541; border-radius: 8px; padding: 6px 12px 6px; margin: 10px 0;  }
+.book-lesson .yth { font-family: 'Carlito',sans-serif; font-weight: 700; color: #17423B; font-size: 11pt; }
+.book-lesson .yt ol { margin: 3px 0; }
+.book-lesson .yta { font-size: 8.5pt; color: #6b7c80; border-top: 1px dotted #ccc; padding-top: 3px; margin-top: 3px; }
+.book-lesson .goals { background: #EEF4F2; border-radius: 6px; padding: 8px 12px; margin: 10px 0; }
+.book-lesson .goals h4, .book-lesson .card h4 { font-family: 'Carlito',sans-serif; margin: 0 0 4px; color: #17423B; text-transform: uppercase; letter-spacing: 1px; font-size: 10pt; }
+.book-lesson .steps3 { display: flex; gap: 6px; margin: 8px 0; }
+.book-lesson .steps3 div { flex: 1; background: #FBE7C6; border-radius: 6px; padding: 6px 8px; font-size: 9.6pt; }
+.book-lesson .steps3 b { display: block; font-family: 'Carlito',sans-serif; color: #17423B; font-size: 10.5pt; }
+.book-lesson .card { border: 2px solid #17423B; border-radius: 8px; padding: 10px 13px; margin: 10px 0;  }
+.book-lesson .card h4 { background: #17423B; color: #fff; margin: -10px -13px 8px; padding: 6px 13px; border-radius: 5px 5px 0 0; font-size: 10.5pt; }
+.book-lesson table { border-collapse: collapse; width: 100%; font-size: 9.6pt; }
+.book-lesson td, .book-lesson th { border: 1px solid #CFDCD8; padding: 4px 6px; text-align: left; vertical-align: top; }
+.book-lesson .lev {  background: #FBE7C6; font-weight: 700; padding: 4px 10px; border-radius: 4px; margin: 12px 0 6px; font-size: 10.5pt; }
+.book-lesson .q { display: flex; gap: 8px; margin: 7px 0 9px;  }
+.book-lesson .qn { flex: 0 0 22px; height: 22px; border-radius: 50%; background: #17423B; color: #fff; font-family: 'Carlito',sans-serif; font-weight: 700; font-size: 9.5pt; text-align: center; line-height: 22px; }
+.book-lesson .qb { flex: 1; }
+.book-lesson .pyq { display: inline-block; background: #F2A541; color: #17423B; font-family: 'Carlito',sans-serif; font-weight: 700; font-size: 8pt; padding: 1px 6px; border-radius: 3px; margin-bottom: 2px; }
+.book-lesson .opts { list-style: none; padding-left: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; margin: 3px 0 0; }
+.book-lesson .slev {  font-weight: 700; margin: 10px 0 4px; font-size: 10.5pt; border-bottom: 1px solid #CFDCD8; }
+.book-lesson .s { margin: 5px 0 7px;  font-size: 9.8pt; }
+.book-lesson .s ul { margin: 2px 0; }
+.book-lesson .note { font-size: 9pt; color: #555; font-style: italic; }
+.book-lesson .stk { border: 1px solid #CFDCD8; border-radius: 8px; padding: 7px 11px; margin: 8px 0 10px;  }
+.book-lesson .stkh { font-family: 'Carlito',sans-serif; font-weight: 700; color: #fff; background: #17423B; display: inline-block; padding: 1px 9px; border-radius: 4px; margin-bottom: 5px; }
+.book-lesson .dec td { font-size: 9.4pt; border: none; border-bottom: 1px dotted #CFDCD8; padding: 2px 4px; }
+.book-lesson .dec td:first-child { width: 33%; font-family: 'Carlito',sans-serif; font-weight: 700; color: #17423B; white-space: nowrap; }
+.book-lesson .sw { background: #EEF4F2; border-radius: 5px; padding: 4px 9px; margin: 5px 0; font-size: 9.6pt; }
+.book-lesson .sw b, .book-lesson .hint b { font-family: 'Carlito',sans-serif; color: #17423B; }
+.book-lesson .sw ul { margin: 2px 0; }
+.book-lesson .hint { background: #FBE7C6; border-radius: 5px; padding: 3px 9px; margin: 4px 0; font-size: 9.6pt; }
+.book-lesson .hint b { margin-right: 4px; }
+.book-lesson .score { border: 1px dashed #17423B; border-radius: 6px; padding: 6px 10px; margin-top: 12px; font-family: 'Carlito',sans-serif; font-size: 9.5pt; }
+.book-lesson .opts.wide { grid-template-columns: 1fr; }
+.book-lesson .fr { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: 82%; line-height: 1.12; margin: 0 2px; }
+.book-lesson .fr > span:first-child { border-bottom: 1px solid currentColor; padding: 0 2px; }
+.book-lesson .fr > span:last-child { padding: 0 2px; }
+.book-lesson table.data { width: auto; margin: 6px auto; }
+.book-lesson h2 {  }
+.book-lesson .steps3 {  }
+.book-lesson table.facts td { font-size: 9.4pt; padding: 2px 5px; text-align: center; }
+.book-lesson .qb table { width: auto; margin: 4px 0; font-size: 9.2pt; }
+.book-lesson .sols { column-count: 2; column-gap: 14px; column-rule: 1px solid #E3EBE8; font-size: 9pt; }
+.book-lesson .sols .s { font-size: 9pt; margin: 3px 0 6px; }
+.book-lesson .sols .s ul { padding-left: 13px; }
+.book-lesson .sols .slev {  margin-top: 4px; }
+.book-lesson .chat { margin: 8px 0;  }
+.book-lesson .cb { display: flex; gap: 7px; align-items: flex-start; margin: 4px 0; }
+.book-lesson .cb.right { flex-direction: row-reverse; }
+.book-lesson .av { flex: 0 0 22px; height: 22px; border-radius: 50%; font-family: 'Carlito',sans-serif; font-weight: 700; font-size: 10pt; text-align: center; line-height: 22px; }
+.book-lesson .cb.right .av { background: var(--pc) !important; }
+.book-lesson .bub { background: #F4F6F5; border: 1px solid #DCE5E2; border-radius: 10px; padding: 4px 9px; font-size: 9.8pt; max-width: 88%; }
+.book-lesson .cb.right .bub { background: #FFF8EC; border-color: #F5D9A8; }
+.book-lesson .bub b { font-family: 'Carlito',sans-serif; }
+.book-lesson .chal { border: 2px solid var(--pc); border-radius: 8px; padding: 7px 12px; margin: 8px 0 10px; background: #fff;  }
+.book-lesson .chh { font-family: 'Carlito',sans-serif; font-weight: 700; color: var(--pc); font-size: 11pt; }
+.book-lesson .chw { font-size: 8.5pt; color: #6b7c80; margin-top: 3px; }
+.book-lesson .rev { background: #FFF8EC; border-left: 4px solid #F2A541; border-radius: 4px; padding: 5px 10px; margin: 8px 0;  }
+.book-lesson .rev b { font-family: 'Carlito',sans-serif; color: var(--pc); }
+.book-lesson /* part colours */
+body { --pc: #17423B; }
+.book-lesson .book-lesson .pB { --pc: #5B3F8C; }
+.book-lesson .book-lesson .pC { --pc: #1F5C99; }
+.book-lesson .book-lesson .pD { --pc: #8C3B2E; }
+.book-lesson .opener, .book-lesson .rule, .book-lesson .qn, .book-lesson .stkh, .book-lesson .card h4 { background: var(--pc) !important; }
+.book-lesson h1, .book-lesson h2, .book-lesson h3, .book-lesson .lev, .book-lesson .slev, .book-lesson .ex .t, .book-lesson .yth, .book-lesson .goals h4, .book-lesson .think b { color: var(--pc); }
+.book-lesson .opener h1 { color: #fff; }
+.book-lesson .card { border-color: var(--pc) !important; }
+.book-lesson .think { border-left-color: var(--pc) !important; }

@@ -7,6 +7,7 @@ import {
   type AlphaKind, type ArithOp, type Digits, type DrillId, type DrillQuestion, type TableKind,
 } from '@/lib/drills';
 import { isMuted, setMuted, sounds } from '@/lib/sound';
+import { classesApi } from '@/lib/classesApi';
 
 // ---------------------------------------------------------------------------
 // Catalogue: three "worlds", each with its own colour.
@@ -106,9 +107,20 @@ function SpeedMathBody() {
   }, []);
   useEffect(() => { loadRecords(); }, [loadRecords]);
 
+  // Opened from a class task: /speed-math?drill=fractions&task=<id>
+  const [taskId, setTaskId] = useState<string | null>(null);
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const d = p.get('drill') as DrillId | null;
+    if (d && ALL.some((x) => x.id === d)) {
+      setActive(d);
+      setTaskId(p.get('task'));
+    }
+  }, []);
+
   if (active) {
     const d = ALL.find((x) => x.id === active)!;
-    return <Arena drill={d} world={d.world} onExit={() => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); setActive(null); loadRecords(); }} />;
+    return <Arena drill={d} world={d.world} taskId={taskId} onExit={() => { setTaskId(null); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); setActive(null); loadRecords(); }} />;
   }
 
   const totalStars = ALL.reduce((s, d) => s + (records[d.id]?.stars || 0), 0);
@@ -158,7 +170,7 @@ function SpeedMathBody() {
 // ---------------------------------------------------------------------------
 type Phase = 'ready' | 'playing' | 'over';
 
-function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: () => void }) {
+function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; taskId: string | null; onExit: () => void }) {
   const [s, setS] = useState<Settings>(DEFAULT_SETTINGS);
   const [mode, setMode] = useState<'game' | 'classic'>('game');
   const [seconds, setSeconds] = useState(60);
@@ -214,13 +226,14 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
       writeRecord(drill.id, { points: Math.max(prev.points, st.points), stars: Math.max(prev.stars, stars) });
       setResult({ stars, record, best: Math.max(prev.points, st.points) });
       sounds.end(record);
+      if (taskId) classesApi.completeSpeedTask(taskId, stars, st.points).catch(() => {});
       setPhase('over');
       return;
     }
     if (timeLeft <= 5) sounds.tick();
     const t = window.setTimeout(() => setTimeLeft((v) => v - 1), 1000);
     return () => window.clearTimeout(t);
-  }, [phase, mode, timeLeft, st.correct, st.points, seconds, drill.id, drill.pace]);
+  }, [phase, mode, timeLeft, st.correct, st.points, seconds, drill.id, drill.pace, taskId]);
 
   const canAnswer = phase === 'playing' && q && !fb;
 
@@ -346,6 +359,7 @@ function Arena({ drill, world, onExit }: { drill: Drill; world: World; onExit: (
             <button onClick={start} className="px-10 py-4 rounded-2xl text-xl font-black text-slate-900 bg-gradient-to-r from-amber-300 to-amber-500 shadow-[0_0_30px_rgba(251,191,36,0.5)] hover:scale-105 active:scale-95 transition-transform">
               ▶ {mode === 'game' ? 'Start round' : 'Start practice'}
             </button>
+            {taskId && <p className="text-sm font-bold text-amber-200">📋 Class task: play a timed round. Your best round is sent to your teacher.</p>}
             {mode === 'game' && <p className="text-xs text-white/60">Three stars at about {drill.pace} correct answers a minute.</p>}
           </div>
         )}

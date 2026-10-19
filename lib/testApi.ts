@@ -46,6 +46,13 @@ export async function startTest(
   return data as TestSession;
 }
 
+// Start a class task test (full paper or unit practice with the class's fixed question set).
+export async function startTaskTest(taskId: string): Promise<TestSession> {
+  const { data, error } = await supabase.rpc('start_task_test', { p_task: taskId });
+  if (error) throw new Error(friendly(error, 'Could not start the task.'));
+  return data as TestSession;
+}
+
 export async function resumeTest(sessionId: string): Promise<TestSession | null> {
   const { data, error } = await supabase.rpc('resume_test', { p_session_id: sessionId });
   if (error) throw new Error(friendly(error, 'Could not load your test.'));
