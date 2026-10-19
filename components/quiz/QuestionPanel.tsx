@@ -175,6 +175,14 @@ export default function QuestionPanel({
                 : 'This question was dropped by NTA in the official answer key.'}
             </p>
           )}
+          {language === 'HI' && hasHindiText && question.isTranslatedHi && (
+            <p
+              className="mb-3 text-xs font-semibold text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2.5"
+              title="इस प्रश्न का हिंदी संस्करण मूल प्रश्न पत्र में नहीं था। इसे सत्यापित अंग्रेज़ी संस्करण से अनुवादित किया गया है। (The official paper had no Hindi for this question. It was translated from the checked English version.)"
+            >
+              ⚠️ हमारे द्वारा अनूदित — मूल प्रश्न पत्र में हिंदी उपलब्ध नहीं थी। (Translated by us — Hindi was missing in the original question paper.)
+            </p>
+          )}
           {showHindiImage ? (
             <HindiImage key={hindiImage} src={hindiImage!} alt={`प्रश्न ${index + 1} (हिंदी)`} textSize={textSize} />
           ) : (

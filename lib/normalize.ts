@@ -24,6 +24,7 @@ export function normalizeQuestion(q: PublicQuestion): NormalizedQuestion {
     layoutTextHi: blankToNull(q.layout_text_hi),
     options: [cleanNewlines(q.option_a), cleanNewlines(q.option_b), cleanNewlines(q.option_c), cleanNewlines(q.option_d)],
     optionsHi,
+    isTranslatedHi: Boolean(q.is_translated_hi),
   };
 }
 

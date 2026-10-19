@@ -19,6 +19,8 @@ export type Question = {
   option_b_hi: string | null;
   option_c_hi: string | null;
   option_d_hi: string | null;
+  // True when the Hindi text was translated by us because the official paper had no Hindi for it.
+  is_translated_hi?: boolean;
   correct_option: number;
   ai_hint: string | null;
   question_number?: number | null;
@@ -44,6 +46,7 @@ export type NormalizedQuestion = {
   layoutTextHi: string | null;
   options: string[];
   optionsHi: string[] | null;
+  isTranslatedHi: boolean;
 };
 
 export type ExamMode = 'FULL' | 'UNIT' | 'VAULT' | 'DAILY';

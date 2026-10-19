@@ -21,7 +21,7 @@ export default function InstructionModal({
           <p>• <strong>Allocated Duration:</strong> <span className="font-bold text-indigo-900">{durationMinutes} Minutes</span></p>
           <p>• <strong>Auto-Submission:</strong> The master timer counts down at the top header. When it hits zero, your test will automatically submit.</p>
           <p>• <strong>Per-Question Timer:</strong> Displays real-time duration spent on each question to assist time management.</p>
-          <p>• <strong>Scoring:</strong> Each correct answer awards <strong>+2 marks</strong>. There is <strong>no negative marking</strong>. A question dropped by NTA gives 2 marks to everyone.</p>
+          <p>• <strong>Scoring:</strong> Each correct answer awards <strong>+2 marks</strong>. There is <strong>no negative marking</strong>. A question dropped by NTA has been corrected by us and has one right answer, marked like any other question.</p>
           <p>• <strong>If the page closes:</strong> Your answers are saved on this device. Open the site again and press <strong>Resume test</strong>. The timer keeps running while you are away, as in the real exam.</p>
         </div>
         <div className="flex gap-3">
