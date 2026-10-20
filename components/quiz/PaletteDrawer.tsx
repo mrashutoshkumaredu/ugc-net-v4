@@ -81,7 +81,7 @@ export default function PaletteDrawer({
 
       {showResults ? (
         <div className="p-3 border-b border-slate-100 shrink-0 bg-slate-50 space-y-2">
-          <div className="grid grid-cols-2 gap-2 text-[10px] sm:text-xs">
+          <div className="grid grid-cols-2 gap-2 text-[11px] sm:text-xs">
             <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-emerald-500 rounded-sm"></span> Correct</div>
             <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-rose-500 rounded-sm"></span> Wrong</div>
             <div className="flex items-center gap-1.5"><span className="w-3 h-3 bg-white border border-slate-300 rounded-sm"></span> Skipped</div>
@@ -103,7 +103,7 @@ export default function PaletteDrawer({
           )}
         </div>
       ) : (
-        <ul className="p-3 border-b border-slate-100 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px] sm:text-[11px] shrink-0 bg-slate-50">
+        <ul className="p-3 border-b border-slate-100 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[11px] shrink-0 bg-slate-50">
           {(Object.keys(NTA_STYLE) as NtaStatus[]).map((s) => (
             <li key={s} className={`flex items-center gap-1.5 ${s === 'answeredMarked' ? 'col-span-2' : ''}`}>
               <span className={`relative w-6 h-6 shrink-0 flex items-center justify-center text-[10px] font-bold ${NTA_STYLE[s].cls}`}>
