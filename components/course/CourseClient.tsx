@@ -81,14 +81,14 @@ function CourseBody() {
         return (
           <section key={part}>
             <h2 className="text-lg font-black text-indigo-950 mb-3">{st.icon} {part.replace(/^Part [A-D] - /, '')}</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {data.chapters.filter((c) => c.part === part).map((c) => {
                 const cs = data.sets.filter((s) => s.chapter_no === c.no);
                 const done = cs.filter((s) => s.best !== null).length;
                 const pct = cs.length ? Math.round((done / cs.length) * 100) : 0;
                 return (
                   <button key={c.no} onClick={() => go({ kind: 'chapter', no: c.no })}
-                    className="text-left bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md hover:-translate-y-0.5 transition flex gap-3 items-center">
+                    className="min-w-0 text-left bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md hover:-translate-y-0.5 transition flex gap-3 items-center">
                     <span className={`shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${st.gradient} text-white font-black text-lg flex items-center justify-center`}>{c.no}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block font-bold text-slate-900 leading-tight">{c.title}</span>
@@ -108,7 +108,7 @@ function CourseBody() {
 
       <section>
         <h2 className="text-lg font-black text-indigo-950 mb-3">🏁 Tests and mocks</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {tests.filter((s) => s.kind !== 'diagnostic').map((s) => (
             <button key={s.id} onClick={() => go({ kind: 'set', id: s.id })} className="text-left bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition">
               <span className="block font-bold text-slate-900">{s.title}</span>
@@ -182,7 +182,7 @@ function Chapter({ ch, sets, taskId, onBack, onOpenSet }: { ch: CourseChapter; s
           </div>
         )
       ) : (
-        <div className="grid sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {sets.map((s) => (
             <button key={s.id} onClick={() => onOpenSet(s.id)} className="text-left bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition flex justify-between gap-3 items-center">
               <span>
@@ -293,7 +293,7 @@ function Player({ setId, taskId, onBack }: { setId: string; taskId: string | nul
       </div>
       {taskId && <p className="text-xs font-bold text-amber-700">📋 Class task: your score is sent to your teacher when you submit.</p>}
 
-      <div className="grid lg:grid-cols-[1fr_220px] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6">
           <div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
             <span className="font-black text-indigo-950 text-base">Q{i + 1} of {qs.length}</span>
