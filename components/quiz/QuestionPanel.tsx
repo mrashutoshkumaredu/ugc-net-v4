@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { formatTime } from '@/lib/scoring';
 import { getPaperDisplayName } from '@/lib/normalize';
@@ -96,6 +97,9 @@ export default function QuestionPanel({
   // Typed Hindi text wins; otherwise show the original NTA picture of the Hindi question.
   const showHindiImage = language === 'HI' && !hasHindiText && Boolean(hindiImage);
   const activeText = language === 'HI' && question.questionTextHi ? question.questionTextHi : question.questionText;
+  // On phones the text size and full screen buttons live in a small "More" menu,
+  // so the toolbar fits on one row without buttons sitting on top of each other.
+  const [moreOpen, setMoreOpen] = useState(false);
   const activeOptions = showHindiImage
     ? question.options.map((_, i) => `विकल्प ${i + 1}`)
     : language === 'HI' && question.optionsHi ? question.optionsHi : question.options;
@@ -104,9 +108,9 @@ export default function QuestionPanel({
     <div className="flex-1 flex flex-col h-full bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden relative">
       <div className="bg-indigo-50 p-2 sm:p-3 border-b border-indigo-100 flex justify-between items-center z-10 shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <span className="text-base sm:text-lg font-bold text-indigo-900">Q {index + 1}</span>
+          <span className="text-base sm:text-lg font-bold text-indigo-900 whitespace-nowrap">Q {index + 1}</span>
           {!isSubmitted && (
-            <div className="bg-indigo-100 border border-indigo-300 text-indigo-900 px-2 py-0.5 rounded text-xs font-mono font-bold flex items-center gap-1" title="Time on this question">
+            <div className="bg-indigo-100 border border-indigo-300 text-indigo-900 px-2 py-0.5 rounded text-xs font-mono font-bold flex items-center gap-1 shrink-0" title="Time on this question">
               <span aria-hidden>⏱️</span>
               <span>{formatTime(timeSpentSeconds)}</span>
             </div>
@@ -114,18 +118,18 @@ export default function QuestionPanel({
           <span className="hidden sm:inline-block text-[10px] sm:text-xs bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-md border border-indigo-200 truncate max-w-[180px]">
             {question.unit}
           </span>
-          <button onClick={onOpenReport} className="text-[11px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200 font-medium shrink-0" title="Report an issue with this question">
+          <button onClick={onOpenReport} className="text-[11px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200 font-medium shrink-0 whitespace-nowrap" title="Report an issue with this question">
             🚩 Flag
           </button>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="relative flex items-center gap-1.5 sm:gap-3 shrink-0">
           {hasHindi && (
-            <button onClick={onToggleLanguage} className="bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-extrabold px-2.5 py-1 rounded-md border border-amber-500 shadow-sm transition" title="Switch language">
+            <button onClick={onToggleLanguage} className="bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-extrabold px-2 sm:px-2.5 py-1 rounded-md border border-amber-500 shadow-sm transition whitespace-nowrap" title="Switch language">
               {language === 'EN' ? 'E / अ' : 'अ / E'}
             </button>
           )}
-          <div className="flex rounded-md border border-indigo-200 bg-white overflow-hidden" role="group" aria-label="Text size">
+          <div className="hidden sm:flex rounded-md border border-indigo-200 bg-white overflow-hidden" role="group" aria-label="Text size">
             {TEXT_SIZES.map((t) => (
               <button
                 key={t.value}
@@ -143,10 +147,51 @@ export default function QuestionPanel({
               onClick={onToggleFullscreen}
               title={isFullscreen ? 'Exit full screen' : 'Full screen'}
               aria-label={isFullscreen ? 'Exit full screen' : 'Full screen'}
-              className="bg-white border border-indigo-200 text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded-md text-sm font-bold leading-none"
+              className="hidden sm:block bg-white border border-indigo-200 text-indigo-800 hover:bg-indigo-50 px-2 py-1 rounded-md text-sm font-bold leading-none"
             >
               {isFullscreen ? '⤡' : '⤢'}
             </button>
+          )}
+          {/* Phones: text size and full screen in a small menu */}
+          <button
+            onClick={() => setMoreOpen((o) => !o)}
+            className="sm:hidden bg-white border border-indigo-200 text-indigo-800 px-2 py-1 rounded-md text-sm font-black leading-none"
+            aria-label="More options: text size and full screen"
+            aria-haspopup="true"
+            aria-expanded={moreOpen}
+          >
+            ⋯
+          </button>
+          {moreOpen && (
+            <>
+              <button className="sm:hidden fixed inset-0 z-20 cursor-default" aria-label="Close menu" onClick={() => setMoreOpen(false)} />
+              <div className="sm:hidden absolute right-0 top-full mt-2 z-30 w-52 bg-white rounded-xl border border-slate-200 shadow-lg p-3 space-y-3">
+                <div>
+                  <p className="text-[11px] font-semibold text-slate-500 mb-1.5">Text size</p>
+                  <div className="flex rounded-md border border-indigo-200 overflow-hidden" role="group" aria-label="Text size">
+                    {TEXT_SIZES.map((t) => (
+                      <button
+                        key={t.value}
+                        onClick={() => onTextSize(t.value)}
+                        title={t.title}
+                        aria-pressed={textSize === t.value}
+                        className={`flex-1 py-1.5 text-xs font-bold ${textSize === t.value ? 'bg-indigo-600 text-white' : 'text-indigo-800'}`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {canFullscreen && (
+                  <button
+                    onClick={() => { onToggleFullscreen(); setMoreOpen(false); }}
+                    className="w-full text-left text-xs font-semibold text-indigo-800 border border-indigo-200 rounded-md px-2.5 py-2"
+                  >
+                    {isFullscreen ? '⤡ Exit full screen' : '⤢ Full screen'}
+                  </button>
+                )}
+              </div>
+            </>
           )}
           <button
             onClick={onTogglePalette}
