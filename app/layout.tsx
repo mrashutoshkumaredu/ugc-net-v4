@@ -19,6 +19,8 @@ export const metadata: Metadata = {
     locale: "en_IN",
   },
   twitter: { card: "summary_large_image", title: SITE_NAME, description: SITE_DESCRIPTION },
+  // Proves to Google Search Console that this site is ours. Public by design.
+  verification: { google: "gJyLNfy3JhNd0G3fQf3D3IzaoXEKcfc3NATIpqwlAts" },
   appleWebApp: { capable: true, title: "NET Paper 1", statusBarStyle: "default" },
   icons: { icon: "/icon-192.png", apple: "/apple-touch-icon.png" },
 };
