@@ -114,7 +114,7 @@ export default function QuestionPanel({
           <span className="hidden sm:inline-block text-[10px] sm:text-xs bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-md border border-indigo-200 truncate max-w-[180px]">
             {question.unit}
           </span>
-          <button onClick={onOpenReport} className="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200 font-medium shrink-0" title="Report an issue with this question">
+          <button onClick={onOpenReport} className="text-[11px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200 font-medium shrink-0" title="Report an issue with this question">
             🚩 Flag
           </button>
         </div>
