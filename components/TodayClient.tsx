@@ -99,7 +99,7 @@ export default function TodayClient() {
           {user && progress && (
             <Card tone="emerald" icon={progress.daily_done ? '✅' : '🎯'} title={progress.daily_done ? 'Daily Practice done. Well done!' : 'Daily Practice · 10 questions'}
               text={progress.revisions_due > 0 ? `${progress.revisions_due} question${progress.revisions_due > 1 ? 's' : ''} you got wrong ${progress.revisions_due > 1 ? 'are' : 'is'} due for revision, plus new ones from your weakest units.` : 'New questions from your weakest units. Wrong answers come back after 1, 3 and 7 days.'}>
-              <button onClick={() => go('Starting Daily Practice', '/quiz?mode=DAILY')} className={`btn ${progress.daily_done ? 'bg-slate-100 text-slate-700' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}>{progress.daily_done ? 'Again' : 'Start'}</button>
+              <button onClick={() => go('Starting Daily Practice', '/quiz?mode=DAILY')} className={`btn ${progress.daily_done ? 'bg-slate-100 text-slate-700' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>{progress.daily_done ? 'Again' : 'Start'}</button>
             </Card>
           )}
 
@@ -150,12 +150,12 @@ const TONES: Record<string, string> = {
 function Card({ tone, icon, title, text, children }: { tone: string; icon: string; title: string; text: string; children: React.ReactNode }) {
   return (
     <div className={`rounded-2xl border-l-4 ${TONES[tone]} border p-4 flex flex-col sm:flex-row sm:items-center gap-3 shadow-sm`}>
-      <span className="text-3xl shrink-0" aria-hidden>{icon}</span>
+      <span className="text-3xl shrink-0 w-10 text-center" aria-hidden>{icon}</span>
       <div className="flex-1 min-w-0">
         <p className="font-black text-slate-900">{title}</p>
         <p className="text-sm text-slate-600">{text}</p>
       </div>
-      <div className="flex items-center gap-3 shrink-0 [&_.btn]:px-4 [&_.btn]:py-2 [&_.btn]:rounded-xl [&_.btn]:text-sm [&_.btn]:font-bold [&_.btn]:transition">{children}</div>
+      <div className="flex items-center gap-3 shrink-0 [&_.btn]:inline-flex [&_.btn]:justify-center [&_.btn]:min-w-[7rem] [&_.btn]:px-4 [&_.btn]:py-2 [&_.btn]:rounded-xl [&_.btn]:text-sm [&_.btn]:font-bold [&_.btn]:transition">{children}</div>
     </div>
   );
 }
