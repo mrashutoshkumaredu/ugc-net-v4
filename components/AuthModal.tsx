@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { mapAuthError } from '@/lib/authErrors';
+import { PASSWORD_HINT, passwordProblem } from '@/lib/password';
 
 export default function AuthModal({
   initialMode,
@@ -31,6 +32,12 @@ export default function AuthModal({
     }
     if (isSignUpMode && !fullName) {
       setError('Please enter your full name.');
+      return;
+    }
+    // Only new passwords follow the rule; older accounts can still log in.
+    const problem = isSignUpMode ? passwordProblem(password) : null;
+    if (problem) {
+      setError(problem);
       return;
     }
 
@@ -100,6 +107,7 @@ export default function AuthModal({
               placeholder="••••••••"
               className="w-full p-2.5 text-xs sm:text-sm border rounded-lg focus:ring-2 focus:ring-indigo-600 outline-none mt-1"
             />
+            {isSignUpMode && <p className="text-[11px] text-slate-500 mt-1">{PASSWORD_HINT}</p>}
           </div>
 
           {!isSignUpMode && (

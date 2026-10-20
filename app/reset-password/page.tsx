@@ -10,6 +10,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import { supabase } from '@/lib/supabase';
 import { mapAuthError } from '@/lib/authErrors';
+import { PASSWORD_HINT, passwordProblem } from '@/lib/password';
 
 type Mode = 'request' | 'sent' | 'update' | 'done';
 
@@ -48,8 +49,9 @@ export default function ResetPasswordPage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters.');
+    const problem = passwordProblem(newPassword);
+    if (problem) {
+      setError(problem);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -106,6 +108,7 @@ export default function ResetPasswordPage() {
                 <label className="block text-xs font-semibold text-slate-600">
                   New password
                   <input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={inputClass} />
+                  <span className="block text-[11px] font-normal text-slate-500 mt-1">{PASSWORD_HINT}</span>
                 </label>
                 <label className="block text-xs font-semibold text-slate-600">
                   Confirm new password
