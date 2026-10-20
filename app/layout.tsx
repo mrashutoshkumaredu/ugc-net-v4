@@ -2,12 +2,23 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import NavProgress from "@/components/NavProgress";
 import BottomNav from "@/components/BottomNav";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "UGC NET Paper 1 Portal",
-  description:
-    "National Eligibility Test practice platform — full-length previous year question papers and unit-wise practice for UGC NET Paper 1.",
-  applicationName: "UGC NET Paper 1 Portal",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  // Link previews on WhatsApp, Telegram, Facebook and X. The picture comes from app/opengraph-image.tsx.
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    locale: "en_IN",
+  },
+  twitter: { card: "summary_large_image", title: SITE_NAME, description: SITE_DESCRIPTION },
   appleWebApp: { capable: true, title: "NET Paper 1", statusBarStyle: "default" },
   icons: { icon: "/icon-192.png", apple: "/apple-touch-icon.png" },
 };
