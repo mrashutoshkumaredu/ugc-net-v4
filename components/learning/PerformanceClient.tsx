@@ -5,8 +5,9 @@ import Link from 'next/link';
 import PageShell from '@/components/PageShell';
 import { UNIT_OPTIONS } from '@/lib/normalize';
 import { normalizeUnit } from '@/lib/scoring';
-import { getMyPerformance, getMyProgress, saveMySettings } from '@/lib/testApi';
+import { getMyPerformance, getMyProgress } from '@/lib/testApi';
 import { MISTAKE_TAGS, type Performance, type Progress } from '@/lib/types';
+import { formatTestLabel } from '@/lib/testTitle';
 
 // NTA gives 60 minutes for 50 Paper 1 questions in practice: about 72 s each.
 const TARGET_SECONDS = 72;
@@ -45,7 +46,6 @@ function PerformanceBody() {
           Nothing to show yet. Take a full paper, a unit practice or today&apos;s Daily Practice, and your strengths and weak spots will appear here.{' '}
           <Link href="/practice" className="font-bold text-indigo-700 hover:underline">Start a test</Link>
         </div>
-        {progress && <SettingsCard progress={progress} onSaved={setProgress} />}
       </div>
     );
   }
@@ -122,7 +122,6 @@ function PerformanceBody() {
 
       <ScoreTrend trend={perf.trend} />
 
-      {progress && <SettingsCard progress={progress} onSaved={setProgress} />}
     </div>
   );
 }
@@ -141,7 +140,8 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 // last points, hover title on every point, and the same numbers as a list.
 function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
   if (trend.length < 2) return null;
-  const W = 640, H = 180, P = { l: 34, r: 12, t: 14, b: 24 };
+  // Labels are sized for phones: the 640-wide drawing shrinks to about half on a phone screen.
+  const W = 640, H = 200, P = { l: 58, r: 16, t: 30, b: 24 };
   const x = (i: number) => P.l + (i * (W - P.l - P.r)) / (trend.length - 1);
   const y = (v: number) => P.t + ((100 - v) * (H - P.t - P.b)) / 100;
   const path = trend.map((t, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(t.score_percentage).toFixed(1)}`).join(' ');
@@ -150,70 +150,36 @@ function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
   return (
     <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
       <h2 className="text-sm font-bold text-slate-800">Score % over your last {trend.length} tests</h2>
+      <p className="text-xs text-slate-500">Only tests where you answered at least one question.</p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto mt-2" role="img" aria-label={`Score trend: latest ${last.score_percentage}%`}>
         {[0, 50, 100].map((g) => (
           <g key={g}>
             <line x1={P.l} x2={W - P.r} y1={y(g)} y2={y(g)} stroke="#e2e8f0" strokeWidth="1" />
-            <text x={P.l - 6} y={y(g) + 4} textAnchor="end" fontSize="10" fill="#64748b">{g}%</text>
+            <text x={P.l - 8} y={y(g) + 7} textAnchor="end" fontSize="20" fill="#64748b">{g}%</text>
           </g>
         ))}
         <path d={path} fill="none" stroke="#4f46e5" strokeWidth="2" strokeLinejoin="round" />
         {trend.map((t, i) => (
           <g key={t.id}>
             <circle cx={x(i)} cy={y(t.score_percentage)} r="12" fill="transparent">
-              <title>{`${t.test_mode}: ${t.score_percentage}% (${new Date(t.submitted_at).toLocaleDateString('en-IN')})`}</title>
+              <title>{`${formatTestLabel(t.test_mode)}: ${t.score_percentage}% (${new Date(t.submitted_at).toLocaleDateString('en-IN')})`}</title>
             </circle>
             <circle cx={x(i)} cy={y(t.score_percentage)} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="2" pointerEvents="none" />
           </g>
         ))}
-        <text x={x(trend.length - 1)} y={y(last.score_percentage) - 9} textAnchor="end" fontSize="11" fontWeight="700" fill="#1e1b4b">{last.score_percentage}%</text>
+        <text x={x(trend.length - 1)} y={y(last.score_percentage) - 12} textAnchor="end" fontSize="22" fontWeight="700" fill="#1e1b4b">{last.score_percentage}%</text>
       </svg>
       <details className="mt-2">
         <summary className="text-xs font-semibold text-indigo-700 cursor-pointer">Show as a list</summary>
         <ul className="mt-2 space-y-1 text-xs text-slate-600">
           {[...trend].reverse().map((t) => (
             <li key={t.id} className="flex justify-between gap-2">
-              <span className="truncate">{new Date(t.submitted_at).toLocaleDateString('en-IN')} · {t.test_mode}</span>
+              <span className="truncate">{new Date(t.submitted_at).toLocaleDateString('en-IN')} · {formatTestLabel(t.test_mode)}</span>
               <span className="shrink-0 font-semibold text-slate-800">{t.score_percentage}% ({t.correct_answers}/{t.total_questions})</span>
             </li>
           ))}
         </ul>
       </details>
-    </section>
-  );
-}
-
-function SettingsCard({ progress, onSaved }: { progress: Progress; onSaved: (p: Progress) => void }) {
-  const [examDate, setExamDate] = useState(progress.exam_date ?? '');
-  const [show, setShow] = useState(progress.show_on_leaderboard);
-  const [msg, setMsg] = useState('');
-
-  const save = async () => {
-    setMsg('');
-    try {
-      await saveMySettings(examDate || null, show);
-      onSaved({ ...progress, exam_date: examDate || null, show_on_leaderboard: show });
-      setMsg('Saved.');
-    } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Could not save.');
-    }
-  };
-
-  return (
-    <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
-      <h2 className="text-sm font-bold text-slate-800">Settings</h2>
-      <label className="block text-xs font-semibold text-slate-600">
-        My exam date (for the countdown on the home page)
-        <input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} className="mt-1 block border border-slate-300 rounded-lg px-2 py-1.5 text-sm" />
-      </label>
-      <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-        <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
-        Show me on the leaderboard (as first name + initial)
-      </label>
-      <div className="flex items-center gap-3">
-        <button onClick={save} className="text-xs font-bold px-3 py-2 rounded-lg bg-indigo-600 text-white">Save settings</button>
-        {msg && <span className="text-xs text-slate-600">{msg}</span>}
-      </div>
     </section>
   );
 }

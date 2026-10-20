@@ -8,11 +8,14 @@ export default function HubTiles({ tiles }: { tiles: Tile[] }) {
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {tiles.map((t) => (
         <Link key={t.href} href={t.href}
-          className={`group relative overflow-hidden rounded-2xl p-5 text-white bg-gradient-to-br ${t.gradient} shadow-md hover:shadow-xl hover:-translate-y-1 transition-all min-h-[140px] flex flex-col justify-end`}>
-          <span className="absolute -right-2 -top-3 text-7xl opacity-20 group-hover:scale-110 transition-transform" aria-hidden>{t.icon}</span>
-          <span className="text-3xl mb-2" aria-hidden>{t.icon}</span>
-          <span className="text-lg font-black">{t.title}</span>
-          <span className="text-sm text-white/85">{t.text}</span>
+          className="group rounded-2xl p-4 sm:p-5 bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-4">
+          {/* Colour only in the small icon tile, so the page stays calm. */}
+          <span className={`shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${t.gradient} flex items-center justify-center text-2xl`} aria-hidden>{t.icon}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-base font-black text-slate-900">{t.title}</span>
+            <span className="block text-sm text-slate-600">{t.text}</span>
+          </span>
+          <span className="shrink-0 text-indigo-600 font-bold" aria-hidden>›</span>
         </Link>
       ))}
     </div>

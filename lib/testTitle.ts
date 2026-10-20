@@ -55,3 +55,11 @@ export function testTitle(session: TestSession | null, questionCount: number): s
       return label ? `${label} · ${qs}` : qs;
   }
 }
+
+// Saved test names come from the database as "Full Test (01 ECONOMICS 12 DEC 2023 SHIFT1)".
+// Show them as "Full Test · 01 Economics · 12 Dec 2023 · Shift 1".
+export function formatTestLabel(label: string | null | undefined): string {
+  if (!label) return '';
+  const m = label.match(/^Full Test \((.+)\)$/);
+  return m ? `Full Test · ${formatPaperTitle(m[1].replace(/ /g, '_'))}` : label;
+}

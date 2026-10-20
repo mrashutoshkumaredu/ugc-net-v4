@@ -158,14 +158,15 @@ function VaultBody() {
                 <h2 className="text-lg font-bold text-indigo-950">{active.name}</h2>
                 <p className="text-xs text-slate-500">{KIND_NOTE[active.kind]} {active.item_count ?? 0} question(s).</p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button onClick={retest} disabled={!active.item_count} className="text-xs font-bold px-3 py-2 rounded-lg bg-emerald-600 text-white disabled:opacity-50">
                   Retest this folder
                 </button>
                 {active.kind === 'custom' && (
                   <button onClick={rename} className="text-xs font-bold px-3 py-2 rounded-lg border border-slate-300">Rename</button>
                 )}
-                <button onClick={remove} className="text-xs font-bold px-3 py-2 rounded-lg border border-rose-300 text-rose-700">Delete</button>
+                {/* Kept away from "Retest" and quiet, so it is not tapped by mistake. It still asks first. */}
+                <button onClick={remove} className="ml-auto text-xs font-semibold text-slate-500 hover:text-rose-700 underline underline-offset-2 px-1 py-2">Delete folder</button>
               </div>
             </div>
 

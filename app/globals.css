@@ -31,7 +31,22 @@ pre {
 
 .layout-text table {
   width: 100%;
-  min-width: max-content;
+}
+
+/* Wide screens: keep tables at their natural width. Phones: let cells wrap
+   so a table fits the screen instead of running off the right edge. */
+@media (min-width: 768px) {
+  .layout-text table {
+    min-width: max-content;
+  }
+}
+
+/* Keep a table's heading row in view while the passage scrolls. */
+.layout-text tr:first-child > th {
+  position: sticky;
+  top: -1rem;
+  z-index: 1;
+  box-shadow: inset 0 -1px 0 #cbd5e1;
 }
 
 .layout-text th,

@@ -136,9 +136,9 @@ function SpeedMathBody() {
 
       {WORLDS.map((w) => (
         <section key={w.id}>
-          <div className="flex items-baseline gap-2 mb-3">
+          <div className="mb-3">
             <h2 className="text-lg font-black text-indigo-950">{w.icon} {w.title}</h2>
-            <p className="text-xs text-slate-500">{w.tagline}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{w.tagline}</p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {w.drills.map((d) => {
@@ -146,7 +146,12 @@ function SpeedMathBody() {
               return (
                 <button
                   key={d.id}
-                  onClick={() => { setActive(d.id); document.documentElement.requestFullscreen?.().catch(() => {}); }}
+                  onClick={() => {
+                    setActive(d.id);
+                    // Full screen only on computers. On phones the game already fills the screen, and
+                    // Android's "drag from the top to exit" message would cover the question.
+                    if (window.matchMedia('(pointer: fine)').matches) document.documentElement.requestFullscreen?.().catch(() => {});
+                  }}
                   className={`group relative overflow-hidden text-left rounded-2xl p-4 text-white bg-gradient-to-br ${w.gradient} shadow-md hover:shadow-xl hover:-translate-y-1 active:translate-y-0 transition-all`}
                 >
                   <span className="absolute -right-3 -bottom-4 text-6xl opacity-20 group-hover:scale-110 transition-transform" aria-hidden>{d.icon}</span>
@@ -322,8 +327,8 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
     <div className="fixed inset-0 z-[60] h-[100dvh] flex flex-col bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 text-white">
       {/* Top bar */}
       <div className={`shrink-0 bg-gradient-to-r ${world.gradient} px-4 py-2.5 flex items-center justify-between gap-3`}>
-        <button onClick={onExit} className="text-sm font-bold bg-black/20 hover:bg-black/30 rounded-lg px-3 py-1.5">← All games</button>
-        <p className="font-black text-lg truncate flex-1 text-center">{drill.icon} {drill.label}</p>
+        <button onClick={onExit} aria-label="All games" className="shrink-0 text-sm font-bold bg-black/20 hover:bg-black/30 rounded-lg px-3 py-1.5">←<span className="hidden sm:inline"> All games</span></button>
+        <p className="font-black text-base sm:text-lg leading-tight flex-1 min-w-0 text-center">{drill.icon} {drill.label}</p>
         <button onClick={toggleMute} aria-label={muted ? 'Sound on' : 'Sound off'} title={muted ? 'Sound on' : 'Sound off'} className="text-lg bg-black/20 hover:bg-black/30 rounded-lg w-9 h-9 flex items-center justify-center">{muted ? '🔇' : '🔊'}</button>
         <div className="text-right">
           <p className="text-[10px] uppercase tracking-widest text-white/80 font-bold">Score</p>
@@ -347,7 +352,9 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
         </div>
       )}
 
-      <div className="relative flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 py-4 flex flex-col items-center justify-center">
+      {/* While playing on a phone, start at the top: centred content slid under the keyboard,
+          and a tall Mini DI table lost its heading row off the top of the screen. */}
+      <div className={`relative flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 py-4 flex flex-col items-center ${phase === 'playing' ? 'justify-start sm:justify-center' : 'justify-center'}`}>
         {phase === 'ready' && (
           <div className="text-center space-y-5 sm-pop">
             <p className="text-6xl" aria-hidden>{drill.icon}</p>

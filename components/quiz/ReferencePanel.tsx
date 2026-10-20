@@ -18,7 +18,7 @@ export default function ReferencePanel({ layoutText, imageSrc, textSize = 'md' }
           // Original NTA picture of the Hindi table / passage.
           <HindiImage key={imageSrc} src={imageSrc} alt="संदर्भ सामग्री (हिंदी)" textSize={textSize} />
         ) : (
-          <MathText html={layoutText} className="layout-text q-ref text-slate-800 leading-relaxed overflow-x-auto" />
+          <MathText html={layoutText} className="layout-text q-ref text-slate-800 leading-relaxed" />
         )}
       </div>
     </div>

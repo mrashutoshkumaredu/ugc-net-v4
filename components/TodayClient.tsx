@@ -12,6 +12,15 @@ import { clearProgress, getActiveProgress, type SavedProgress } from '@/lib/prog
 import { classesApi, taskHref, type ClassTask } from '@/lib/classesApi';
 import { courseApi, type CourseChapter, type CourseSet } from '@/lib/courseApi';
 import type { Progress } from '@/lib/types';
+import { formatTestLabel } from '@/lib/testTitle';
+
+// The test clock keeps running while you are away, so say plainly how much time is left.
+function timeLeftText(endsAt?: number) {
+  if (!endsAt) return 'The test clock kept running while you were away.';
+  const mins = Math.floor((endsAt - Date.now()) / 60000);
+  if (mins < 1) return "Time is up. Open it to submit and see your score.";
+  return `About ${mins} minute${mins === 1 ? '' : 's'} left on the clock.`;
+}
 
 // Today: the one page that answers "what should I do now?".
 export default function TodayClient() {
@@ -67,7 +76,6 @@ export default function TodayClient() {
           ) : !user && checkedSession ? (
             <div className="flex flex-wrap gap-2 mt-4">
               <button onClick={() => setAuth('REGISTER')} className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-indigo-950 font-black rounded-xl">Create free account</button>
-              <button onClick={() => setAuth('LOGIN')} className="px-5 py-2.5 bg-white/15 hover:bg-white/25 font-bold rounded-xl">Log in</button>
             </div>
           ) : null}
         </div>
@@ -75,15 +83,15 @@ export default function TodayClient() {
         {/* Priority cards */}
         <div className="space-y-3">
           {resumable && user && (
-            <Card tone="amber" icon="⏯" title="Finish your unfinished test" text={`${resumable.label || 'Test in progress'}. The timer has kept running.`}>
-              <button onClick={() => go('Resuming your test', `/quiz?session=${resumable.sessionId}`)} className="btn bg-amber-500 hover:bg-amber-600 text-slate-900">Resume</button>
+            <Card tone="amber" icon="⏯" title="Finish your unfinished test" text={`${formatTestLabel(resumable.label) || 'Test in progress'}. ${timeLeftText(resumable.endsAt)}`}>
+              <button onClick={() => go('Resuming your test', `/quiz?session=${resumable.sessionId}`)} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Resume</button>
               <button onClick={() => { clearProgress(resumable.sessionId); setResumable(null); }} className="text-xs text-amber-800 hover:underline" title="Discard this test">Discard</button>
             </Card>
           )}
 
           {tasks.length > 0 && (
             <Card tone="violet" icon="📋" title={`${tasks.length} class task${tasks.length > 1 ? 's' : ''} to do`} text={tasks.slice(0, 3).map((t) => `${t.title}${t.due_on ? ` (due ${new Date(t.due_on + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })})` : ''}`).join(' · ')}>
-              <Link href={taskHref(tasks[0])} className="btn bg-violet-600 hover:bg-violet-700 text-white">Start next</Link>
+              <Link href={taskHref(tasks[0])} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Start next</Link>
               <Link href="/classes" className="text-xs text-violet-800 hover:underline">All tasks</Link>
             </Card>
           )}
@@ -91,27 +99,28 @@ export default function TodayClient() {
           {user && progress && (
             <Card tone="emerald" icon={progress.daily_done ? '✅' : '🎯'} title={progress.daily_done ? 'Daily Practice done. Well done!' : 'Daily Practice · 10 questions'}
               text={progress.revisions_due > 0 ? `${progress.revisions_due} question${progress.revisions_due > 1 ? 's' : ''} you got wrong ${progress.revisions_due > 1 ? 'are' : 'is'} due for revision, plus new ones from your weakest units.` : 'New questions from your weakest units. Wrong answers come back after 1, 3 and 7 days.'}>
-              <button onClick={() => go('Starting Daily Practice', '/quiz?mode=DAILY')} className={`btn ${progress.daily_done ? 'bg-slate-100 text-slate-700' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}>{progress.daily_done ? 'Again' : 'Start'}</button>
+              <button onClick={() => go('Starting Daily Practice', '/quiz?mode=DAILY')} className={`btn ${progress.daily_done ? 'bg-slate-100 text-slate-700' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>{progress.daily_done ? 'Again' : 'Start'}</button>
             </Card>
           )}
 
           {diag && diag.best === null ? (
             <Card tone="teal" icon="🩺" title="Find your weak chapters" text={`Free Diagnostic Test: ${diag.questions} questions, one from each maths chapter.`}>
-              <Link href={`/course?set=${diag.id}`} className="btn bg-teal-600 hover:bg-teal-700 text-white">Take it</Link>
+              <Link href={`/course?set=${diag.id}`} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Take it</Link>
             </Card>
           ) : nextChapter ? (
             <Card tone="teal" icon="📘" title={`Next chapter: ${nextChapter.title}`} text={nextChapter.subtitle || 'Continue the Maths Course.'}>
-              <Link href={`/course?ch=${nextChapter.no}`} className="btn bg-teal-600 hover:bg-teal-700 text-white">Open</Link>
+              <Link href={`/course?ch=${nextChapter.no}`} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Open</Link>
             </Card>
           ) : null}
 
           <Card tone="orange" icon="⚡" title="Quick game: 60 seconds" text="Beat your Fraction ↔ % record. Faster fractions mean faster Data Interpretation.">
-            <Link href="/speed-math?drill=fractions" className="btn bg-orange-500 hover:bg-orange-600 text-white">Play</Link>
+            <Link href="/speed-math?drill=fractions" className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Play</Link>
           </Card>
         </div>
 
         {/* Shortcuts to the hubs */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Hidden on phones: the bottom bar already has these four. */}
+        <div className="hidden md:grid grid-cols-4 gap-3">
           {[
             ['/practice', '📝', 'Practice', 'PYQ papers and units', 'from-indigo-500 to-indigo-700'],
             ['/learn', '📘', 'Learn', 'Course and notes', 'from-teal-500 to-emerald-600'],
@@ -133,19 +142,20 @@ export default function TodayClient() {
 }
 
 const TONES: Record<string, string> = {
-  amber: 'border-amber-300 bg-amber-50', violet: 'border-violet-300 bg-violet-50', emerald: 'border-emerald-300 bg-emerald-50',
-  teal: 'border-teal-300 bg-teal-50', orange: 'border-orange-300 bg-orange-50',
+  // White cards; the colour stays only on the left edge, so buttons and right/wrong colours stand out.
+  amber: 'border-slate-200 border-l-amber-400 bg-white', violet: 'border-slate-200 border-l-violet-400 bg-white', emerald: 'border-slate-200 border-l-emerald-400 bg-white',
+  teal: 'border-slate-200 border-l-teal-400 bg-white', orange: 'border-slate-200 border-l-orange-400 bg-white',
 };
 
 function Card({ tone, icon, title, text, children }: { tone: string; icon: string; title: string; text: string; children: React.ReactNode }) {
   return (
     <div className={`rounded-2xl border-l-4 ${TONES[tone]} border p-4 flex flex-col sm:flex-row sm:items-center gap-3 shadow-sm`}>
-      <span className="text-3xl shrink-0" aria-hidden>{icon}</span>
+      <span className="text-3xl shrink-0 w-10 text-center" aria-hidden>{icon}</span>
       <div className="flex-1 min-w-0">
         <p className="font-black text-slate-900">{title}</p>
         <p className="text-sm text-slate-600">{text}</p>
       </div>
-      <div className="flex items-center gap-3 shrink-0 [&_.btn]:px-4 [&_.btn]:py-2 [&_.btn]:rounded-xl [&_.btn]:text-sm [&_.btn]:font-bold [&_.btn]:transition">{children}</div>
+      <div className="flex items-center gap-3 shrink-0 [&_.btn]:inline-flex [&_.btn]:justify-center [&_.btn]:min-w-[7rem] [&_.btn]:px-4 [&_.btn]:py-2 [&_.btn]:rounded-xl [&_.btn]:text-sm [&_.btn]:font-bold [&_.btn]:transition">{children}</div>
     </div>
   );
 }

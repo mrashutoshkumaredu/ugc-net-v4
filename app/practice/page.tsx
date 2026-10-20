@@ -212,13 +212,15 @@ export default function PracticePage() {
           </div>
         )}
 
-        <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        {/* Phones get a short banner so the paper picker and Start button show without scrolling. */}
+        <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-4 sm:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-6">
           <div className="space-y-2 max-w-2xl">
-            <span className="text-xs font-semibold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">Official NTA Pattern</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Let&apos;s Master UGC NET Paper 1 PYQs</h2>
-            <p className="text-xs sm:text-sm text-indigo-200 leading-relaxed">Attempt full-length 60-minute previous year papers or build unit-wise practice sets. Each correct answer gives 2 marks, with no negative marking.</p>
+            <span className="text-xs font-semibold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">Based on the NTA pattern</span>
+            <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight">Let&apos;s Master UGC NET Paper 1 PYQs</h2>
+            <p className="sm:hidden text-xs text-indigo-200">{loading ? 'Loading papers…' : `${catalog?.total ?? 0} questions · ${papers.length} papers · 2 marks each, no negative marking`}</p>
+            <p className="hidden sm:block text-xs sm:text-sm text-indigo-200 leading-relaxed">Attempt full-length 60-minute previous year papers or build unit-wise practice sets. Each correct answer gives 2 marks, with no negative marking.</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0">
+          <div className="hidden sm:grid grid-cols-2 gap-3 w-full md:w-auto shrink-0">
             <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3.5 rounded-xl text-center">
               <span className="block text-2xl font-black text-amber-400">{loading ? '--' : catalog?.total ?? 0}</span>
               <span className="text-[11px] text-indigo-200 uppercase font-medium">Total Questions</span>
@@ -232,10 +234,10 @@ export default function PracticePage() {
 
         {loadError && <p className="text-center text-rose-600 text-sm">{loadError}</p>}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pb-12">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
             <div>
-              <div className="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold mb-4" aria-hidden>📝</div>
+              <div className="hidden sm:flex w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl items-center justify-center font-bold mb-4" aria-hidden>📝</div>
               <h3 className="text-lg font-bold text-slate-800 mb-1">Full Previous Year Paper</h3>
               <p className="text-xs text-slate-500 mb-4">A complete 50-question shift paper under real exam timing.</p>
 
@@ -283,9 +285,9 @@ export default function PracticePage() {
             </button>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
             <div>
-              <div className="w-10 h-10 bg-amber-100 text-amber-800 rounded-xl flex items-center justify-center font-bold mb-4" aria-hidden>🎯</div>
+              <div className="hidden sm:flex w-10 h-10 bg-amber-100 text-amber-800 rounded-xl items-center justify-center font-bold mb-4" aria-hidden>🎯</div>
               <h3 className="text-lg font-bold text-slate-800 mb-1">Unit-Wise Practice</h3>
               <p className="text-xs text-slate-500 mb-4">Pick a unit and how many questions. You get a fresh random set each time.</p>
               <div className="space-y-3 mb-6">
@@ -339,7 +341,7 @@ export default function PracticePage() {
             <button
               onClick={() => prepareTest('UNIT')}
               disabled={loading || themeQuestionCount === 0}
-              className="w-full py-3 bg-amber-500 text-slate-900 font-bold text-sm rounded-xl hover:bg-amber-600 transition shadow-md disabled:opacity-50"
+              className="w-full py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition shadow-md disabled:opacity-50"
             >
               Start Unit Practice
             </button>
