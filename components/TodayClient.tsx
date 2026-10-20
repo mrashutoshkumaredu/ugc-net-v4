@@ -32,8 +32,13 @@ export default function TodayClient() {
   }, [user]);
 
   const go = (msg: string, href: string) => { setStarting(msg); router.push(href); };
-  const hour = new Date().getHours();
-  const hello = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  // Work out the greeting in the browser, from the student's own clock. The page is
+  // built in advance on the server, so its time would be wrong for most visitors.
+  const [hello, setHello] = useState('Hello');
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setHello(hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening');
+  }, []);
   const first = ((user?.user_metadata?.full_name as string | undefined) || '').split(' ')[0];
   const days = progress?.exam_date ? Math.max(0, Math.round((Date.parse(progress.exam_date) - Date.parse(progress.today)) / 86400000)) : null;
 
