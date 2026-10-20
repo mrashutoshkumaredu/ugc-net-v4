@@ -76,7 +76,6 @@ export default function TodayClient() {
           ) : !user && checkedSession ? (
             <div className="flex flex-wrap gap-2 mt-4">
               <button onClick={() => setAuth('REGISTER')} className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-indigo-950 font-black rounded-xl">Create free account</button>
-              <button onClick={() => setAuth('LOGIN')} className="px-5 py-2.5 bg-white/15 hover:bg-white/25 font-bold rounded-xl">Log in</button>
             </div>
           ) : null}
         </div>
@@ -120,7 +119,8 @@ export default function TodayClient() {
         </div>
 
         {/* Shortcuts to the hubs */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Hidden on phones: the bottom bar already has these four. */}
+        <div className="hidden md:grid grid-cols-4 gap-3">
           {[
             ['/practice', '📝', 'Practice', 'PYQ papers and units', 'from-indigo-500 to-indigo-700'],
             ['/learn', '📘', 'Learn', 'Course and notes', 'from-teal-500 to-emerald-600'],

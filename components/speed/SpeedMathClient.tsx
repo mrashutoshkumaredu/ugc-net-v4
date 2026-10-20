@@ -136,9 +136,9 @@ function SpeedMathBody() {
 
       {WORLDS.map((w) => (
         <section key={w.id}>
-          <div className="flex items-baseline gap-2 mb-3">
+          <div className="mb-3">
             <h2 className="text-lg font-black text-indigo-950">{w.icon} {w.title}</h2>
-            <p className="text-xs text-slate-500">{w.tagline}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{w.tagline}</p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {w.drills.map((d) => {
@@ -327,8 +327,8 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
     <div className="fixed inset-0 z-[60] h-[100dvh] flex flex-col bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 text-white">
       {/* Top bar */}
       <div className={`shrink-0 bg-gradient-to-r ${world.gradient} px-4 py-2.5 flex items-center justify-between gap-3`}>
-        <button onClick={onExit} className="text-sm font-bold bg-black/20 hover:bg-black/30 rounded-lg px-3 py-1.5">← All games</button>
-        <p className="font-black text-lg truncate flex-1 text-center">{drill.icon} {drill.label}</p>
+        <button onClick={onExit} aria-label="All games" className="shrink-0 text-sm font-bold bg-black/20 hover:bg-black/30 rounded-lg px-3 py-1.5">←<span className="hidden sm:inline"> All games</span></button>
+        <p className="font-black text-base sm:text-lg leading-tight flex-1 min-w-0 text-center">{drill.icon} {drill.label}</p>
         <button onClick={toggleMute} aria-label={muted ? 'Sound on' : 'Sound off'} title={muted ? 'Sound on' : 'Sound off'} className="text-lg bg-black/20 hover:bg-black/30 rounded-lg w-9 h-9 flex items-center justify-center">{muted ? '🔇' : '🔊'}</button>
         <div className="text-right">
           <p className="text-[10px] uppercase tracking-widest text-white/80 font-bold">Score</p>

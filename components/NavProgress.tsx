@@ -49,7 +49,8 @@ export default function NavProgress() {
       <div className="h-1 w-full overflow-hidden bg-indigo-100">
         <div className="h-full w-1/3 bg-indigo-600 nav-progress-bar" />
       </div>
-      <div className="absolute right-3 top-2 rounded-full bg-indigo-900 text-white text-xs font-semibold px-3 py-1 shadow">
+      {/* At the bottom, so it does not cover headings at the top of the page. */}
+      <div className="fixed left-1/2 -translate-x-1/2 bottom-20 md:bottom-6 rounded-full bg-indigo-900 text-white text-xs font-semibold px-3 py-1 shadow">
         Loading… <span className="opacity-80">लोड हो रहा है</span>
       </div>
     </div>
