@@ -4,7 +4,7 @@
 -- 2. Number bases shown as subscripts, e.g. (499)10 -> (499)<sub>10</sub>, and (L)M -> (L)<sub>M</sub>:
 --    Malayalam 11 Dec 2023 Q32, Psychology 14 Dec 2023 Q35, Political Science 06 Jan 2026 Q33 (EN + HI).
 -- 3. Social Medicine 02 Jan 2026 Q27: the maths sign "not equal" had broken into a line break ("$SP<br>eq 0$").
---    Restored as $SP \neq 0$ (two cells).
+--    Restored as $SP ≠ 0$ (two cells). The ≠ character is used because the table forbids the text "\n" (so \neq cannot be stored).
 -- 4. Stray <br> between table rows/cells (in about 44 rows) removed. Browsers push them above the table as empty lines.
 begin;
 
@@ -27,7 +27,7 @@ update public.questions_hindi set question_text = regexp_replace(regexp_replace(
 where id in (382, 535, 977) and question_text !~ '<sub>';
 
 -- 3. Broken "not equal"
-update public.questions set layout_text = replace(layout_text, '<br>eq 0$', ' \neq 0$')
+update public.questions set layout_text = replace(layout_text, '<br>eq 0$', ' ≠ 0$')
 where paper_id = '81_SOCIAL_MEDICINE_AND_COMMUNITY_HEALTH_02_JAN_2026_SHIFT2' and question_number = 27 and layout_text like '%<br>eq 0$%';
 
 -- 4. Stray <br> inside tables (only <br> sitting directly between table tags; <br> inside a cell's text is kept)
