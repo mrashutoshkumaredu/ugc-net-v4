@@ -151,6 +151,7 @@ function StudentView() {
                   </div>
                   <p className="text-xs text-slate-500">{t.class_name} · {describe(t)}</p>
                   {t.result && t.kind === 'SPEED' && <p className="text-xs text-amber-700">Best so far: {resultText(t, t.result)}</p>}
+                  {['FULL', 'UNIT', 'CHAPTER'].includes(t.kind) && <p className="text-[11px] text-slate-500">Your first attempt is the one your teacher sees.</p>}
                   <Link href={taskHref(t)} className="self-start mt-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg">Start ▸</Link>
                 </div>
               );
