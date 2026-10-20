@@ -84,14 +84,14 @@ export default function TodayClient() {
         <div className="space-y-3">
           {resumable && user && (
             <Card tone="amber" icon="⏯" title="Finish your unfinished test" text={`${formatTestLabel(resumable.label) || 'Test in progress'}. ${timeLeftText(resumable.endsAt)}`}>
-              <button onClick={() => go('Resuming your test', `/quiz?session=${resumable.sessionId}`)} className="btn bg-amber-500 hover:bg-amber-600 text-slate-900">Resume</button>
+              <button onClick={() => go('Resuming your test', `/quiz?session=${resumable.sessionId}`)} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Resume</button>
               <button onClick={() => { clearProgress(resumable.sessionId); setResumable(null); }} className="text-xs text-amber-800 hover:underline" title="Discard this test">Discard</button>
             </Card>
           )}
 
           {tasks.length > 0 && (
             <Card tone="violet" icon="📋" title={`${tasks.length} class task${tasks.length > 1 ? 's' : ''} to do`} text={tasks.slice(0, 3).map((t) => `${t.title}${t.due_on ? ` (due ${new Date(t.due_on + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })})` : ''}`).join(' · ')}>
-              <Link href={taskHref(tasks[0])} className="btn bg-violet-600 hover:bg-violet-700 text-white">Start next</Link>
+              <Link href={taskHref(tasks[0])} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Start next</Link>
               <Link href="/classes" className="text-xs text-violet-800 hover:underline">All tasks</Link>
             </Card>
           )}
@@ -105,16 +105,16 @@ export default function TodayClient() {
 
           {diag && diag.best === null ? (
             <Card tone="teal" icon="🩺" title="Find your weak chapters" text={`Free Diagnostic Test: ${diag.questions} questions, one from each maths chapter.`}>
-              <Link href={`/course?set=${diag.id}`} className="btn bg-teal-600 hover:bg-teal-700 text-white">Take it</Link>
+              <Link href={`/course?set=${diag.id}`} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Take it</Link>
             </Card>
           ) : nextChapter ? (
             <Card tone="teal" icon="📘" title={`Next chapter: ${nextChapter.title}`} text={nextChapter.subtitle || 'Continue the Maths Course.'}>
-              <Link href={`/course?ch=${nextChapter.no}`} className="btn bg-teal-600 hover:bg-teal-700 text-white">Open</Link>
+              <Link href={`/course?ch=${nextChapter.no}`} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Open</Link>
             </Card>
           ) : null}
 
           <Card tone="orange" icon="⚡" title="Quick game: 60 seconds" text="Beat your Fraction ↔ % record. Faster fractions mean faster Data Interpretation.">
-            <Link href="/speed-math?drill=fractions" className="btn bg-orange-500 hover:bg-orange-600 text-white">Play</Link>
+            <Link href="/speed-math?drill=fractions" className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Play</Link>
           </Card>
         </div>
 
@@ -142,8 +142,9 @@ export default function TodayClient() {
 }
 
 const TONES: Record<string, string> = {
-  amber: 'border-amber-300 bg-amber-50', violet: 'border-violet-300 bg-violet-50', emerald: 'border-emerald-300 bg-emerald-50',
-  teal: 'border-teal-300 bg-teal-50', orange: 'border-orange-300 bg-orange-50',
+  // White cards; the colour stays only on the left edge, so buttons and right/wrong colours stand out.
+  amber: 'border-slate-200 border-l-amber-400 bg-white', violet: 'border-slate-200 border-l-violet-400 bg-white', emerald: 'border-slate-200 border-l-emerald-400 bg-white',
+  teal: 'border-slate-200 border-l-teal-400 bg-white', orange: 'border-slate-200 border-l-orange-400 bg-white',
 };
 
 function Card({ tone, icon, title, text, children }: { tone: string; icon: string; title: string; text: string; children: React.ReactNode }) {

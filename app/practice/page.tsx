@@ -341,7 +341,7 @@ export default function PracticePage() {
             <button
               onClick={() => prepareTest('UNIT')}
               disabled={loading || themeQuestionCount === 0}
-              className="w-full py-3 bg-amber-500 text-slate-900 font-bold text-sm rounded-xl hover:bg-amber-600 transition shadow-md disabled:opacity-50"
+              className="w-full py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition shadow-md disabled:opacity-50"
             >
               Start Unit Practice
             </button>

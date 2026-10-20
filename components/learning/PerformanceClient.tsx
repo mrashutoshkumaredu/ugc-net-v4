@@ -5,7 +5,7 @@ import Link from 'next/link';
 import PageShell from '@/components/PageShell';
 import { UNIT_OPTIONS } from '@/lib/normalize';
 import { normalizeUnit } from '@/lib/scoring';
-import { getMyPerformance, getMyProgress, saveMySettings } from '@/lib/testApi';
+import { getMyPerformance, getMyProgress } from '@/lib/testApi';
 import { MISTAKE_TAGS, type Performance, type Progress } from '@/lib/types';
 import { formatTestLabel } from '@/lib/testTitle';
 
@@ -46,7 +46,6 @@ function PerformanceBody() {
           Nothing to show yet. Take a full paper, a unit practice or today&apos;s Daily Practice, and your strengths and weak spots will appear here.{' '}
           <Link href="/practice" className="font-bold text-indigo-700 hover:underline">Start a test</Link>
         </div>
-        {progress && <SettingsCard progress={progress} onSaved={setProgress} />}
       </div>
     );
   }
@@ -123,7 +122,6 @@ function PerformanceBody() {
 
       <ScoreTrend trend={perf.trend} />
 
-      {progress && <SettingsCard progress={progress} onSaved={setProgress} />}
     </div>
   );
 }
@@ -182,41 +180,6 @@ function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
           ))}
         </ul>
       </details>
-    </section>
-  );
-}
-
-function SettingsCard({ progress, onSaved }: { progress: Progress; onSaved: (p: Progress) => void }) {
-  const [examDate, setExamDate] = useState(progress.exam_date ?? '');
-  const [show, setShow] = useState(progress.show_on_leaderboard);
-  const [msg, setMsg] = useState('');
-
-  const save = async () => {
-    setMsg('');
-    try {
-      await saveMySettings(examDate || null, show);
-      onSaved({ ...progress, exam_date: examDate || null, show_on_leaderboard: show });
-      setMsg('Saved.');
-    } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Could not save.');
-    }
-  };
-
-  return (
-    <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
-      <h2 className="text-sm font-bold text-slate-800">Settings</h2>
-      <label className="block text-xs font-semibold text-slate-600">
-        My exam date (for the countdown on the home page)
-        <input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} className="mt-1 block border border-slate-300 rounded-lg px-2 py-1.5 text-sm" />
-      </label>
-      <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-        <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
-        Show me on the leaderboard (as first name + initial)
-      </label>
-      <div className="flex items-center gap-3">
-        <button onClick={save} className="text-xs font-bold px-3 py-2 rounded-lg bg-indigo-600 text-white">Save settings</button>
-        {msg && <span className="text-xs text-slate-600">{msg}</span>}
-      </div>
     </section>
   );
 }

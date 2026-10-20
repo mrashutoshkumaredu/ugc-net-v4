@@ -10,6 +10,7 @@ import { formatTime } from '@/lib/scoring';
 import { HUBS, hubOf } from '@/lib/hubs';
 import AuthModal from './AuthModal';
 import HistoryDrawer from './HistoryDrawer';
+import SettingsModal from './SettingsModal';
 
 export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRemaining?: number }) {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
   const { user, signOut } = useAuth();
   const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER' | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [menu, setMenu] = useState(false);
   const [fsOn, setFsOn] = useState(false);
@@ -99,7 +101,7 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
                   <div className="absolute right-0 mt-2 w-60 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50">
                     <p className="px-4 pb-2 mb-1 border-b border-slate-100 text-xs text-slate-500 truncate">👋 {name}</p>
                     <button onClick={() => { setShowHistory(true); setMenu(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">🕘 My test history</button>
-                    <Link href="/performance" onClick={() => setMenu(false)} className="block px-4 py-2 text-sm hover:bg-slate-50">🎯 Exam date and settings</Link>
+                    <button onClick={() => { setShowSettings(true); setMenu(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">⚙️ Settings: exam date, leaderboard</button>
                     <button onClick={toggleFs} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">{fsOn ? '⤓ Exit full screen' : '⤢ Full screen'}</button>
                     {admin && <Link href="/admin" onClick={() => setMenu(false)} className="block px-4 py-2 text-sm hover:bg-slate-50 text-rose-700 font-semibold">🛠 Admin</Link>}
                     <button onClick={() => { setMenu(false); signOut(); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 border-t border-slate-100 mt-1">↩ Log out</button>
@@ -133,6 +135,7 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
 
       {authMode && <AuthModal initialMode={authMode} onClose={() => setAuthMode(null)} onSuccess={() => setAuthMode(null)} />}
       {showHistory && <HistoryDrawer onClose={() => setShowHistory(false)} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 }

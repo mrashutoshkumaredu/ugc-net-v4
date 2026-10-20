@@ -76,6 +76,11 @@ function CourseBody() {
         </button>
       )}
 
+      <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+        <strong>📖 Lesson notes open</strong> · <strong>🔒 Lesson notes locked</strong>: they open when your teacher sets that chapter in your class.
+        Practice sets in every chapter are free for everyone. The number (for example 0/1) shows practice sets done.
+      </p>
+
       {parts.map((part) => {
         const st = PART_STYLE[partLetter(part)];
         return (
@@ -110,9 +115,15 @@ function CourseBody() {
         <h2 className="text-lg font-black text-indigo-950 mb-3">🏁 Tests and mocks</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {tests.filter((s) => s.kind !== 'diagnostic').map((s) => (
-            <button key={s.id} onClick={() => go({ kind: 'set', id: s.id })} className="text-left bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition">
-              <span className="block font-bold text-slate-900">{s.title}</span>
-              <span className="block text-xs text-slate-500">{s.questions} questions · {s.minutes} min{s.best !== null ? ` · best ${s.best}%` : ''}</span>
+            <button key={s.id} onClick={() => go({ kind: 'set', id: s.id })} className="min-w-0 text-left bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition flex items-center gap-3">
+              <span className="min-w-0 flex-1">
+                {/* "Class 21: Arithmetic Test" -> "Arithmetic Test": class numbers clashed with chapter numbers. */}
+                <span className="block font-bold text-slate-900">{s.title.replace(/^Class\s+\d+\s*:\s*/i, '')}</span>
+                <span className="block text-xs text-slate-500">{s.questions} questions · {s.minutes} min</span>
+              </span>
+              {s.best !== null
+                ? <span className="shrink-0 text-xs font-bold text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-full px-2.5 py-1">✓ Best {s.best}%</span>
+                : <span className="shrink-0 text-xs font-bold text-indigo-700">Start ▸</span>}
             </button>
           ))}
         </div>
