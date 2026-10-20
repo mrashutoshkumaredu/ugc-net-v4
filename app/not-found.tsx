@@ -18,7 +18,7 @@ export default function NotFound() {
           <Link href="/" className="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white">
             Go to Today
           </Link>
-          <Link href="/practice" className="px-4 py-2 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-600 text-slate-900">
+          <Link href="/practice" className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50">
             Practice
           </Link>
         </div>
