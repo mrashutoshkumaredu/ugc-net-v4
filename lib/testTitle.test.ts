@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatPaperTitle, testTitle } from './testTitle';
+import { formatPaperTitle, formatTestLabel, testTitle } from './testTitle';
 import type { TestSession } from './types';
 
 const base: TestSession = {
@@ -31,5 +31,13 @@ describe('testTitle', () => {
   });
   it('is empty without a session', () => {
     expect(testTitle(null, 0)).toBe('');
+  });
+});
+
+describe('formatTestLabel', () => {
+  it('tidies saved full test names and leaves others alone', () => {
+    expect(formatTestLabel('Full Test (01 ECONOMICS 12 DEC 2023 SHIFT1)')).toBe('Full Test · 01 Economics · 12 Dec 2023 · Shift 1');
+    expect(formatTestLabel('Teaching Aptitude (10 Qs)')).toBe('Teaching Aptitude (10 Qs)');
+    expect(formatTestLabel(null)).toBe('');
   });
 });

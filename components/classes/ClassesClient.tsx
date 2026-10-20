@@ -11,6 +11,9 @@ import { courseApi, type CourseChapter, type CourseSet } from '@/lib/courseApi';
 import { classesApi, taskHref, type ClassRole, type ClassTask, type TaskKind, type TaskResult } from '@/lib/classesApi';
 import type { Catalog } from '@/lib/types';
 
+// Green only for a good score, so 0% is not shown as a success.
+const scoreColour = (pct: number | null) => (pct === null ? 'text-slate-700' : pct >= 60 ? 'text-emerald-700' : pct >= 40 ? 'text-amber-700' : 'text-rose-700');
+
 const DRILLS: [string, string][] = [
   ['arithmetic', 'Arithmetic'], ['tables', 'Tables & Powers'], ['formulas', 'Quick Formulas'], ['fractions', 'Fraction ↔ %'],
   ['estimation', 'Estimation'], ['percent', '% Change'], ['minidi', 'Mini DI'], ['series', 'Number Series'],
@@ -163,7 +166,7 @@ function StudentView() {
             {done.map((t) => (
               <li key={t.id} className="p-3 flex justify-between gap-2 text-sm">
                 <span><strong>✓ {t.title}</strong> <span className="text-slate-500">· {t.class_name}</span></span>
-                <span className="font-bold text-emerald-700 shrink-0">{resultText(t, t.result!)}</span>
+                <span className={`font-bold shrink-0 ${scoreColour(t.result!.score_percentage)}`}>{resultText(t, t.result!)}</span>
               </li>
             ))}
           </ul>

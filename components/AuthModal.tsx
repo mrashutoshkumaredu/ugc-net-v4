@@ -20,6 +20,7 @@ export default function AuthModal({
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -99,14 +100,25 @@ export default function AuthModal({
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-600">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full p-2.5 text-xs sm:text-sm border rounded-lg focus:ring-2 focus:ring-indigo-600 outline-none mt-1"
-            />
+            {/* No dotted placeholder: it looked as if a password was already filled in. */}
+            <div className="relative mt-1">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={isSignUpMode ? 'new-password' : 'current-password'}
+                className="w-full p-2.5 pr-16 text-xs sm:text-sm border rounded-lg focus:ring-2 focus:ring-indigo-600 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-0 px-3 text-xs font-semibold text-indigo-600"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
             {isSignUpMode && <p className="text-[11px] text-slate-500 mt-1">{PASSWORD_HINT}</p>}
           </div>
 

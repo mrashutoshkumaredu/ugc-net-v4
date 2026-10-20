@@ -12,6 +12,7 @@ import { clearProgress, getActiveProgress, type SavedProgress } from '@/lib/prog
 import { classesApi, taskHref, type ClassTask } from '@/lib/classesApi';
 import { courseApi, type CourseChapter, type CourseSet } from '@/lib/courseApi';
 import type { Progress } from '@/lib/types';
+import { formatTestLabel } from '@/lib/testTitle';
 
 // Today: the one page that answers "what should I do now?".
 export default function TodayClient() {
@@ -75,7 +76,7 @@ export default function TodayClient() {
         {/* Priority cards */}
         <div className="space-y-3">
           {resumable && user && (
-            <Card tone="amber" icon="⏯" title="Finish your unfinished test" text={`${resumable.label || 'Test in progress'}. The timer has kept running.`}>
+            <Card tone="amber" icon="⏯" title="Finish your unfinished test" text={`${formatTestLabel(resumable.label) || 'Test in progress'}. The timer has kept running.`}>
               <button onClick={() => go('Resuming your test', `/quiz?session=${resumable.sessionId}`)} className="btn bg-amber-500 hover:bg-amber-600 text-slate-900">Resume</button>
               <button onClick={() => { clearProgress(resumable.sessionId); setResumable(null); }} className="text-xs text-amber-800 hover:underline" title="Discard this test">Discard</button>
             </Card>

@@ -48,6 +48,7 @@ describe('cycle names', () => {
   });
 
   it('turns paper ids into readable names', () => {
-    expect(getPaperDisplayName('31_DEC_2025_MORNING')).toBe('31 DEC 2025 MORNING');
+    expect(getPaperDisplayName('31_DEC_2025_MORNING')).toBe('31 Dec 2025 · Morning');
+    expect(getPaperDisplayName('01_ECONOMICS_12_DEC_2023_SHIFT1')).toBe('01 Economics · 12 Dec 2023 · Shift 1');
   });
 });

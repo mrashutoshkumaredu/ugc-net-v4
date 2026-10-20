@@ -10,6 +10,7 @@ import { cleanNewlines, CORRECT_MARKS, formatTime, normalizeUnit } from '@/lib/s
 import { getPaperDisplayName } from '@/lib/normalize';
 import { getReview, listVaultFolders, setMistakeTag } from '@/lib/testApi';
 import { MISTAKE_TAGS, type MistakeTag, type ReviewData, type ReviewItem, type VaultFolder } from '@/lib/types';
+import { formatTestLabel } from '@/lib/testTitle';
 
 const MathText = dynamic(() => import('@/components/quiz/MathText'), { ssr: false });
 
@@ -104,7 +105,7 @@ function ReviewBody() {
     <div className="space-y-4">
       <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-slate-800">{sub.test_mode}</p>
+          <p className="text-sm font-bold text-slate-800">{formatTestLabel(sub.test_mode)}</p>
           <p className="text-xs text-slate-500">{new Date(sub.submitted_at).toLocaleString('en-IN')} · Time {formatTime(sub.time_taken_seconds)}</p>
         </div>
         <div className="text-right">

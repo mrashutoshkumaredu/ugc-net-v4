@@ -146,7 +146,12 @@ function SpeedMathBody() {
               return (
                 <button
                   key={d.id}
-                  onClick={() => { setActive(d.id); document.documentElement.requestFullscreen?.().catch(() => {}); }}
+                  onClick={() => {
+                    setActive(d.id);
+                    // Full screen only on computers. On phones the game already fills the screen, and
+                    // Android's "drag from the top to exit" message would cover the question.
+                    if (window.matchMedia('(pointer: fine)').matches) document.documentElement.requestFullscreen?.().catch(() => {});
+                  }}
                   className={`group relative overflow-hidden text-left rounded-2xl p-4 text-white bg-gradient-to-br ${w.gradient} shadow-md hover:shadow-xl hover:-translate-y-1 active:translate-y-0 transition-all`}
                 >
                   <span className="absolute -right-3 -bottom-4 text-6xl opacity-20 group-hover:scale-110 transition-transform" aria-hidden>{d.icon}</span>
@@ -347,7 +352,9 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
         </div>
       )}
 
-      <div className="relative flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 py-4 flex flex-col items-center justify-center">
+      {/* While playing on a phone, start at the top: centred content slid under the keyboard,
+          and a tall Mini DI table lost its heading row off the top of the screen. */}
+      <div className={`relative flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 py-4 flex flex-col items-center ${phase === 'playing' ? 'justify-start sm:justify-center' : 'justify-center'}`}>
         {phase === 'ready' && (
           <div className="text-center space-y-5 sm-pop">
             <p className="text-6xl" aria-hidden>{drill.icon}</p>

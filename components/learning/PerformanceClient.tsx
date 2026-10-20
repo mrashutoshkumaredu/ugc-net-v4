@@ -7,6 +7,7 @@ import { UNIT_OPTIONS } from '@/lib/normalize';
 import { normalizeUnit } from '@/lib/scoring';
 import { getMyPerformance, getMyProgress, saveMySettings } from '@/lib/testApi';
 import { MISTAKE_TAGS, type Performance, type Progress } from '@/lib/types';
+import { formatTestLabel } from '@/lib/testTitle';
 
 // NTA gives 60 minutes for 50 Paper 1 questions in practice: about 72 s each.
 const TARGET_SECONDS = 72;
@@ -161,7 +162,7 @@ function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
         {trend.map((t, i) => (
           <g key={t.id}>
             <circle cx={x(i)} cy={y(t.score_percentage)} r="12" fill="transparent">
-              <title>{`${t.test_mode}: ${t.score_percentage}% (${new Date(t.submitted_at).toLocaleDateString('en-IN')})`}</title>
+              <title>{`${formatTestLabel(t.test_mode)}: ${t.score_percentage}% (${new Date(t.submitted_at).toLocaleDateString('en-IN')})`}</title>
             </circle>
             <circle cx={x(i)} cy={y(t.score_percentage)} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="2" pointerEvents="none" />
           </g>
@@ -173,7 +174,7 @@ function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
         <ul className="mt-2 space-y-1 text-xs text-slate-600">
           {[...trend].reverse().map((t) => (
             <li key={t.id} className="flex justify-between gap-2">
-              <span className="truncate">{new Date(t.submitted_at).toLocaleDateString('en-IN')} · {t.test_mode}</span>
+              <span className="truncate">{new Date(t.submitted_at).toLocaleDateString('en-IN')} · {formatTestLabel(t.test_mode)}</span>
               <span className="shrink-0 font-semibold text-slate-800">{t.score_percentage}% ({t.correct_answers}/{t.total_questions})</span>
             </li>
           ))}

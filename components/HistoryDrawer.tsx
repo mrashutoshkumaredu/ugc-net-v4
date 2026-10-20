@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import type { TestSubmission } from '@/lib/types';
+import { formatTestLabel } from '@/lib/testTitle';
 
 export default function HistoryDrawer({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
@@ -49,7 +50,7 @@ export default function HistoryDrawer({ onClose }: { onClose: () => void }) {
             <div key={item.id} className="p-4 border rounded-xl bg-slate-50">
               <div className="flex justify-between items-center gap-3">
                 <div className="min-w-0">
-                  <span className="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">{item.test_mode}</span>
+                  <span className="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">{formatTestLabel(item.test_mode)}</span>
                   <p className="text-xs text-slate-500 mt-1">{new Date(item.submitted_at).toLocaleString('en-IN')}</p>
                 </div>
                 <div className="text-right shrink-0">

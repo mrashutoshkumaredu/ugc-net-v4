@@ -1,4 +1,5 @@
 import { cleanNewlines, normalizeUnit } from './scoring';
+import { formatPaperTitle } from './testTitle';
 import type { NormalizedQuestion, PublicQuestion } from './types';
 
 function blankToNull(s: string | null | undefined) {
@@ -60,6 +61,7 @@ export function cycleSortKey(cycleId: string) {
   return Number(year || 0) * 100 + m;
 }
 
+// Readable paper name for students, e.g. "01 Economics · 12 Dec 2023 · Shift 1".
 export function getPaperDisplayName(paperId: string) {
-  return paperId.replace(/_/g, ' ').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+  return formatPaperTitle(paperId);
 }
