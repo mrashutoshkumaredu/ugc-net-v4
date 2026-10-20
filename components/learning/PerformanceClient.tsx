@@ -142,7 +142,8 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 // last points, hover title on every point, and the same numbers as a list.
 function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
   if (trend.length < 2) return null;
-  const W = 640, H = 180, P = { l: 34, r: 12, t: 14, b: 24 };
+  // Labels are sized for phones: the 640-wide drawing shrinks to about half on a phone screen.
+  const W = 640, H = 200, P = { l: 58, r: 16, t: 30, b: 24 };
   const x = (i: number) => P.l + (i * (W - P.l - P.r)) / (trend.length - 1);
   const y = (v: number) => P.t + ((100 - v) * (H - P.t - P.b)) / 100;
   const path = trend.map((t, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(t.score_percentage).toFixed(1)}`).join(' ');
@@ -151,11 +152,12 @@ function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
   return (
     <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
       <h2 className="text-sm font-bold text-slate-800">Score % over your last {trend.length} tests</h2>
+      <p className="text-xs text-slate-500">Only tests where you answered at least one question.</p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto mt-2" role="img" aria-label={`Score trend: latest ${last.score_percentage}%`}>
         {[0, 50, 100].map((g) => (
           <g key={g}>
             <line x1={P.l} x2={W - P.r} y1={y(g)} y2={y(g)} stroke="#e2e8f0" strokeWidth="1" />
-            <text x={P.l - 6} y={y(g) + 4} textAnchor="end" fontSize="10" fill="#64748b">{g}%</text>
+            <text x={P.l - 8} y={y(g) + 7} textAnchor="end" fontSize="20" fill="#64748b">{g}%</text>
           </g>
         ))}
         <path d={path} fill="none" stroke="#4f46e5" strokeWidth="2" strokeLinejoin="round" />
@@ -167,7 +169,7 @@ function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
             <circle cx={x(i)} cy={y(t.score_percentage)} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="2" pointerEvents="none" />
           </g>
         ))}
-        <text x={x(trend.length - 1)} y={y(last.score_percentage) - 9} textAnchor="end" fontSize="11" fontWeight="700" fill="#1e1b4b">{last.score_percentage}%</text>
+        <text x={x(trend.length - 1)} y={y(last.score_percentage) - 12} textAnchor="end" fontSize="22" fontWeight="700" fill="#1e1b4b">{last.score_percentage}%</text>
       </svg>
       <details className="mt-2">
         <summary className="text-xs font-semibold text-indigo-700 cursor-pointer">Show as a list</summary>

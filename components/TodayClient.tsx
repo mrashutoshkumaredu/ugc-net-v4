@@ -14,6 +14,14 @@ import { courseApi, type CourseChapter, type CourseSet } from '@/lib/courseApi';
 import type { Progress } from '@/lib/types';
 import { formatTestLabel } from '@/lib/testTitle';
 
+// The test clock keeps running while you are away, so say plainly how much time is left.
+function timeLeftText(endsAt?: number) {
+  if (!endsAt) return 'The test clock kept running while you were away.';
+  const mins = Math.floor((endsAt - Date.now()) / 60000);
+  if (mins < 1) return "Time is up. Open it to submit and see your score.";
+  return `About ${mins} minute${mins === 1 ? '' : 's'} left on the clock.`;
+}
+
 // Today: the one page that answers "what should I do now?".
 export default function TodayClient() {
   const router = useRouter();
@@ -76,7 +84,7 @@ export default function TodayClient() {
         {/* Priority cards */}
         <div className="space-y-3">
           {resumable && user && (
-            <Card tone="amber" icon="⏯" title="Finish your unfinished test" text={`${formatTestLabel(resumable.label) || 'Test in progress'}. The timer has kept running.`}>
+            <Card tone="amber" icon="⏯" title="Finish your unfinished test" text={`${formatTestLabel(resumable.label) || 'Test in progress'}. ${timeLeftText(resumable.endsAt)}`}>
               <button onClick={() => go('Resuming your test', `/quiz?session=${resumable.sessionId}`)} className="btn bg-amber-500 hover:bg-amber-600 text-slate-900">Resume</button>
               <button onClick={() => { clearProgress(resumable.sessionId); setResumable(null); }} className="text-xs text-amber-800 hover:underline" title="Discard this test">Discard</button>
             </Card>

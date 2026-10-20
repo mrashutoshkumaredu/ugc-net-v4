@@ -212,6 +212,7 @@ function QuizPageInner() {
       visited,
       timeSpent: timeByQuestionRef.current,
       savedAt: Date.now(),
+      endsAt: Date.parse(session.started_at) + session.duration_seconds * 1000,
     });
     // questionTimeSpent changes every second, so time per question is kept too.
   }, [session, phase, label, answers, reviewFlags, currentIndex, language, confidence, visited, questionTimeSpent]);

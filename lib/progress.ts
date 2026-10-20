@@ -15,6 +15,8 @@ export type SavedProgress = {
   confidence?: Record<number, 'guess'>;
   visited?: Record<number, boolean>;
   timeSpent?: Record<number, number>;
+  // When the test's time runs out (ms since 1970), so Today can say how long is left.
+  endsAt?: number;
 };
 
 const ACTIVE_KEY = 'ugcnet.activeSession';
