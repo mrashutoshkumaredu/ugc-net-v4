@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { formatTime } from '@/lib/scoring';
 import { getPaperDisplayName } from '@/lib/normalize';
@@ -101,6 +101,20 @@ export default function QuestionPanel({
   // On phones the text size and full screen buttons live in a small "More" menu,
   // so the toolbar fits on one row without buttons sitting on top of each other.
   const [moreOpen, setMoreOpen] = useState(false);
+  // Close the menu when the student touches anywhere else. This is a document listener, not an
+  // invisible full-screen layer, so the reference material and the question still scroll normally.
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!moreOpen) return;
+    const close = (e: Event) => {
+      const t = e.target as Node;
+      if (moreBtnRef.current?.contains(t) || moreMenuRef.current?.contains(t)) return;
+      setMoreOpen(false);
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [moreOpen]);
   const activeOptions = showHindiImage
     ? question.options.map((_, i) => `विकल्प ${i + 1}`)
     : language === 'HI' && question.optionsHi ? question.optionsHi : question.options;
@@ -155,6 +169,7 @@ export default function QuestionPanel({
           )}
           {/* Phones: text size and full screen in a small menu */}
           <button
+            ref={moreBtnRef}
             onClick={() => setMoreOpen((o) => !o)}
             className="sm:hidden bg-white border border-indigo-200 text-indigo-800 px-2 py-1 rounded-md text-sm font-black leading-none"
             aria-label="More options: text size and full screen"
@@ -165,15 +180,14 @@ export default function QuestionPanel({
           </button>
           {moreOpen && (
             <>
-              <button className="sm:hidden fixed inset-0 z-20 cursor-default" aria-label="Close menu" onClick={() => setMoreOpen(false)} />
-              <div className="sm:hidden absolute right-0 top-full mt-2 z-30 w-52 bg-white rounded-xl border border-slate-200 shadow-lg p-3 space-y-3">
+              <div ref={moreMenuRef} className="sm:hidden absolute right-0 top-full mt-2 z-30 w-52 bg-white rounded-xl border border-slate-200 shadow-lg p-3 space-y-3">
                 <div>
                   <p className="text-[11px] font-semibold text-slate-500 mb-1.5">Text size</p>
                   <div className="flex rounded-md border border-indigo-200 overflow-hidden" role="group" aria-label="Text size">
                     {TEXT_SIZES.map((t) => (
                       <button
                         key={t.value}
-                        onClick={() => onTextSize(t.value)}
+                        onClick={() => { onTextSize(t.value); setMoreOpen(false); }}
                         title={t.title}
                         aria-pressed={textSize === t.value}
                         className={`flex-1 py-1.5 text-xs font-bold ${textSize === t.value ? 'bg-indigo-600 text-white' : 'text-indigo-800'}`}

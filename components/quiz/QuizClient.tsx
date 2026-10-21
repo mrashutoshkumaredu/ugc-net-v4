@@ -55,6 +55,8 @@ function QuizPageInner() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteHiddenDesktop, setPaletteHiddenDesktop] = useState(false);
   const [textSize, setTextSizeState] = useState<TextSize>('md');
+  // Reference material shown full screen, with the question hidden until the student goes back.
+  const [refExpanded, setRefExpanded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [canFullscreen, setCanFullscreen] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
@@ -418,10 +420,17 @@ function QuizPageInner() {
           {/* In Hindi-picture mode the picture already holds the lists and options (match-the-list),
               so the English reference table is shown only when there is a Hindi table/passage picture. */}
           {referenceText && !(showingHindiPicture && !hindiRefImage) && (
-            <ReferencePanel layoutText={referenceText} imageSrc={hindiRefImage} textSize={textSize} />
+            <ReferencePanel
+              layoutText={referenceText}
+              imageSrc={hindiRefImage}
+              textSize={textSize}
+              expanded={refExpanded}
+              onToggleExpand={() => setRefExpanded((v) => !v)}
+              questionLabel={`Question ${currentIndex + 1} of ${questions.length}`}
+            />
           )}
 
-          <QuestionPanel
+          {!(refExpanded && referenceText && !(showingHindiPicture && !hindiRefImage)) && <QuestionPanel
             question={currentQuestion}
             index={currentIndex}
             total={questions.length}
@@ -454,7 +463,7 @@ function QuizPageInner() {
             hindiImage={hindiImage?.q}
             canGoPrev={currentIndex > 0}
             canGoNext={currentIndex < questions.length - 1}
-          />
+          />}
         </div>
 
         <div className={paletteOpen ? 'flex flex-col h-full' : paletteHiddenDesktop ? 'hidden' : 'hidden md:flex md:flex-col h-full'}>
