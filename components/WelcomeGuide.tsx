@@ -19,7 +19,7 @@ const COPY: Record<GuideLang, Copy> = {
       { icon: '📝', name: 'Practice', text: 'Full previous year papers with a real 60-minute timer, unit-wise sets, daily practice and Speed Maths.' },
       { icon: '📘', name: 'Learn', text: 'Maths course, revision notes and previous year question trends by unit.' },
       { icon: '📊', name: 'Progress', text: 'Your scores, weak areas, saved questions (Revision Vault) and the leaderboard.' },
-      { icon: '👥', name: 'Classes', text: 'Appears when a teacher adds you to a class, with tasks to attempt.' },
+      { icon: '👥', name: 'Classes', text: 'Appears when you join a class, displaying tasks assigned by your teacher.' },
     ],
     tipsTitle: 'Good to know',
     tips: [
@@ -40,7 +40,7 @@ const COPY: Record<GuideLang, Copy> = {
       { icon: '📝', name: 'प्रैक्टिस (Practice)', text: '60 मिनट के वास्तविक टाइमर के साथ पिछले वर्षों के पूरे पेपर, यूनिट-वार सेट, रोज़ का अभ्यास और स्पीड मैथ्स।' },
       { icon: '📘', name: 'सीखें (Learn)', text: 'गणित कोर्स, रिवीज़न नोट्स और यूनिट के अनुसार पिछले वर्षों के प्रश्नों के रुझान।' },
       { icon: '📊', name: 'प्रगति (Progress)', text: 'आपके अंक, कमज़ोर यूनिट, सहेजे गए प्रश्न (रिवीज़न वॉल्ट) और लीडरबोर्ड।' },
-      { icon: '👥', name: 'क्लास (Classes)', text: 'यह तब दिखता है जब कोई शिक्षक आपको क्लास में जोड़ते हैं। इसमें हल करने के लिए टास्क होते हैं।' },
+      { icon: '👥', name: 'क्लास (Classes)', text: 'यह तब दिखता है जब आप किसी क्लास से जुड़ते हैं। इसमें आपके शिक्षक द्वारा दिए गए टास्क दिखते हैं।' },
     ],
     tipsTitle: 'ध्यान रखें',
     tips: [

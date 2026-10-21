@@ -16,7 +16,7 @@ const MathText = dynamic(() => import('@/components/quiz/MathText'), { ssr: fals
 type Item = Awaited<ReturnType<typeof listVaultItems>>[number];
 
 const KIND_NOTE: Record<VaultFolder['kind'], string> = {
-  wrong: 'Added automatically when you answer a question wrongly.',
+  wrong: 'Added automatically when you answer a question incorrectly.',
   lucky: "Added automatically when you mark 'I'm guessing' and get it right.",
   custom: 'Your own folder.',
 };

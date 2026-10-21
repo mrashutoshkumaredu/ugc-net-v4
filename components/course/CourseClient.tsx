@@ -33,6 +33,8 @@ function CourseBody() {
   const [err, setErr] = useState('');
   const [view, setView] = useState<View>({ kind: 'home' });
   const [task, setTask] = useState<string | null>(null);
+  // Parts the student has opened or closed by hand; until then only the first part is open.
+  const [toggled, setToggled] = useState<Record<string, boolean>>({});
   const { user } = useAuth();
 
   const load = useCallback(() => { courseApi.catalog().then(setData).catch((e) => setErr(e.message)); }, []);
@@ -81,13 +83,21 @@ function CourseBody() {
         Practice sets in every chapter are free for everyone. The number (for example 0/1) shows practice sets done.
       </p>
 
-      {parts.map((part) => {
+      {parts.map((part, idx) => {
         const st = PART_STYLE[partLetter(part)];
+        const inPart = data.chapters.filter((c) => c.part === part);
+        const isOpen = part in toggled ? toggled[part] : idx === 0;
         return (
           <section key={part}>
-            <h2 className="text-lg font-black text-indigo-950 mb-3">{st.icon} {part.replace(/^Part [A-D] - /, '')}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {data.chapters.filter((c) => c.part === part).map((c) => {
+            <h2 className={isOpen ? 'mb-3' : ''}>
+              <button type="button" onClick={() => setToggled((t) => ({ ...t, [part]: !isOpen }))} aria-expanded={isOpen}
+                className="w-full flex items-center justify-between gap-3 text-left text-lg font-black text-indigo-950">
+                <span>{st.icon} {part.replace(/^Part [A-D] - /, '')} <span className="text-xs font-semibold text-slate-500">({inPart.length} chapter{inPart.length === 1 ? '' : 's'})</span></span>
+                <span className="text-slate-400 text-base" aria-hidden>{isOpen ? '▴' : '▾'}</span>
+              </button>
+            </h2>
+            {isOpen && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {inPart.map((c) => {
                 const cs = data.sets.filter((s) => s.chapter_no === c.no);
                 const done = cs.filter((s) => s.best !== null).length;
                 const pct = cs.length ? Math.round((done / cs.length) * 100) : 0;
@@ -106,7 +116,7 @@ function CourseBody() {
                   </button>
                 );
               })}
-            </div>
+            </div>}
           </section>
         );
       })}

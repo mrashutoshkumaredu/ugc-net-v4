@@ -68,16 +68,18 @@ function PerformanceBody() {
             const weak = u.accuracy < 50;
             return (
               <li key={u.unit} className="text-xs" title={`${shortUnit(u.unit)}: ${u.correct}/${u.attempted} correct (${u.accuracy}%), ${u.avg_seconds ?? '—'} s per question`}>
-                <div className="flex justify-between gap-2 mb-1">
-                  <span className="font-semibold text-slate-700 truncate">
+                <div className="mb-1">
+                  <span className="font-semibold text-slate-700">
                     {shortUnit(u.unit)}
                     {weak && <span className="ml-2 text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded">Needs work</span>}
                     {slow && <span className="ml-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded">Slow</span>}
                   </span>
-                  <span className="text-slate-600 shrink-0"><strong className="text-slate-900">{u.accuracy}%</strong> · {u.correct}/{u.attempted} · {u.avg_seconds ? `${Math.round(u.avg_seconds)} s` : '—'}</span>
                 </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden" aria-hidden>
-                  <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${Math.max(2, u.accuracy)}%` }} />
+                <div className="flex items-center gap-3 max-w-2xl">
+                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden" aria-hidden>
+                    <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${Math.max(2, u.accuracy)}%` }} />
+                  </div>
+                  <span className="text-slate-600 shrink-0 whitespace-nowrap"><strong className="text-slate-900">{u.accuracy}%</strong> · {u.correct}/{u.attempted} · {u.avg_seconds ? `${Math.round(u.avg_seconds)} s` : '—'}</span>
                 </div>
               </li>
             );

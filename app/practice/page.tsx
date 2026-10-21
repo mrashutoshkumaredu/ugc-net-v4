@@ -193,7 +193,7 @@ export default function PracticePage() {
               </div>
               <button
                 onClick={() => { setStarting('Starting Daily Practice'); router.push('/quiz?mode=DAILY'); }}
-                className={`px-4 py-2.5 font-bold text-sm rounded-xl shrink-0 ${progress.daily_done ? 'bg-slate-100 text-slate-700 border border-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                className={`px-6 py-3 font-bold text-base rounded-xl shrink-0 ${progress.daily_done ? 'bg-slate-100 text-slate-700 border border-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md'}`}
               >
                 {progress.daily_done ? 'Done ✓ · Again' : 'Start'}
               </button>
@@ -293,7 +293,7 @@ export default function PracticePage() {
             <button
               onClick={() => prepareTest('FULL')}
               disabled={loading || fullTestQuestionCount === 0}
-              className="w-full py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition shadow-md disabled:opacity-50"
+              className="w-full sm:w-auto sm:px-8 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition shadow-md disabled:opacity-50"
             >
               Start Full Paper
             </button>
@@ -355,7 +355,7 @@ export default function PracticePage() {
             <button
               onClick={() => prepareTest('UNIT')}
               disabled={loading || themeQuestionCount === 0}
-              className="w-full py-3 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition shadow-md disabled:opacity-50"
+              className="w-full sm:w-auto sm:px-8 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition shadow-md disabled:opacity-50"
             >
               Start Unit Practice
             </button>

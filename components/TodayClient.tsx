@@ -127,10 +127,12 @@ export default function TodayClient() {
             ['/progress', '📊', 'Progress', 'Scores and mistakes', 'from-amber-500 to-orange-600'],
             ['/speed-math', '⚡', 'Speed Maths', '11 quick games', 'from-rose-500 to-pink-600'],
           ].map(([href, icon, title, text, g]) => (
-            <Link key={href} href={href} className={`rounded-2xl p-4 text-white bg-gradient-to-br ${g} shadow hover:shadow-lg hover:-translate-y-0.5 transition`}>
-              <span className="text-2xl" aria-hidden>{icon}</span>
-              <span className="block font-black mt-1">{title}</span>
-              <span className="block text-[11px] text-white/85">{text}</span>
+            <Link key={href} href={href} className="rounded-2xl p-4 bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex items-center gap-3">
+              <span className={`shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${g} flex items-center justify-center text-2xl`} aria-hidden>{icon}</span>
+              <span className="min-w-0">
+                <span className="block font-black text-slate-900">{title}</span>
+                <span className="block text-[11px] text-slate-600">{text}</span>
+              </span>
             </Link>
           ))}
         </div>

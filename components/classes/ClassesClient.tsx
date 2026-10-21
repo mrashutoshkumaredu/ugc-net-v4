@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getCatalog } from '@/lib/testApi';
 import { UNIT_OPTIONS } from '@/lib/normalize';
 import { formatPaperTitle } from '@/lib/testTitle';
+import { classesSubtitle, formatClassName, type ClassTab } from '@/lib/classNames';
 import { courseApi, type CourseChapter, type CourseSet } from '@/lib/courseApi';
 import { classesApi, taskHref, type ClassRole, type ClassTask, type TaskKind, type TaskResult } from '@/lib/classesApi';
 import type { Catalog } from '@/lib/types';
@@ -35,28 +36,28 @@ const fmtDate = (d: string | null) => (d ? new Date(d + 'T00:00:00').toLocaleDat
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function ClassesClient() {
-  return (
-    <PageShell title="📋 Classes & Tasks" subtitle="Join your teacher's class to get tasks. Teachers can create classes, add students and track their work." requireLogin wide>
-      <ClassesBody />
-    </PageShell>
-  );
-}
-
-function ClassesBody() {
   const { user } = useAuth();
   const [role, setRole] = useState<ClassRole | null>(null);
-  const [tab, setTab] = useState<'student' | 'teacher'>('student');
+  const [tab, setTab] = useState<ClassTab>('student');
   useEffect(() => {
     if (!user) return;
     classesApi.role().then((r) => { setRole(r); if (r.teacher_status === 'approved') setTab('teacher'); }).catch(() => setRole({ teacher_status: null, is_admin: false }));
   }, [user]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-1 border-b border-slate-200" role="tablist">
+    <PageShell title="📋 Classes & Tasks" subtitle={classesSubtitle(tab, role?.teacher_status)} requireLogin wide>
+      <ClassesBody role={role} setRole={setRole} tab={tab} setTab={setTab} />
+    </PageShell>
+  );
+}
+
+function ClassesBody({ role, setRole, tab, setTab }: { role: ClassRole | null; setRole: React.Dispatch<React.SetStateAction<ClassRole | null>>; tab: ClassTab; setTab: (t: ClassTab) => void }) {
+  return (
+    <div className="space-y-4 rounded-2xl bg-[#f7f3e7] p-3 sm:p-4 text-[#111417]">
+      <div className="flex gap-1 border-b border-slate-300" role="tablist">
         {([['student', '🎒 My Tasks'], ['teacher', '🧑‍🏫 Teach']] as const).map(([v, l]) => (
           <button key={v} role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
-            className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px ${tab === v ? 'border-indigo-600 text-indigo-900' : 'border-transparent text-slate-500'}`}>{l}</button>
+            className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px ${tab === v ? 'border-[#266b47] text-[#111417]' : 'border-transparent text-slate-500'}`}>{l}</button>
         ))}
       </div>
       {tab === 'student' ? <StudentView /> : <TeacherView role={role} onRequested={() => setRole((r) => ({ ...(r || { is_admin: false }), teacher_status: 'pending' }))} />}
@@ -102,7 +103,7 @@ function StudentView() {
           <div className="flex gap-2">
             <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Class code, e.g. 7K3QF9" maxLength={8}
               className="flex-1 min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold tracking-widest uppercase" />
-            <button onClick={join} disabled={code.trim().length < 4} className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">Join</button>
+            <button onClick={join} disabled={code.trim().length < 4} className="px-4 py-2 bg-[#266b47] text-white text-sm font-bold rounded-lg disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed">Join</button>
           </div>
           {msg && <p className="text-xs text-emerald-700 mt-2">{msg}</p>}
           {err && <p className="text-xs text-rose-600 mt-2">{err}</p>}
@@ -113,7 +114,7 @@ function StudentView() {
             <ul className="space-y-1">
               {data!.classes.map((c) => (
                 <li key={c.id} className="flex items-center justify-between text-sm">
-                  <span><strong>{c.name}</strong> <span className="text-slate-500">· {c.teacher}</span></span>
+                  <span><strong>{formatClassName(c.name)}</strong> <span className="text-slate-500">· {c.teacher}</span></span>
                   <button onClick={() => classesApi.leaveClass(c.id).then(load)} className="text-xs text-slate-400 hover:text-rose-600">Leave</button>
                 </li>
               ))}
@@ -127,7 +128,7 @@ function StudentView() {
           <p className="text-sm font-bold text-amber-900">You have been invited</p>
           {invites.map((i) => (
             <div key={i.class_id} className="flex items-center justify-between gap-2 text-sm">
-              <span><strong>{i.name}</strong> · {i.teacher}</span>
+              <span><strong>{formatClassName(i.name)}</strong> · {i.teacher}</span>
               <span className="flex gap-2">
                 <button onClick={() => classesApi.answerInvite(i.class_id, true).then(load)} className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg">Accept</button>
                 <button onClick={() => classesApi.answerInvite(i.class_id, false).then(load)} className="px-3 py-1.5 bg-white border border-amber-300 text-xs font-bold rounded-lg">Decline</button>
@@ -138,7 +139,7 @@ function StudentView() {
       )}
 
       <section>
-        <h2 className="text-base font-black text-indigo-950 mb-2">To do <span className="text-slate-400 font-semibold">({pending.length})</span></h2>
+        <h2 className="text-base font-black text-[#111417] mb-2">To do <span className="text-slate-400 font-semibold">({pending.length})</span></h2>
         {pending.length === 0 ? <p className="text-sm text-slate-500">No pending tasks. 🎉</p> : (
           <div className="grid sm:grid-cols-2 gap-3">
             {pending.map((t) => {
@@ -149,10 +150,10 @@ function StudentView() {
                     <p className="font-bold text-slate-900">{t.title}</p>
                     {t.due_on && <span className={`text-[11px] font-bold rounded-full px-2 py-0.5 h-fit ${overdue ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'}`}>{overdue ? 'Overdue · ' : 'Due '}{fmtDate(t.due_on)}</span>}
                   </div>
-                  <p className="text-xs text-slate-500">{t.class_name} · {describe(t)}</p>
+                  <p className="text-xs text-slate-500">{formatClassName(t.class_name)} · {describe(t)}</p>
                   {t.result && t.kind === 'SPEED' && <p className="text-xs text-amber-700">Best so far: {resultText(t, t.result)}</p>}
                   {['FULL', 'UNIT', 'CHAPTER'].includes(t.kind) && <p className="text-[11px] text-slate-500">Your first submitted attempt is the one your teacher sees.</p>}
-                  <Link href={taskHref(t)} className="self-start mt-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg">Start ▸</Link>
+                  <Link href={taskHref(t)} className="self-start mt-1 px-4 py-2 bg-[#266b47] hover:bg-[#1f5a3c] text-white text-sm font-bold rounded-lg">Start ▸</Link>
                 </div>
               );
             })}
@@ -162,11 +163,11 @@ function StudentView() {
 
       {done.length > 0 && (
         <section>
-          <h2 className="text-base font-black text-indigo-950 mb-2">Done <span className="text-slate-400 font-semibold">({done.length})</span></h2>
+          <h2 className="text-base font-black text-[#111417] mb-2">Done <span className="text-slate-400 font-semibold">({done.length})</span></h2>
           <ul className="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100">
             {done.map((t) => (
               <li key={t.id} className="p-3 flex justify-between gap-2 text-sm">
-                <span><strong>✓ {t.title}</strong> <span className="text-slate-500">· {t.class_name}</span></span>
+                <span><strong>✓ {t.title}</strong> <span className="text-slate-500">· {formatClassName(t.class_name)}</span></span>
                 <span className={`font-bold shrink-0 ${scoreColour(t.result!.score_percentage)}`}>{resultText(t, t.result!)}</span>
               </li>
             ))}
@@ -196,7 +197,7 @@ function TeacherView({ role, onRequested }: { role: ClassRole | null; onRequeste
         {role.teacher_status === 'pending' ? (
           <p className="text-sm font-bold text-amber-700">Your request has been sent. The site admin will approve it soon.</p>
         ) : (
-          <button onClick={() => classesApi.requestTeacher().then(onRequested).catch((e) => setErr(e.message))} className="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl">
+          <button onClick={() => classesApi.requestTeacher().then(onRequested).catch((e) => setErr(e.message))} className="px-5 py-2.5 bg-[#266b47] text-white font-bold rounded-xl">
             {role.teacher_status === 'rejected' ? 'Ask again' : 'Request teacher access'}
           </button>
         )}
@@ -213,15 +214,15 @@ function TeacherView({ role, onRequested }: { role: ClassRole | null; onRequeste
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New class name, e.g. NET Batch Dec 2026" maxLength={80}
           className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
         <button disabled={!name.trim()} onClick={() => classesApi.createClass(name).then((id) => { setName(''); setSelected(id); }).catch((e) => setErr(e.message))}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">+ Create class</button>
+          className="px-4 py-2 bg-[#266b47] text-white text-sm font-bold rounded-lg disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed">+ Create class</button>
       </div>
       {err && <p className="text-xs text-rose-600">{err}</p>}
       {classes.length === 0 ? <p className="text-sm text-slate-500">No classes yet. Create your first one above.</p> : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {classes.map((c) => (
-            <button key={c.id} onClick={() => setSelected(c.id)} className="text-left bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-2xl p-4 shadow-md hover:-translate-y-0.5 transition">
-              <p className="font-black text-lg">{c.name}</p>
-              <p className="text-xs text-indigo-100 mt-1">{c.students} student{c.students === 1 ? '' : 's'} · {c.tasks} task{c.tasks === 1 ? '' : 's'}</p>
+            <button key={c.id} onClick={() => setSelected(c.id)} className="text-left bg-[#266b47] text-white rounded-2xl p-4 shadow-md hover:-translate-y-0.5 transition">
+              <p className="font-black text-lg">{formatClassName(c.name)}</p>
+              <p className="text-xs text-white/80 mt-1">{c.students} student{c.students === 1 ? '' : 's'} · {c.tasks} task{c.tasks === 1 ? '' : 's'}</p>
               <p className="mt-3 text-xs font-bold bg-black/20 rounded-full px-2 py-0.5 inline-block tracking-widest">Code {c.join_code}</p>
             </button>
           ))}
@@ -260,32 +261,23 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <button onClick={onBack} className="text-sm font-bold text-indigo-700 hover:underline">← My classes</button>
-        {confirmDel ? (
-          <span className="flex items-center gap-2 text-xs">
-            <span className="text-rose-700 font-semibold">Delete this class and all its tasks?</span>
-            <button onClick={() => classesApi.deleteClass(classId).then(onBack)} className="px-2 py-1 bg-rose-600 text-white rounded font-bold">Yes, delete</button>
-            <button onClick={() => setConfirmDel(false)} className="px-2 py-1 border border-slate-300 rounded font-bold">Keep</button>
-          </span>
-        ) : (
-          <button onClick={() => setConfirmDel(true)} className="text-xs text-slate-400 hover:text-rose-600">Delete class</button>
-        )}
+      <div>
+        <button onClick={onBack} className="text-sm font-bold text-[#266b47] hover:underline">← My classes</button>
       </div>
 
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-950 to-violet-900 text-white p-5 grid sm:grid-cols-3 gap-4 items-center">
+      <div className="rounded-2xl bg-[#111417] text-white p-5 grid sm:grid-cols-3 gap-4 items-center">
         <div>
-          <p className="text-xs uppercase tracking-widest text-violet-200 font-bold">Class</p>
-          <p className="text-2xl font-black">{d.class.name}</p>
-          <p className="text-xs text-violet-200">{total} student{total === 1 ? '' : 's'} · {d.tasks.length} task{d.tasks.length === 1 ? '' : 's'}</p>
+          <p className="text-xs uppercase tracking-widest text-[#f7f3e7]/70 font-bold">Class</p>
+          <p className="text-2xl font-black">{formatClassName(d.class.name)}</p>
+          <p className="text-xs text-[#f7f3e7]/70">{total} student{total === 1 ? '' : 's'} · {d.tasks.length} task{d.tasks.length === 1 ? '' : 's'}</p>
         </div>
         <div className="text-center">
-          <p className="text-xs uppercase tracking-widest text-violet-200 font-bold">Join code</p>
+          <p className="text-xs uppercase tracking-widest text-[#f7f3e7]/70 font-bold">Join code</p>
           <p className="text-3xl font-black tracking-[0.3em]">{d.class.join_code}</p>
         </div>
         <div className="flex flex-col gap-2">
           <button onClick={() => copy(joinLink)} className="px-3 py-2 bg-white/15 hover:bg-white/25 rounded-lg text-sm font-bold">🔗 Copy join link</button>
-          <button onClick={() => copy(`Join my UGC NET class "${d.class.name}": ${joinLink} (code ${d.class.join_code})`)} className="px-3 py-2 bg-white/15 hover:bg-white/25 rounded-lg text-sm font-bold">💬 Copy message for WhatsApp</button>
+          <button onClick={() => copy(`Join my UGC NET class "${formatClassName(d.class.name)}": ${joinLink} (code ${d.class.join_code})`)} className="px-3 py-2 bg-white/15 hover:bg-white/25 rounded-lg text-sm font-bold">💬 Copy message for WhatsApp</button>
         </div>
       </div>
       {note && <p className="text-xs text-emerald-700">{note}</p>}
@@ -293,8 +285,8 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
       {/* Tasks */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-black text-indigo-950">Tasks</h2>
-          <button onClick={() => setShowForm((v) => !v)} className="px-3 py-1.5 bg-indigo-600 text-white text-sm font-bold rounded-lg">{showForm ? 'Close' : '+ New task'}</button>
+          <h2 className="text-base font-black text-[#111417]">Tasks</h2>
+          <button onClick={() => setShowForm((v) => !v)} className="px-3 py-1.5 bg-[#266b47] text-white text-sm font-bold rounded-lg">{showForm ? 'Close' : '+ New task'}</button>
         </div>
         {showForm && <TaskForm classId={classId} onCreated={() => { setShowForm(false); load(); }} />}
         {d.tasks.length === 0 ? <p className="text-sm text-slate-500">No tasks yet.</p> : (
@@ -306,18 +298,20 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
               const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
               return (
                 <li key={t.id} className="bg-white border border-slate-200 rounded-2xl">
-                  <button onClick={() => setOpen(open === t.id ? null : t.id)} className="w-full text-left p-4 flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
-                    <span>
-                      <span className="block font-bold text-slate-900">{t.title}</span>
-                      <span className="block text-xs text-slate-500">{describe(t)}{t.due_on ? ` · due ${fmtDate(t.due_on)}` : ''}</span>
-                    </span>
-                    <span className="flex items-center gap-3 shrink-0">
-                      {avg !== null && <span className="text-xs font-bold text-slate-600">Avg {avg}%</span>}
-                      <span className="w-28">
-                        <span className="block text-[11px] font-bold text-slate-600 text-right">{doneRs.length}/{total} done</span>
-                        <span className="block h-2 bg-slate-100 rounded-full overflow-hidden"><span className="block h-full bg-emerald-500" style={{ width: `${pct}%` }} /></span>
+                  <button onClick={() => setOpen(open === t.id ? null : t.id)} className="w-full text-left p-4 flex flex-col gap-3">
+                    <span className="flex items-start justify-between gap-3">
+                      <span>
+                        <span className="block font-bold text-slate-900">{t.title}</span>
+                        <span className="block text-xs text-slate-500">{describe(t)}{t.due_on ? ` · due ${fmtDate(t.due_on)}` : ''}</span>
                       </span>
-                      <span className="text-slate-400">{open === t.id ? '▴' : '▾'}</span>
+                      <span className="text-slate-400 shrink-0">{open === t.id ? '▴' : '▾'}</span>
+                    </span>
+                    <span className="block">
+                      <span className="flex items-center justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>{doneRs.length}/{total} done</span>
+                        {avg !== null && <span>Avg {avg}%</span>}
+                      </span>
+                      <span className="block h-2 bg-slate-100 rounded-full overflow-hidden"><span className="block h-full bg-emerald-500" style={{ width: `${pct}%` }} /></span>
                     </span>
                   </button>
                   {open === t.id && (
@@ -348,34 +342,60 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
       </section>
 
       {/* Students */}
-      <section className="grid lg:grid-cols-2 gap-4">
+      <section className="space-y-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-4">
-          <h2 className="text-base font-black text-indigo-950 mb-2">Students</h2>
+          <h2 className="text-base font-black text-[#111417] mb-2">Students</h2>
           {total === 0 ? <p className="text-sm text-slate-500">No students yet. Share the code or add emails.</p> : (
-            <ul className="divide-y divide-slate-100 text-sm">
-              {perStudent.map(({ s, doneN, avg }) => (
-                <li key={s.user_id} className="py-2 flex justify-between items-center gap-2">
-                  <span className="min-w-0">
-                    <span className="block font-semibold truncate">{s.name}</span>
-                    <span className="block text-xs text-slate-400 truncate">{s.email}</span>
-                  </span>
-                  <span className="flex items-center gap-3 shrink-0 text-xs">
-                    <span className={`font-bold ${d.tasks.length && doneN < d.tasks.length ? 'text-amber-600' : 'text-emerald-700'}`}>{doneN}/{d.tasks.length} tasks</span>
-                    {avg !== null && <span className="font-bold text-slate-600">{avg}%</span>}
-                    <button onClick={() => classesApi.remove(classId, s.user_id, null).then(load)} className="text-slate-300 hover:text-rose-600" aria-label={`Remove ${s.name}`}>✕</button>
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <>
+              <table className="hidden sm:table w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500 border-b border-slate-200">
+                    <th scope="col" className="py-1.5 pr-3 font-semibold">Name</th>
+                    <th scope="col" className="py-1.5 pr-3 font-semibold">Email</th>
+                    <th scope="col" className="py-1.5 pr-3 font-semibold">Tasks done</th>
+                    <th scope="col" className="py-1.5 pr-3 font-semibold">Average</th>
+                    <th scope="col" className="py-1.5 text-right font-semibold"><span className="sr-only">Remove</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {perStudent.map(({ s, doneN, avg }) => (
+                    <tr key={s.user_id}>
+                      <td className="py-2 pr-3 font-semibold">{s.name}</td>
+                      <td className="py-2 pr-3 text-slate-500 max-w-[16rem] truncate">{s.email}</td>
+                      <td className={`py-2 pr-3 font-bold ${d.tasks.length && doneN < d.tasks.length ? 'text-amber-600' : 'text-emerald-700'}`}>{doneN}/{d.tasks.length}</td>
+                      <td className="py-2 pr-3 font-bold text-slate-600">{avg !== null ? `${avg}%` : '—'}</td>
+                      <td className="py-2 text-right">
+                        <button onClick={() => classesApi.remove(classId, s.user_id, null).then(load)} className="text-slate-300 hover:text-rose-600" aria-label={`Remove ${s.name}`}>✕</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <ul className="sm:hidden divide-y divide-slate-100 text-sm">
+                {perStudent.map(({ s, doneN, avg }) => (
+                  <li key={s.user_id} className="py-2 flex justify-between items-center gap-2">
+                    <span className="min-w-0">
+                      <span className="block font-semibold truncate">{s.name}</span>
+                      <span className="block text-xs text-slate-400 truncate">{s.email}</span>
+                    </span>
+                    <span className="flex items-center gap-3 shrink-0 text-xs">
+                      <span className={`font-bold ${d.tasks.length && doneN < d.tasks.length ? 'text-amber-600' : 'text-emerald-700'}`}>{doneN}/{d.tasks.length} tasks</span>
+                      {avg !== null && <span className="font-bold text-slate-600">{avg}%</span>}
+                      <button onClick={() => classesApi.remove(classId, s.user_id, null).then(load)} className="text-slate-300 hover:text-rose-600" aria-label={`Remove ${s.name}`}>✕</button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-4">
-          <h2 className="text-base font-black text-indigo-950 mb-1">Add students by email</h2>
+          <h2 className="text-base font-black text-[#111417] mb-1">Add students by email</h2>
           <p className="text-xs text-slate-500 mb-2">One per line or separated by commas. They see an invite when they log in with that email.</p>
           <textarea value={emails} onChange={(e) => setEmails(e.target.value)} rows={3} placeholder="student1@gmail.com, student2@gmail.com"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm" />
           <button disabled={!emails.trim()} onClick={() => classesApi.invite(classId, emails.split(/[\s,;]+/).filter(Boolean)).then((n) => { setEmails(''); setNote(`${n} invite${n === 1 ? '' : 's'} added.`); load(); }).catch((e) => setNote(e.message))}
-            className="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">Add</button>
+            className="mt-2 px-4 py-2 bg-[#266b47] text-white text-sm font-bold rounded-lg disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed">Add</button>
           {d.invites.length > 0 && (
             <div className="mt-3">
               <p className="text-xs font-bold text-slate-600 mb-1">Waiting to accept ({d.invites.length})</p>
@@ -388,6 +408,21 @@ function ClassDetail({ classId, onBack }: { classId: string; onBack: () => void 
             </div>
           )}
         </div>
+      </section>
+
+      {/* Danger zone */}
+      <section className="rounded-2xl border border-orange-300 bg-white p-4">
+        <h2 className="text-base font-black text-[#111417]">Danger zone</h2>
+        <p className="text-xs text-slate-600 mt-1">Deleting a class removes it and all its tasks.</p>
+        {confirmDel ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-orange-800 font-semibold">Delete this class and all its tasks?</span>
+            <button onClick={() => classesApi.deleteClass(classId).then(onBack)} className="px-3 py-1.5 bg-orange-700 text-white rounded-lg font-bold">Yes, delete</button>
+            <button onClick={() => setConfirmDel(false)} className="px-3 py-1.5 border border-slate-300 rounded-lg font-bold">Keep</button>
+          </div>
+        ) : (
+          <button onClick={() => setConfirmDel(true)} className="mt-3 px-4 py-2 border border-orange-600 text-orange-800 text-sm font-bold rounded-lg hover:bg-orange-50">Delete class</button>
+        )}
       </section>
     </div>
   );
@@ -437,10 +472,10 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
   };
 
   return (
-    <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 space-y-3">
-      <div className="flex rounded-lg bg-white p-1 w-fit border border-indigo-200">
+    <div className="bg-white border border-slate-300 rounded-2xl p-4 space-y-3">
+      <div className="flex rounded-lg bg-slate-100 p-1 w-fit border border-slate-200">
         {([['FULL', '📄 Full paper'], ['UNIT', '🎯 Unit-wise practice'], ['LESSON', '📖 Read lesson'], ['CHAPTER', '📝 Chapter practice'], ['SPEED', '⚡ Speed Maths']] as const).map(([v, l]) => (
-          <button key={v} onClick={() => setKind(v)} className={`px-3 py-1.5 text-xs font-bold rounded-md ${kind === v ? 'bg-indigo-600 text-white' : 'text-slate-600'}`}>{l}</button>
+          <button key={v} onClick={() => setKind(v)} className={`px-3 py-1.5 text-xs font-bold rounded-md ${kind === v ? 'bg-[#266b47] text-white' : 'text-slate-600'}`}>{l}</button>
         ))}
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
@@ -508,7 +543,7 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
         </label>
       </div>
       {err && <p className="text-xs text-rose-600">{err}</p>}
-      <button onClick={save} disabled={(kind === 'FULL' && !paper) || (kind === 'CHAPTER' && !setId)} className="px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg disabled:opacity-50">Assign to class</button>
+      <button onClick={save} disabled={(kind === 'FULL' && !paper) || (kind === 'CHAPTER' && !setId)} className="px-5 py-2 bg-[#266b47] text-white text-sm font-bold rounded-lg disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed">Assign to class</button>
     </div>
   );
 }
