@@ -3,6 +3,7 @@ import "./globals.css";
 import NavProgress from "@/components/NavProgress";
 import BottomNav from "@/components/BottomNav";
 import SiteFooter from "@/components/SiteFooter";
+import WelcomeGuide from "@/components/WelcomeGuide";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -42,6 +43,7 @@ export default function RootLayout({
         {children}
         <SiteFooter />
         <BottomNav />
+        <WelcomeGuide />
       </body>
     </html>
   );
