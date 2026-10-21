@@ -59,8 +59,11 @@ export default function PracticePage() {
     [papers]
   );
 
+  // Listed by subject code, then name and date, so the order does not depend on how an id was typed.
   const papersForCycle = useMemo(
-    () => papers.filter((p) => selectedCycle === 'ALL' || (p.cycle || 'Unknown') === selectedCycle),
+    () => papers
+      .filter((p) => selectedCycle === 'ALL' || (p.cycle || 'Unknown') === selectedCycle)
+      .sort((a, b) => getPaperDisplayName(a.paper_id).localeCompare(getPaperDisplayName(b.paper_id), 'en', { numeric: true })),
     [papers, selectedCycle]
   );
 

@@ -7,6 +7,21 @@ const MONTHS: Record<string, string> = {
 
 const titleWord = (w: string) => (w.length <= 1 ? w : w[0].toUpperCase() + w.slice(1).toLowerCase());
 
+// Joining words stay lowercase inside a subject name: "Social Medicine and Community Health".
+const SMALL_WORDS = new Set(['AND', 'OF', 'THE', 'IN', 'FOR', 'TO', 'ON']);
+
+// Some stored paper ids (June 2023) lack the NTA subject code that every other cycle has.
+// Codes are fixed per subject, so they are filled in for display only; the stored ids are unchanged.
+const SUBJECT_CODES: Record<string, string> = {
+  'POLITICAL SCIENCE': '02',
+  'HISTORY': '06',
+  'COMMERCE': '08',
+  'EDUCATION': '09',
+  'ENGLISH': '30',
+  'SPANISH': '40',
+  'GEOGRAPHY': '80',
+};
+
 // "30_ENGLISH_06_DEC_2023_SHIFT1" -> "30 English · 06 Dec 2023 · Shift 1"
 // Works for the older ids too, e.g. "31_DEC_2025_MORNING" -> "31 Dec 2025 · Morning".
 export function formatPaperTitle(paperId: string): string {
@@ -20,7 +35,12 @@ export function formatPaperTitle(paperId: string): string {
   const i = parts.findIndex((p, k) => /^\d{1,2}$/.test(p) && MONTHS[parts[k + 1]] && /^\d{4}$/.test(parts[k + 2] || ''));
   if (i === -1) return parts.map(titleWord).join(' ');
 
-  const subject = parts.slice(0, i).map(titleWord).join(' ');
+  const subjectParts = parts.slice(0, i);
+  if (subjectParts.length > 0 && !/^[A-Z]?\d+$/.test(subjectParts[0])) {
+    const code = SUBJECT_CODES[subjectParts.join(' ')];
+    if (code) subjectParts.unshift(code);
+  }
+  const subject = subjectParts.map((w, k) => (k > 0 && SMALL_WORDS.has(w) ? w.toLowerCase() : titleWord(w))).join(' ');
   const date = `${parts[i].padStart(2, '0')} ${MONTHS[parts[i + 1]]} ${parts[i + 2]}`;
   const rest = parts
     .slice(i + 3)

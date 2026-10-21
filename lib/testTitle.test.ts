@@ -12,6 +12,19 @@ describe('formatPaperTitle', () => {
     expect(formatPaperTitle('30_ENGLISH_06_DEC_2023_SHIFT1')).toBe('30 English · 06 Dec 2023 · Shift 1');
     expect(formatPaperTitle('82_FORENSIC_SCIENCE_26_JUN_2025_SHIFT1')).toBe('82 Forensic Science · 26 Jun 2025 · Shift 1');
   });
+  it('keeps joining words lowercase in long subject names', () => {
+    expect(formatPaperTitle('81_SOCIAL_MEDICINE_AND_COMMUNITY_HEALTH_02_JAN_2026_SHIFT2'))
+      .toBe('81 Social Medicine and Community Health · 02 Jan 2026 · Shift 2');
+    expect(formatPaperTitle('62_COMPARATIVE_STUDY_OF_RELIGIONS_21_AUG_2024_SHIFT2'))
+      .toBe('62 Comparative Study of Religions · 21 Aug 2024 · Shift 2');
+  });
+  it('fills in the subject code that some June 2023 ids lack, without changing coded ones', () => {
+    expect(formatPaperTitle('COMMERCE_13_JUN_2023_SHIFT1')).toBe('08 Commerce · 13 Jun 2023 · Shift 1');
+    expect(formatPaperTitle('POLITICAL_SCIENCE_15_JUN_2023_SHIFT2')).toBe('02 Political Science · 15 Jun 2023 · Shift 2');
+    expect(formatPaperTitle('08_COMMERCE_07_DEC_2023_SHIFT1')).toBe('08 Commerce · 07 Dec 2023 · Shift 1');
+    expect(formatPaperTitle('N16_MUSIC_07_JAN_2026_SHIFT2')).toBe('N16 Music · 07 Jan 2026 · Shift 2');
+    expect(formatPaperTitle('GENERAL_PAPER_18_JUN_2024_SHIFT1')).toBe('General Paper · 18 Jun 2024 · Shift 1');
+  });
   it('handles older ids', () => {
     expect(formatPaperTitle('31_DEC_2025_MORNING')).toBe('31 Dec 2025 · Morning');
     expect(formatPaperTitle('02_JAN_2026_EEVENING_QUESTION_PAPER')).toBe('02 Jan 2026 · Evening');

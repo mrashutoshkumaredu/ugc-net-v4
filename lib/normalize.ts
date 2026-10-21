@@ -45,6 +45,7 @@ export const UNIT_OPTIONS: { value: string; label: string }[] = [
 // Cycle ids as stored in the database (e.g. "December_2025").
 const CYCLE_DISPLAY_NAMES: Record<string, string> = {
   June_2024_Cancelled: 'June 2024 (cancelled exam, 18 June)',
+  June_2024_Reconducted: 'June 2024 (re-exam, Aug 2024)',
 };
 
 export function getCycleDisplayName(cycleId: string) {
