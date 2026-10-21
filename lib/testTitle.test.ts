@@ -22,7 +22,7 @@ describe('formatPaperTitle', () => {
     expect(formatPaperTitle('COMMERCE_13_JUN_2023_SHIFT1')).toBe('08 Commerce · 13 Jun 2023 · Shift 1');
     expect(formatPaperTitle('POLITICAL_SCIENCE_15_JUN_2023_SHIFT2')).toBe('02 Political Science · 15 Jun 2023 · Shift 2');
     expect(formatPaperTitle('08_COMMERCE_07_DEC_2023_SHIFT1')).toBe('08 Commerce · 07 Dec 2023 · Shift 1');
-    expect(formatPaperTitle('N16_MUSIC_07_JAN_2026_SHIFT2')).toBe('N16 Music · 07 Jan 2026 · Shift 2');
+    expect(formatPaperTitle('N16_MUSIC_07_JAN_2026_SHIFT2')).toBe('16 Music · 07 Jan 2026 · Shift 2');
     expect(formatPaperTitle('GENERAL_PAPER_18_JUN_2024_SHIFT1')).toBe('General Paper · 18 Jun 2024 · Shift 1');
   });
   it('handles older ids', () => {

@@ -36,6 +36,8 @@ export function formatPaperTitle(paperId: string): string {
   if (i === -1) return parts.map(titleWord).join(' ');
 
   const subjectParts = parts.slice(0, i);
+  // One stored id has a stray "N" before the subject code (N16_MUSIC...). Show it as 16 Music, like every other numbered paper.
+  if (subjectParts.length > 0 && /^N\d{2}$/.test(subjectParts[0])) subjectParts[0] = subjectParts[0].slice(1);
   if (subjectParts.length > 0 && !/^[A-Z]?\d+$/.test(subjectParts[0])) {
     const code = SUBJECT_CODES[subjectParts.join(' ')];
     if (code) subjectParts.unshift(code);
