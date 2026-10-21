@@ -8,41 +8,42 @@ import {
 } from '@/lib/drills';
 import { isMuted, setMuted, sounds } from '@/lib/sound';
 import { classesApi } from '@/lib/classesApi';
+import Icon, { type IconName } from '@/components/Icon';
 
 // ---------------------------------------------------------------------------
 // Catalogue: three "worlds", each with its own colour.
 // `pace` is how many correct answers per minute earn three stars.
-type Drill = { id: DrillId; label: string; icon: string; blurb: string; pace: number };
-type World = { id: string; title: string; icon: string; tagline: string; gradient: string; ring: string; drills: Drill[] };
+type Drill = { id: DrillId; label: string; icon: IconName; blurb: string; pace: number };
+type World = { id: string; title: string; icon: IconName; tagline: string; gradient: string; ring: string; drills: Drill[] };
 
 const WORLDS: World[] = [
   {
-    id: 'calc', title: 'Calculation', icon: '🧮', tagline: 'Mental maths for Mathematical Aptitude',
+    id: 'calc', title: 'Calculation', icon: 'calculator', tagline: 'Mental maths for Mathematical Aptitude',
     gradient: 'from-orange-500 to-rose-500', ring: 'ring-orange-300',
     drills: [
-      { id: 'arithmetic', label: 'Arithmetic', icon: '➕', blurb: 'Add, subtract, multiply, divide', pace: 20 },
-      { id: 'tables', label: 'Tables & Powers', icon: '✖️', blurb: 'Tables, squares, cubes, roots', pace: 22 },
-      { id: 'formulas', label: 'Quick Formulas', icon: '💰', blurb: 'Interest, profit, speed, discounts', pace: 8 },
+      { id: 'arithmetic', label: 'Arithmetic', icon: 'plus', blurb: 'Add, subtract, multiply, divide', pace: 20 },
+      { id: 'tables', label: 'Tables & Powers', icon: 'multiply', blurb: 'Tables, squares, cubes, roots', pace: 22 },
+      { id: 'formulas', label: 'Quick Formulas', icon: 'rupee', blurb: 'Interest, profit, speed, discounts', pace: 8 },
     ],
   },
   {
-    id: 'di', title: 'Data Interpretation', icon: '📊', tagline: 'The skills behind Q1–5 of every paper',
+    id: 'di', title: 'Data Interpretation', icon: 'chart', tagline: 'The skills behind Q1–5 of every paper',
     gradient: 'from-sky-500 to-indigo-600', ring: 'ring-sky-300',
     drills: [
-      { id: 'fractions', label: 'Fraction ↔ %', icon: '🔢', blurb: '1/8 = 12.5% at a glance', pace: 18 },
-      { id: 'estimation', label: 'Estimation', icon: '🎯', blurb: 'Pick the closest value fast', pace: 12 },
-      { id: 'percent', label: '% Change', icon: '📈', blurb: 'Rise, fall, more than, less than', pace: 10 },
-      { id: 'minidi', label: 'Mini DI', icon: '🗂️', blurb: 'Read a table, answer quickly', pace: 6 },
+      { id: 'fractions', label: 'Fraction ↔ %', icon: 'hash', blurb: '1/8 = 12.5% at a glance', pace: 18 },
+      { id: 'estimation', label: 'Estimation', icon: 'target', blurb: 'Pick the closest value fast', pace: 12 },
+      { id: 'percent', label: '% Change', icon: 'trend', blurb: 'Rise, fall, more than, less than', pace: 10 },
+      { id: 'minidi', label: 'Mini DI', icon: 'grid', blurb: 'Read a table, answer quickly', pace: 6 },
     ],
   },
   {
-    id: 'logic', title: 'Reasoning', icon: '🧩', tagline: 'Patterns for Mathematical and Logical Reasoning',
+    id: 'logic', title: 'Reasoning', icon: 'puzzle', tagline: 'Patterns for Mathematical and Logical Reasoning',
     gradient: 'from-emerald-500 to-teal-600', ring: 'ring-emerald-300',
     drills: [
-      { id: 'series', label: 'Number Series', icon: '🔁', blurb: 'Next or missing number', pace: 10 },
-      { id: 'coding', label: 'Coding & Letters', icon: '🔤', blurb: 'TABLE → UBCMF, letter series', pace: 6 },
-      { id: 'alphabet', label: 'Alphabet Grid', icon: '🅰️', blurb: 'Positions and opposites', pace: 24 },
-      { id: 'syllogism', label: 'Syllogism', icon: '⭕', blurb: 'Does the conclusion follow?', pace: 10 },
+      { id: 'series', label: 'Number Series', icon: 'repeat', blurb: 'Next or missing number', pace: 10 },
+      { id: 'coding', label: 'Coding & Letters', icon: 'letters', blurb: 'TABLE → UBCMF, letter series', pace: 6 },
+      { id: 'alphabet', label: 'Alphabet Grid', icon: 'leaf', blurb: 'Positions and opposites', pace: 24 },
+      { id: 'syllogism', label: 'Syllogism', icon: 'help', blurb: 'Does the conclusion follow?', pace: 10 },
     ],
   },
 ];
@@ -90,7 +91,7 @@ const Stars = ({ n, size = 'text-base' }: { n: number; size?: string }) => (
 
 export default function SpeedMathClient() {
   return (
-    <PageShell title="⚡ Speed Maths & Logic" subtitle="Quick-fire games for the calculation and pattern skills Paper 1 tests. Beat the clock, build combos, collect stars." wide>
+    <PageShell title="Speed Maths & Logic" icon="zap" subtitle="Quick-fire games for the calculation and pattern skills Paper 1 tests. Beat the clock, build combos, collect stars." wide>
       <SpeedMathBody />
     </PageShell>
   );
@@ -126,18 +127,18 @@ function SpeedMathBody() {
   const totalStars = ALL.reduce((s, d) => s + (records[d.id]?.stars || 0), 0);
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-950 via-violet-900 to-fuchsia-900 text-white p-5 flex items-center justify-between gap-4 shadow-lg">
+      <div className="rounded-2xl bg-gradient-to-r from-indigo-950 via-indigo-900 to-indigo-900 text-white p-5 flex items-center justify-between gap-4 shadow-lg">
         <div>
-          <p className="text-xs uppercase tracking-widest text-violet-200 font-bold">Your collection</p>
-          <p className="text-3xl font-black mt-1">{totalStars} <span className="text-amber-400">★</span> <span className="text-base font-semibold text-violet-200">of {ALL.length * 3}</span></p>
+          <p className="text-xs uppercase tracking-widest text-indigo-200 font-bold">Your collection</p>
+          <p className="text-3xl font-black mt-1">{totalStars} <span className="text-amber-400">★</span> <span className="text-base font-semibold text-indigo-200">of {ALL.length * 3}</span></p>
         </div>
-        <p className="text-xs text-violet-100 max-w-xs text-right hidden sm:block">Play a timed round in any game. The faster and more accurately you answer, the more stars you earn.</p>
+        <p className="text-xs text-indigo-100 max-w-xs text-right hidden sm:block">Play a timed round in any game. The faster and more accurately you answer, the more stars you earn.</p>
       </div>
 
       {WORLDS.map((w) => (
         <section key={w.id}>
           <div className="mb-3">
-            <h2 className="text-lg font-black text-indigo-950">{w.icon} {w.title}</h2>
+            <h2 className="text-lg font-black text-indigo-950 inline-flex items-center gap-2"><Icon name={w.icon} className="w-5 h-5 text-indigo-700" />{w.title}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{w.tagline}</p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -154,8 +155,8 @@ function SpeedMathBody() {
                   }}
                   className={`group relative overflow-hidden text-left rounded-2xl p-4 text-white bg-gradient-to-br ${w.gradient} shadow-md hover:shadow-xl hover:-translate-y-1 active:translate-y-0 transition-all`}
                 >
-                  <span className="absolute -right-3 -bottom-4 text-6xl opacity-20 group-hover:scale-110 transition-transform" aria-hidden>{d.icon}</span>
-                  <span className="block text-2xl mb-1" aria-hidden>{d.icon}</span>
+                  <span className="absolute -right-3 -bottom-4 opacity-20 group-hover:scale-110 transition-transform" aria-hidden><Icon name={d.icon} className="w-16 h-16" strokeWidth={1.5} /></span>
+                  <span className="block mb-1" aria-hidden><Icon name={d.icon} className="w-7 h-7" /></span>
                   <span className="block font-extrabold leading-tight">{d.label}</span>
                   <span className="block text-[11px] text-white/80 mt-0.5">{d.blurb}</span>
                   <span className="mt-3 flex items-center justify-between">
@@ -250,7 +251,7 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
     setSt((p) => {
       const streak = ok ? p.streak + 1 : 0;
       const gain = ok ? 10 + Math.min(streak - 1, 10) * 2 : 0;
-      if (ok) setPopup({ text: `+${gain}${streak >= 3 ? `  🔥×${streak}` : ''}`, id: Date.now() });
+      if (ok) setPopup({ text: `+${gain}${streak >= 3 ? `  ×${streak} combo` : ''}`, id: Date.now() });
       return { answered: p.answered + 1, correct: p.correct + (ok ? 1 : 0), streak, bestStreak: Math.max(p.bestStreak, streak), points: p.points + gain };
     });
     if (ok) nextT.current = window.setTimeout(next, 450);
@@ -312,8 +313,8 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
         </select>
       )}
       <div className="flex rounded-lg bg-white/10 p-1">
-        <button onClick={() => setMode('game')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${mode === 'game' ? 'bg-amber-400 text-slate-900' : 'text-white/70'}`}>⏱️ Timed</button>
-        <button onClick={() => setMode('classic')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${mode === 'classic' ? 'bg-white text-slate-900' : 'text-white/70'}`}>🧘 Practice</button>
+        <button onClick={() => setMode('game')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${mode === 'game' ? 'bg-amber-400 text-slate-900' : 'text-white/70'}`}><span className="inline-flex items-center gap-1"><Icon name="timer" className="w-3.5 h-3.5" />Timed</span></button>
+        <button onClick={() => setMode('classic')} className={`px-3 py-1.5 text-xs font-bold rounded-md ${mode === 'classic' ? 'bg-white text-slate-900' : 'text-white/70'}`}><span className="inline-flex items-center gap-1"><Icon name="leaf" className="w-3.5 h-3.5" />Practice</span></button>
       </div>
       {mode === 'game' && (
         <select aria-label="Round length" className={sel} value={seconds} onChange={(e) => setSeconds(Number(e.target.value))}>
@@ -328,8 +329,8 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
       {/* Top bar */}
       <div className={`shrink-0 bg-gradient-to-r ${world.gradient} px-4 py-2.5 flex items-center justify-between gap-3`}>
         <button onClick={onExit} aria-label="All games" className="shrink-0 text-sm font-bold bg-black/20 hover:bg-black/30 rounded-lg px-3 py-1.5">←<span className="hidden sm:inline"> All games</span></button>
-        <p className="font-black text-base sm:text-lg leading-tight flex-1 min-w-0 text-center">{drill.icon} {drill.label}</p>
-        <button onClick={toggleMute} aria-label={muted ? 'Sound on' : 'Sound off'} title={muted ? 'Sound on' : 'Sound off'} className="text-lg bg-black/20 hover:bg-black/30 rounded-lg w-9 h-9 flex items-center justify-center">{muted ? '🔇' : '🔊'}</button>
+        <p className="font-black text-base sm:text-lg leading-tight flex-1 min-w-0 text-center flex items-center justify-center gap-2"><Icon name={drill.icon} className="w-5 h-5" />{drill.label}</p>
+        <button onClick={toggleMute} aria-label={muted ? 'Sound on' : 'Sound off'} title={muted ? 'Sound on' : 'Sound off'} className="text-lg bg-black/20 hover:bg-black/30 rounded-lg w-9 h-9 flex items-center justify-center"><Icon name={muted ? 'volumeOff' : 'volumeOn'} className="w-5 h-5" /></button>
         <div className="text-right">
           <p className="text-[10px] uppercase tracking-widest text-white/80 font-bold">Score</p>
           <p className="text-xl font-black tabular-nums leading-none">{st.points}</p>
@@ -340,8 +341,8 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
       {mode === 'game' && (
         <div className="shrink-0 px-4 pt-3">
           <div className="flex justify-between text-xs font-bold mb-1">
-            <span className={urgent ? 'text-red-400 sm-pulse' : 'text-white/80'}>⏱ {phase === 'playing' ? `${timeLeft}s` : `${seconds}s`}</span>
-            <span className="text-white/70">🔥 Combo ×{st.streak}</span>
+            <span className={`inline-flex items-center gap-1 ${urgent ? 'text-red-400 sm-pulse' : 'text-white/80'}`}><Icon name="timer" className="w-3.5 h-3.5" />{phase === 'playing' ? `${timeLeft}s` : `${seconds}s`}</span>
+            <span className="text-white/70 inline-flex items-center gap-1"><Icon name="flame" className="w-3.5 h-3.5" />Combo ×{st.streak}</span>
           </div>
           <div className="h-3 rounded-full bg-white/10 overflow-hidden">
             <div
@@ -357,7 +358,7 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
       <div className={`relative flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 py-4 flex flex-col items-center ${phase === 'playing' ? 'justify-start sm:justify-center' : 'justify-center'}`}>
         {phase === 'ready' && (
           <div className="text-center space-y-5 sm-pop">
-            <p className="text-6xl" aria-hidden>{drill.icon}</p>
+            <p className="flex justify-center" aria-hidden><Icon name={drill.icon} className="w-16 h-16" strokeWidth={1.5} /></p>
             <div>
               <p className="text-2xl font-black">{drill.label}</p>
               <p className="text-sm text-white/70 mt-1">{drill.blurb}</p>
@@ -366,7 +367,7 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
             <button onClick={start} className="px-10 py-4 rounded-2xl text-xl font-black text-slate-900 bg-gradient-to-r from-amber-300 to-amber-500 shadow-[0_0_30px_rgba(251,191,36,0.5)] hover:scale-105 active:scale-95 transition-transform">
               ▶ {mode === 'game' ? 'Start round' : 'Start practice'}
             </button>
-            {taskId && <p className="text-sm font-bold text-amber-200">📋 Class task: play a timed round. Your best round is sent to your teacher.</p>}
+            {taskId && <p className="text-sm font-bold text-amber-200 flex items-center justify-center gap-1.5"><Icon name="clipboard" />Class task: play a timed round. Your best round is sent to your teacher.</p>}
             {mode === 'game' && <p className="text-xs text-white/60">Three stars at about {drill.pace} correct answers a minute.</p>}
           </div>
         )}
@@ -375,7 +376,7 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
           <div className="text-center space-y-4 sm-pop">
             <p className="text-sm uppercase tracking-widest text-white/60 font-bold">Time&apos;s up!</p>
             <Stars n={result.stars} size="text-6xl" />
-            {result.record && <p className="text-amber-300 font-black text-lg sm-pulse">🏆 New record!</p>}
+            {result.record && <p className="text-amber-300 font-black text-lg sm-pulse inline-flex items-center gap-2"><Icon name="trophy" className="w-5 h-5" />New record!</p>}
             <p className="text-5xl font-black tabular-nums">{st.points}</p>
             <p className="text-sm text-white/70">{st.correct} correct · {accuracy}% accuracy · best combo ×{st.bestStreak} · your best {result.best}</p>
             <div className="flex justify-center gap-3 pt-2">
@@ -413,11 +414,11 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
             {q.input === 'choice' ? (
               <div className={`grid ${q.choices!.length === 2 ? 'grid-cols-2' : q.table ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'} gap-3 mt-4 ${q.table ? 'lg:mt-0' : ''}`}>
                 {q.choices!.map((c, i) => {
-                  let look = 'from-indigo-700 to-violet-800 border-indigo-300/50 hover:from-indigo-600 hover:to-violet-700';
+                  let look = 'from-indigo-700 to-indigo-800 border-indigo-300/50 hover:from-indigo-600 hover:to-indigo-700';
                   if (fb) {
                     if (c === q.answer) look = 'from-emerald-500 to-emerald-700 border-emerald-200 sm-glow';
                     else if (c === fb.given) look = 'from-red-500 to-red-700 border-red-200';
-                    else look = 'from-indigo-900 to-violet-950 border-white/10 opacity-50';
+                    else look = 'from-indigo-900 to-indigo-950 border-white/10 opacity-50';
                   }
                   return (
                     <button
@@ -469,9 +470,9 @@ function Arena({ drill, world, taskId, onExit }: { drill: Drill; world: World; t
 
       {/* Bottom stats */}
       <div className="shrink-0 grid grid-cols-4 text-center border-t border-white/10 bg-black/20">
-        {[['✅', 'Correct', `${st.correct}`], ['🎯', 'Accuracy', `${accuracy}%`], ['🔥', 'Combo', `×${st.streak}`], ['🏅', 'Best combo', `×${st.bestStreak}`]].map(([icon, label, v]) => (
+        {([['check', 'Correct', `${st.correct}`], ['target', 'Accuracy', `${accuracy}%`], ['flame', 'Combo', `×${st.streak}`], ['medal', 'Best combo', `×${st.bestStreak}`]] as [IconName, string, string][]).map(([icon, label, v]) => (
           <div key={label} className="py-2">
-            <p className="text-lg font-black tabular-nums">{icon} {v}</p>
+            <p className="text-lg font-black tabular-nums inline-flex items-center gap-1.5"><Icon name={icon} className="w-4 h-4" />{v}</p>
             <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold">{label}</p>
           </div>
         ))}

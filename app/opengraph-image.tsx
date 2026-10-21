@@ -16,20 +16,20 @@ export default function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "center",
           padding: "80px",
-          background: "linear-gradient(135deg, #312e81 0%, #3730a3 55%, #4c1d95 100%)",
+          background: "linear-gradient(135deg, #073c49 0%, #0b5f73 60%, #084a5a 100%)",
           color: "white",
         }}
       >
-        <div style={{ fontSize: 30, fontWeight: 700, color: "#fbbf24", letterSpacing: 2 }}>
+        <div style={{ fontSize: 30, fontWeight: 700, color: "#f59e42", letterSpacing: 2 }}>
           PRACTICE · LEARN · TRACK
         </div>
         <div style={{ fontSize: 84, fontWeight: 900, marginTop: 20, lineHeight: 1.05 }}>UGC NET Paper 1</div>
-        <div style={{ fontSize: 38, marginTop: 28, color: "#c7d2fe", lineHeight: 1.3, maxWidth: 950 }}>
+        <div style={{ fontSize: 38, marginTop: 28, color: "#cce5eb", lineHeight: 1.3, maxWidth: 950 }}>
           Full previous year papers, unit-wise practice, notes and Speed Maths games.
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 48, fontSize: 28, color: "#e0e7ff" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 48, fontSize: 28, color: "#e6f2f5" }}>
           <div>ugcnetpaper1.vercel.app</div>
-          <div style={{ color: "#fbbf24" }}>A Lousing Marup initiative</div>
+          <div style={{ color: "#f59e42" }}>A Lousing Marup initiative</div>
         </div>
       </div>
     ),

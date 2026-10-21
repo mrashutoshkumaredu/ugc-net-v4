@@ -331,7 +331,7 @@ function NotesEditor() {
             </div>
           );
         })}
-        <p className="text-[10px] text-slate-400 pt-2 border-t border-slate-100">🟢 published · 🟡 draft (hidden from students)</p>
+        <p className="text-[10px] text-slate-400 pt-2 border-t border-slate-100"><span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1" />published · <span className="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1" />draft (hidden from students)</p>
       </aside>
 
       <section className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">

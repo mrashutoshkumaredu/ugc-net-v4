@@ -14,6 +14,7 @@ import { getCatalog, getMyProgress } from '@/lib/testApi';
 import { hindiCoverage, usePicturePapers } from '@/lib/hindiImages';
 import { clearProgress, getActiveProgress, type SavedProgress } from '@/lib/progress';
 import type { Catalog, ExamConfig, Progress } from '@/lib/types';
+import Icon from '@/components/Icon';
 
 
 export default function PracticePage() {
@@ -200,7 +201,7 @@ export default function PracticePage() {
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-around text-center gap-3">
               <div>
-                <p className="text-2xl font-extrabold text-indigo-950">{progress.streak}🔥</p>
+                <p className="text-2xl font-extrabold text-indigo-950 inline-flex items-center gap-1">{progress.streak}<Icon name="flame" className="w-6 h-6 text-orange-500" /></p>
                 <p className="text-[11px] text-slate-500">day streak</p>
               </div>
               <div>
@@ -244,7 +245,7 @@ export default function PracticePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pb-12">
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
             <div>
-              <div className="hidden sm:flex w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl items-center justify-center font-bold mb-4" aria-hidden>📝</div>
+              <div className="hidden sm:flex w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl items-center justify-center font-bold mb-4" aria-hidden><Icon name="write" className="w-5 h-5" /></div>
               <h3 className="text-lg font-bold text-slate-800 mb-1">Full Previous Year Paper</h3>
               <p className="text-xs text-slate-500 mb-4">A complete 50-question shift paper under real exam timing.</p>
 
@@ -301,7 +302,7 @@ export default function PracticePage() {
 
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
             <div>
-              <div className="hidden sm:flex w-10 h-10 bg-amber-100 text-amber-800 rounded-xl items-center justify-center font-bold mb-4" aria-hidden>🎯</div>
+              <div className="hidden sm:flex w-10 h-10 bg-amber-100 text-amber-800 rounded-xl items-center justify-center font-bold mb-4" aria-hidden><Icon name="target" className="w-5 h-5" /></div>
               <h3 className="text-lg font-bold text-slate-800 mb-1">Unit-Wise Practice</h3>
               <p className="text-xs text-slate-500 mb-4">Pick a unit and how many questions. You get a fresh random set each time.</p>
               <div className="space-y-3 mb-6">

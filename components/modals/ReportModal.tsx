@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import type { ReportIssueType } from '@/lib/types';
+import Icon from '@/components/Icon';
 
 const ISSUE_TYPES: ReportIssueType[] = [
   'Wrong Answer Key',
@@ -42,7 +43,7 @@ export default function ReportModal({ questionId, onClose }: { questionId: numbe
     <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-2xl relative border border-slate-200">
         <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
-        <h3 className="text-lg font-bold text-rose-900 mb-1 flex items-center gap-2">🚩 Report Question Discrepancy</h3>
+        <h3 className="text-lg font-bold text-rose-900 mb-1 flex items-center gap-2"><Icon name="report" className="w-5 h-5" />Report Question Discrepancy</h3>
         <p className="text-xs text-slate-500 mb-4">Spotted a typo or wrong answer key? Let us know and we&apos;ll fix it.</p>
 
         {submitted ? (

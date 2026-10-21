@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useClassHub } from '@/hooks/useClassHub';
 import { HUBS, hubOf } from '@/lib/hubs';
+import Icon from '@/components/Icon';
 
 // Phone tab bar: one tap to any hub. Hidden on wide screens and during a test.
 export default function BottomNav() {
@@ -23,7 +24,7 @@ export default function BottomNav() {
             const active = h.id === current;
             return (
               <Link key={h.id} href={h.href} aria-current={active ? 'page' : undefined} className="relative flex-1 flex flex-col items-center py-2 gap-0.5">
-                <span className={`text-xl leading-none transition ${active ? 'scale-110' : 'opacity-60'}`} aria-hidden>{h.icon}</span>
+                <span className={`text-xl leading-none transition ${active ? 'scale-110' : 'opacity-60'}`} aria-hidden><Icon name={h.icon} className="w-5 h-5" /></span>
                 <span className={`text-[11px] font-bold ${active ? 'text-indigo-700' : 'text-slate-500'}`}>{h.label}</span>
                 {active && <span className={`absolute top-0 h-0.5 w-8 rounded-full ${h.accent}`} />}
                 {h.id === 'class' && classHub.pending > 0 && <span className="absolute top-1 right-[28%] min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] flex items-center justify-center">{classHub.pending}</span>}

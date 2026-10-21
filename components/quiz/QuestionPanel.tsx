@@ -6,6 +6,7 @@ import { formatTime } from '@/lib/scoring';
 import { getPaperDisplayName } from '@/lib/normalize';
 import type { NormalizedQuestion } from '@/lib/types';
 import HindiImage from './HindiImage';
+import Icon from '@/components/Icon';
 
 // dompurify (used inside MathText) needs a real browser window, so this is
 // loaded client-only — see the comment in MathText.tsx for why.
@@ -111,7 +112,7 @@ export default function QuestionPanel({
           <span className="text-base sm:text-lg font-bold text-indigo-900 whitespace-nowrap">Q {index + 1}</span>
           {!isSubmitted && (
             <div className="bg-indigo-100 border border-indigo-300 text-indigo-900 px-2 py-0.5 rounded text-xs font-mono font-bold flex items-center gap-1 shrink-0" title="Time on this question">
-              <span aria-hidden>⏱️</span>
+              <Icon name="timer" className="w-3.5 h-3.5" />
               <span>{formatTime(timeSpentSeconds)}</span>
             </div>
           )}
@@ -119,7 +120,7 @@ export default function QuestionPanel({
             {question.unit}
           </span>
           <button onClick={onOpenReport} className="text-[11px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md border border-rose-200 font-medium shrink-0 whitespace-nowrap" title="Report an issue with this question">
-            🚩 Flag
+            <span className="inline-flex items-center gap-1"><Icon name="report" className="w-3 h-3" />Flag</span>
           </button>
         </div>
 
@@ -225,7 +226,7 @@ export default function QuestionPanel({
               className="mb-3 text-xs font-semibold text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2.5"
               title="इस प्रश्न का हिंदी संस्करण मूल प्रश्न पत्र में नहीं था। इसका अनुवाद सत्यापित अंग्रेज़ी संस्करण से किया गया है। (The official paper had no Hindi for this question. It was translated from the checked English version.)"
             >
-              ⚠️ हमारे द्वारा अनुवादित — मूल प्रश्न पत्र में हिंदी उपलब्ध नहीं थी। (Translated by us — Hindi was missing in the original question paper.)
+              <Icon name="warning" className="w-3.5 h-3.5 mr-1 align-[-2px]" />हमारे द्वारा अनुवादित — मूल प्रश्न पत्र में हिंदी उपलब्ध नहीं थी। (Translated by us — Hindi was missing in the original question paper.)
             </p>
           )}
           {showHindiImage ? (
@@ -280,7 +281,7 @@ export default function QuestionPanel({
               className={`text-xs font-bold px-3 py-1.5 rounded-full border transition ${confidence === 'guess' ? 'bg-amber-100 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}
               title="Mark this answer as a guess. If it turns out right, it goes to your Lucky guesses folder for revision."
             >
-              {confidence === 'guess' ? '🤔 I am guessing' : '✅ I am sure'}
+              <span className="inline-flex items-center gap-1.5"><Icon name={confidence === 'guess' ? 'help' : 'check'} className="w-3.5 h-3.5" />{confidence === 'guess' ? 'I am guessing' : 'I am sure'}</span>
             </button>
             <span className="text-[11px] text-slate-400">Tap if you&apos;re guessing. Lucky guesses come back for revision.</span>
           </div>

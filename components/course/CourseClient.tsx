@@ -6,6 +6,7 @@ import Link from 'next/link';
 import PageShell from '@/components/PageShell';
 import { useAuth } from '@/hooks/useAuth';
 import { courseApi, partLetter, PART_STYLE, type CourseChapter, type CourseQuestion, type CourseResult, type CourseSet } from '@/lib/courseApi';
+import Icon, { type IconName } from '@/components/Icon';
 
 // Sanitised HTML renderer (client only, see MathText.tsx).
 const MathText = dynamic(() => import('@/components/quiz/MathText'), { ssr: false });
@@ -22,7 +23,7 @@ function readView(): { view: View; task: string | null } {
 
 export default function CourseClient() {
   return (
-    <PageShell title="📘 Maths Course" subtitle="Mathematical Aptitude, Reasoning and Data Interpretation for Paper 1, chapter by chapter, from the very basics. Practice is free for everyone." wide>
+    <PageShell title="Maths Course" icon="learn" subtitle="Mathematical Aptitude, Reasoning and Data Interpretation for Paper 1, chapter by chapter, from the very basics. Practice is free for everyone." wide>
       <CourseBody />
     </PageShell>
   );
@@ -68,18 +69,19 @@ function CourseBody() {
   const parts = Array.from(new Set(data.chapters.map((c) => c.part)));
   const tests = data.sets.filter((s) => !s.chapter_no);
   const diag = tests.find((s) => s.kind === 'diagnostic');
+  const testsOpen = 'tests' in toggled ? toggled.tests : true;
   return (
     <div className="space-y-6">
       {diag && (
-        <button onClick={() => go({ kind: 'set', id: diag.id })} className="w-full text-left rounded-2xl bg-gradient-to-r from-indigo-950 via-violet-900 to-fuchsia-900 text-white p-5 shadow-lg hover:shadow-xl transition">
-          <p className="text-xs uppercase tracking-widest text-violet-200 font-bold">Start here</p>
-          <p className="text-xl font-black mt-1">🩺 Diagnostic Test</p>
-          <p className="text-sm text-violet-100">{diag.questions} questions, one from each chapter. Find out which chapters to start with.{diag.best !== null ? ` Your best: ${diag.best}%.` : ''}</p>
+        <button onClick={() => go({ kind: 'set', id: diag.id })} className="w-full text-left rounded-2xl bg-gradient-to-r from-indigo-950 via-indigo-900 to-indigo-900 text-white p-5 shadow-lg hover:shadow-xl transition">
+          <p className="text-xs uppercase tracking-widest text-indigo-200 font-bold">Start here</p>
+          <p className="text-xl font-black mt-1 flex items-center gap-2"><Icon name="stethoscope" className="w-5 h-5" />Diagnostic Test</p>
+          <p className="text-sm text-indigo-100">{diag.questions} questions, one from each chapter. Find out which chapters to start with.{diag.best !== null ? ` Your best: ${diag.best}%.` : ''}</p>
         </button>
       )}
 
       <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-        <strong>📖 Lesson notes open</strong> · <strong>🔒 Lesson notes locked</strong>: they open when your teacher assigns that chapter to your class.
+        <strong className="inline-flex items-center gap-1"><Icon name="book" className="w-3.5 h-3.5" />Lesson notes open</strong> · <strong className="inline-flex items-center gap-1"><Icon name="lock" className="w-3.5 h-3.5" />Lesson notes locked</strong>: they open when your teacher assigns that chapter to your class.
         Practice sets in every chapter are free for everyone. The number (for example 0/1) shows practice sets done.
       </p>
 
@@ -89,14 +91,9 @@ function CourseBody() {
         const isOpen = part in toggled ? toggled[part] : idx === 0;
         return (
           <section key={part}>
-            <h2 className={isOpen ? 'mb-3' : ''}>
-              <button type="button" onClick={() => setToggled((t) => ({ ...t, [part]: !isOpen }))} aria-expanded={isOpen}
-                className="w-full flex items-center justify-between gap-3 text-left text-lg font-black text-indigo-950">
-                <span>{st.icon} {part.replace(/^Part [A-D] - /, '')} <span className="text-xs font-semibold text-slate-500">({inPart.length} chapter{inPart.length === 1 ? '' : 's'})</span></span>
-                <span className="text-slate-400 text-base" aria-hidden>{isOpen ? '▴' : '▾'}</span>
-              </button>
-            </h2>
-            {isOpen && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <SectionToggle open={isOpen} onToggle={() => setToggled((t) => ({ ...t, [part]: !isOpen }))}
+              icon={st.icon} title={part.replace(/^Part [A-D] - /, '')} count={`${inPart.length} chapter${inPart.length === 1 ? '' : 's'}`} />
+            {isOpen && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
               {inPart.map((c) => {
                 const cs = data.sets.filter((s) => s.chapter_no === c.no);
                 const done = cs.filter((s) => s.best !== null).length;
@@ -110,7 +107,7 @@ function CourseBody() {
                       <span className="block text-[11px] text-slate-500 truncate">{c.subtitle}</span>
                       <span className="mt-1.5 flex items-center gap-2">
                         <span className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><span className="block h-full bg-emerald-500" style={{ width: `${pct}%` }} /></span>
-                        <span className="text-[10px] font-bold text-slate-500">{c.can_read ? '📖' : '🔒'} {done}/{cs.length}</span>
+                        <span className="text-[10px] font-bold text-slate-500 inline-flex items-center gap-1"><Icon name={c.can_read ? 'book' : 'lock'} className="w-3 h-3" />{done}/{cs.length}</span>
                       </span>
                     </span>
                   </button>
@@ -122,8 +119,9 @@ function CourseBody() {
       })}
 
       <section>
-        <h2 className="text-lg font-black text-indigo-950 mb-3">🏁 Tests and mocks</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <SectionToggle open={testsOpen} onToggle={() => setToggled((t) => ({ ...t, tests: !testsOpen }))}
+          icon="finish" title="Tests and mocks" count={`${tests.filter((s) => s.kind !== 'diagnostic').length} tests`} />
+        {testsOpen && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
           {tests.filter((s) => s.kind !== 'diagnostic').map((s) => (
             <button key={s.id} onClick={() => go({ kind: 'set', id: s.id })} className="min-w-0 text-left bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-md transition flex items-center gap-3">
               <span className="min-w-0 flex-1">
@@ -136,9 +134,23 @@ function CourseBody() {
                 : <span className="shrink-0 text-xs font-bold text-indigo-700">Start ▸</span>}
             </button>
           ))}
-        </div>
+        </div>}
       </section>
     </div>
+  );
+}
+
+// A heading that is clearly a button: bordered row, visible chevron and a Show/Hide word.
+function SectionToggle({ open, onToggle, title, count, icon }: { open: boolean; onToggle: () => void; title: string; count: string; icon: IconName }) {
+  return (
+    <button type="button" onClick={onToggle} aria-expanded={open}
+      className="w-full flex items-center justify-between gap-3 text-left bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-sm rounded-xl px-4 py-3 transition">
+      <span className="text-lg font-black text-indigo-950 inline-flex items-center gap-2"><Icon name={icon} className="w-5 h-5 text-indigo-700" />{title} <span className="text-xs font-semibold text-slate-500">({count})</span></span>
+      <span className="shrink-0 flex items-center gap-2 text-xs font-bold text-indigo-700">
+        {open ? 'Hide' : 'Show'}
+        <span className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-sm" aria-hidden>{open ? '▴' : '▾'}</span>
+      </span>
+    </button>
   );
 }
 
@@ -166,16 +178,16 @@ function Chapter({ ch, sets, taskId, onBack, onOpenSet }: { ch: CourseChapter; s
       </div>
 
       <div className="flex gap-1 border-b border-slate-200" role="tablist">
-        {([['learn', `${lesson && !lesson.locked ? '📖' : '🔒'} Learn`], ['practice', `📝 Practice (${sets.length})`]] as const).map(([v, l]) => (
+        {([['learn', lesson && !lesson.locked ? 'book' : 'lock', 'Learn'], ['practice', 'write', `Practice (${sets.length})`]] as const).map(([v, ic, l]) => (
           <button key={v} role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
-            className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px ${tab === v ? 'border-indigo-600 text-indigo-900' : 'border-transparent text-slate-500'}`}>{l}</button>
+            className={`px-4 py-2 text-sm font-bold border-b-2 -mb-px ${tab === v ? 'border-indigo-600 text-indigo-900' : 'border-transparent text-slate-500'}`}><span className="inline-flex items-center gap-1.5"><Icon name={ic} />{l}</span></button>
         ))}
       </div>
 
       {tab === 'learn' ? (
         !lesson ? <p className="text-sm text-slate-500">Loading…</p> : lesson.locked ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center max-w-lg mx-auto">
-            <p className="text-4xl mb-2">🔒</p>
+            <p className="mb-2 flex justify-center text-slate-500"><Icon name="lock" className="w-10 h-10" /></p>
             <p className="font-bold text-slate-900">The full lesson is available to students in a class</p>
             <p className="text-sm text-slate-500 mt-1 mb-4">Ask your teacher to assign this chapter&apos;s lesson. Join their class on the Classes page with the code they give you. The practice questions are free for everyone.</p>
             <div className="flex justify-center gap-3">
@@ -192,7 +204,7 @@ function Chapter({ ch, sets, taskId, onBack, onOpenSet }: { ch: CourseChapter; s
             </div>
             {taskId && (
               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-emerald-900">📋 This lesson is a class task. When you have read it, mark it as done.</p>
+                <p className="text-sm font-semibold text-emerald-900 flex items-center gap-2"><Icon name="clipboard" className="w-4 h-4" />This lesson is a class task. When you have read it, mark it as done.</p>
                 {doneMsg ? <p className="text-sm font-bold text-emerald-700">{doneMsg}</p> : (
                   <button onClick={() => courseApi.lessonDone(taskId).then(() => setDoneMsg('✓ Marked as read')).catch((e) => setDoneMsg(e.message))}
                     className="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg">I have read it ✓</button>
@@ -270,10 +282,10 @@ function Player({ setId, taskId, onBack }: { setId: string; taskId: string | nul
     return (
       <div className="space-y-4">
         <button onClick={onBack} className="text-sm font-bold text-indigo-700 hover:underline">← Back to chapter</button>
-        <div className="rounded-2xl bg-gradient-to-r from-indigo-950 to-violet-900 text-white p-6 text-center">
-          <p className="text-sm text-violet-200 font-bold">{info.set!.title}</p>
+        <div className="rounded-2xl bg-gradient-to-r from-indigo-950 to-indigo-900 text-white p-6 text-center">
+          <p className="text-sm text-indigo-200 font-bold">{info.set!.title}</p>
           <p className="text-5xl font-black my-2">{result.score_percentage}%</p>
-          <p className="text-sm text-violet-100">{result.correct} of {result.total} correct{taskId ? ' · sent to your teacher' : ''}{!result.saved ? ' · log in to save your scores' : ''}</p>
+          <p className="text-sm text-indigo-100">{result.correct} of {result.total} correct{taskId ? ' · sent to your teacher' : ''}{!result.saved ? ' · log in to save your scores' : ''}</p>
         </div>
         <ol className="space-y-3">
           {qs.map((x, k) => {
@@ -310,9 +322,9 @@ function Player({ setId, taskId, onBack }: { setId: string; taskId: string | nul
       <div className="flex items-center justify-between gap-3">
         <button onClick={onBack} className="text-sm font-bold text-indigo-700 hover:underline">← Leave</button>
         <p className="text-sm font-bold text-slate-700 truncate">{info.set!.title}</p>
-        <span className={`font-mono font-black text-lg px-3 py-1 rounded-lg ${left <= 60 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-800'}`}>⏱ {mm}:{ss}</span>
+        <span className={`font-mono font-black text-lg px-3 py-1 rounded-lg inline-flex items-center gap-1.5 ${left <= 60 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-800'}`}><Icon name="timer" className="w-4 h-4" />{mm}:{ss}</span>
       </div>
-      {taskId && <p className="text-xs font-bold text-amber-700">📋 Class task: your score is sent to your teacher when you submit.</p>}
+      {taskId && <p className="text-xs font-bold text-amber-700 flex items-center gap-1.5"><Icon name="clipboard" />Class task: your score is sent to your teacher when you submit.</p>}
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6">

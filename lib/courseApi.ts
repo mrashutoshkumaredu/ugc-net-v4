@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import type { IconName } from '@/components/Icon';
 
 // Wrappers for the Maths course functions (supabase/migrations/20261019_09_course_schema.sql).
 
@@ -38,10 +39,10 @@ export const courseApi = {
     'course_task_question_stats', { p_task: taskId }, 'Could not load question stats.'),
 };
 
-export const PART_STYLE: Record<string, { icon: string; gradient: string }> = {
-  A: { icon: '🧮', gradient: 'from-orange-500 to-rose-500' },
-  B: { icon: '🧩', gradient: 'from-emerald-500 to-teal-600' },
-  C: { icon: '📊', gradient: 'from-sky-500 to-indigo-600' },
-  D: { icon: '📝', gradient: 'from-violet-500 to-fuchsia-600' },
+export const PART_STYLE: Record<string, { icon: IconName; gradient: string }> = {
+  A: { icon: 'calculator', gradient: 'from-orange-500 to-rose-500' },
+  B: { icon: 'puzzle', gradient: 'from-emerald-500 to-teal-600' },
+  C: { icon: 'chart', gradient: 'from-sky-500 to-indigo-600' },
+  D: { icon: 'write', gradient: 'from-violet-500 to-fuchsia-600' },
 };
 export const partLetter = (part: string) => (part.match(/Part ([A-D])/)?.[1] || 'A');

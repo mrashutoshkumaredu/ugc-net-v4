@@ -5,11 +5,13 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import AuthModal from '@/components/AuthModal';
 import { useAuth } from '@/hooks/useAuth';
+import Icon, { type IconName } from '@/components/Icon';
 
 // Standard page frame: header, a title block and the page content.
 // With `requireLogin`, logged-out visitors see a login prompt instead.
 export default function PageShell({
   title,
+  icon,
   subtitle,
   requireLogin = false,
   wide = false,
@@ -17,6 +19,7 @@ export default function PageShell({
   children,
 }: {
   title: string;
+  icon?: IconName;
   subtitle?: string;
   requireLogin?: boolean;
   wide?: boolean;
@@ -49,7 +52,7 @@ export default function PageShell({
       <main className={`w-full ${wide ? 'max-w-6xl' : 'max-w-4xl'} mx-auto p-4 sm:p-6 space-y-5`}>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-indigo-950">{title}</h1>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-indigo-950 flex items-center gap-2">{icon && <Icon name={icon} className="w-6 h-6 text-indigo-700" />}{title}</h1>
             {subtitle && <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">{subtitle}</p>}
           </div>
           {actions && <div className="shrink-0">{actions}</div>}

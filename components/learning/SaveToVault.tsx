@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { addToVault, createVaultFolder } from '@/lib/testApi';
 import type { VaultFolder } from '@/lib/types';
+import Icon from '@/components/Icon';
 
 // "Save to Vault" button with a small folder picker. The parent loads the
 // folder list once and passes it in, so a long review page doesn't refetch.
@@ -62,7 +63,7 @@ export default function SaveToVault({
         aria-expanded={open}
         className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition ${saved ? 'bg-indigo-50 text-indigo-800 border-indigo-300' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
       >
-        {saved ? '📌 In your Vault' : '📌 Save to Vault'}
+        <span className="inline-flex items-center gap-1.5"><Icon name="pin" className="w-3.5 h-3.5" />{saved ? 'In your Vault' : 'Save to Vault'}</span>
       </button>
       {open && (
         <div className="absolute z-30 mt-1 right-0 w-60 bg-white border border-slate-200 rounded-xl shadow-xl p-2 space-y-1">

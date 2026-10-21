@@ -13,6 +13,7 @@ import { classesApi, taskHref, type ClassTask } from '@/lib/classesApi';
 import { courseApi, type CourseChapter, type CourseSet } from '@/lib/courseApi';
 import type { Progress } from '@/lib/types';
 import { formatTestLabel } from '@/lib/testTitle';
+import Icon, { type IconName } from '@/components/Icon';
 
 // The test clock keeps running while you are away, so say plainly how much time is left.
 function timeLeftText(endsAt?: number) {
@@ -60,17 +61,17 @@ export default function TodayClient() {
       <SiteHeader />
       <main className="w-full max-w-5xl mx-auto p-4 sm:p-6 space-y-5">
         {/* Greeting */}
-        <div className="rounded-3xl bg-gradient-to-br from-indigo-900 via-indigo-800 to-violet-900 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
-          <span className="absolute -right-6 -bottom-10 text-[140px] opacity-10" aria-hidden>📚</span>
-          <p className="text-sm text-indigo-200 font-semibold">{hello}{first ? `, ${first}` : ''} 👋</p>
+        <div className="rounded-3xl bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-900 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
+          <span className="absolute -right-6 -bottom-10 opacity-10" aria-hidden><Icon name="library" className="w-40 h-40" strokeWidth={1.5} /></span>
+          <p className="text-sm text-indigo-200 font-semibold">{hello}{first ? `, ${first}` : ''}</p>
           <h1 className="text-2xl sm:text-3xl font-black mt-1">{user ? 'Here is your plan for today' : 'Crack UGC NET Paper 1, one day at a time'}</h1>
           {user && progress ? (
             <div className="flex gap-6 mt-4">
-              <div><p className="text-3xl font-black">{progress.streak}🔥</p><p className="text-xs text-indigo-200">day streak</p></div>
+              <div><p className="text-3xl font-black inline-flex items-center gap-1.5">{progress.streak}<Icon name="flame" className="w-7 h-7 text-orange-300" /></p><p className="text-xs text-indigo-200">day streak</p></div>
               {days !== null ? (
                 <div><p className="text-3xl font-black">{days}</p><p className="text-xs text-indigo-200">days to exam</p></div>
               ) : (
-                <Link href="/performance" className="self-center text-xs font-bold bg-white/15 hover:bg-white/25 rounded-lg px-3 py-2">🎯 Set your exam date</Link>
+                <Link href="/performance" className="self-center text-xs font-bold bg-white/15 hover:bg-white/25 rounded-lg px-3 py-2 inline-flex items-center gap-1.5"><Icon name="target" />Set your exam date</Link>
               )}
             </div>
           ) : !user && checkedSession ? (
@@ -83,37 +84,37 @@ export default function TodayClient() {
         {/* Priority cards */}
         <div className="space-y-3">
           {resumable && user && (
-            <Card tone="amber" icon="⏯" title="Finish your unfinished test" text={`${formatTestLabel(resumable.label) || 'Test in progress'}. ${timeLeftText(resumable.endsAt)}`}>
+            <Card tone="amber" icon="timer" title="Finish your unfinished test" text={`${formatTestLabel(resumable.label) || 'Test in progress'}. ${timeLeftText(resumable.endsAt)}`}>
               <button onClick={() => go('Resuming your test', `/quiz?session=${resumable.sessionId}`)} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Resume</button>
               <button onClick={() => { clearProgress(resumable.sessionId); setResumable(null); }} className="text-xs text-amber-800 hover:underline" title="Discard this test">Discard</button>
             </Card>
           )}
 
           {tasks.length > 0 && (
-            <Card tone="violet" icon="📋" title={`${tasks.length} class task${tasks.length > 1 ? 's' : ''} to do`} text={tasks.slice(0, 3).map((t) => `${t.title}${t.due_on ? ` (due ${new Date(t.due_on + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })})` : ''}`).join(' · ')}>
+            <Card tone="violet" icon="clipboard" title={`${tasks.length} class task${tasks.length > 1 ? 's' : ''} to do`} text={tasks.slice(0, 3).map((t) => `${t.title}${t.due_on ? ` (due ${new Date(t.due_on + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })})` : ''}`).join(' · ')}>
               <Link href={taskHref(tasks[0])} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Start next</Link>
               <Link href="/classes" className="text-xs text-violet-800 hover:underline">All tasks</Link>
             </Card>
           )}
 
           {user && progress && (
-            <Card tone="emerald" icon={progress.daily_done ? '✅' : '🎯'} title={progress.daily_done ? 'Daily Practice done. Well done!' : 'Daily Practice · 10 questions'}
+            <Card tone="emerald" icon={progress.daily_done ? 'check' : 'target'} title={progress.daily_done ? 'Daily Practice done. Well done!' : 'Daily Practice · 10 questions'}
               text={progress.revisions_due > 0 ? `${progress.revisions_due} question${progress.revisions_due > 1 ? 's' : ''} you got wrong ${progress.revisions_due > 1 ? 'are' : 'is'} due for revision, plus new questions from your weakest units.` : 'New questions from your weakest units. Wrong answers come back after 1, 3 and 7 days.'}>
               <button onClick={() => go('Starting Daily Practice', '/quiz?mode=DAILY')} className={`btn ${progress.daily_done ? 'bg-slate-100 text-slate-700' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>{progress.daily_done ? 'Again' : 'Start'}</button>
             </Card>
           )}
 
           {diag && diag.best === null ? (
-            <Card tone="teal" icon="🩺" title="Find your weak chapters" text={`Free Diagnostic Test: ${diag.questions} questions, one from each maths chapter.`}>
+            <Card tone="teal" icon="stethoscope" title="Find your weak chapters" text={`Free Diagnostic Test: ${diag.questions} questions, one from each maths chapter.`}>
               <Link href={`/course?set=${diag.id}`} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Take it</Link>
             </Card>
           ) : nextChapter ? (
-            <Card tone="teal" icon="📘" title={`Next chapter: ${nextChapter.title}`} text={nextChapter.subtitle || 'Continue the Maths Course.'}>
+            <Card tone="teal" icon="learn" title={`Next chapter: ${nextChapter.title}`} text={nextChapter.subtitle || 'Continue the Maths Course.'}>
               <Link href={`/course?ch=${nextChapter.no}`} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Open</Link>
             </Card>
           ) : null}
 
-          <Card tone="orange" icon="⚡" title="Quick game: 60 seconds" text="Beat your Fraction ↔ % record. Faster fractions mean faster Data Interpretation.">
+          <Card tone="orange" icon="zap" title="Quick game: 60 seconds" text="Beat your Fraction ↔ % record. Faster fractions mean faster Data Interpretation.">
             <Link href="/speed-math?drill=fractions" className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Play</Link>
           </Card>
         </div>
@@ -121,14 +122,14 @@ export default function TodayClient() {
         {/* Shortcuts to the hubs */}
         {/* Hidden on phones: the bottom bar already has these four. */}
         <div className="hidden md:grid grid-cols-4 gap-3">
-          {[
-            ['/practice', '📝', 'Practice', 'PYQ papers and units', 'from-indigo-500 to-indigo-700'],
-            ['/learn', '📘', 'Learn', 'Course and notes', 'from-teal-500 to-emerald-600'],
-            ['/progress', '📊', 'Progress', 'Scores and mistakes', 'from-amber-500 to-orange-600'],
-            ['/speed-math', '⚡', 'Speed Maths', '11 quick games', 'from-rose-500 to-pink-600'],
-          ].map(([href, icon, title, text, g]) => (
+          {([
+            ['/practice', 'write', 'Practice', 'PYQ papers and units', 'from-indigo-500 to-indigo-700'],
+            ['/learn', 'learn', 'Learn', 'Course and notes', 'from-teal-500 to-emerald-600'],
+            ['/progress', 'chart', 'Progress', 'Scores and mistakes', 'from-amber-500 to-orange-600'],
+            ['/speed-math', 'zap', 'Speed Maths', '11 quick games', 'from-rose-500 to-pink-600'],
+          ] as [string, IconName, string, string, string][]).map(([href, icon, title, text, g]) => (
             <Link key={href} href={href} className="rounded-2xl p-4 bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex items-center gap-3">
-              <span className={`shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${g} flex items-center justify-center text-2xl`} aria-hidden>{icon}</span>
+              <span className={`shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${g} flex items-center justify-center text-white`} aria-hidden><Icon name={icon} className="w-6 h-6" /></span>
               <span className="min-w-0">
                 <span className="block font-black text-slate-900">{title}</span>
                 <span className="block text-[11px] text-slate-600">{text}</span>
@@ -149,10 +150,10 @@ const TONES: Record<string, string> = {
   teal: 'border-slate-200 border-l-teal-400 bg-white', orange: 'border-slate-200 border-l-orange-400 bg-white',
 };
 
-function Card({ tone, icon, title, text, children }: { tone: string; icon: string; title: string; text: string; children: React.ReactNode }) {
+function Card({ tone, icon, title, text, children }: { tone: string; icon: IconName; title: string; text: string; children: React.ReactNode }) {
   return (
     <div className={`rounded-2xl border-l-4 ${TONES[tone]} border p-4 flex flex-col sm:flex-row sm:items-center gap-3 shadow-sm`}>
-      <span className="text-3xl shrink-0 w-10 text-center" aria-hidden>{icon}</span>
+      <span className="shrink-0 w-10 flex justify-center text-slate-700" aria-hidden><Icon name={icon} className="w-8 h-8" strokeWidth={1.75} /></span>
       <div className="flex-1 min-w-0">
         <p className="font-black text-slate-900">{title}</p>
         <p className="text-sm text-slate-600">{text}</p>

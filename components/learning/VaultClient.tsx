@@ -10,6 +10,7 @@ import {
   createVaultFolder, deleteVaultFolder, listVaultFolders, listVaultItems, removeFromVault, renameVaultFolder,
 } from '@/lib/testApi';
 import type { VaultFolder } from '@/lib/types';
+import Icon from '@/components/Icon';
 
 const MathText = dynamic(() => import('@/components/quiz/MathText'), { ssr: false });
 
@@ -129,7 +130,7 @@ function VaultBody() {
             aria-current={f.id === activeId ? 'true' : undefined}
             className={`w-full flex items-center justify-between text-left text-sm px-2.5 py-2 rounded-lg ${f.id === activeId ? 'bg-indigo-600 text-white font-bold' : 'hover:bg-slate-50 text-slate-700'}`}
           >
-            <span className="truncate">{f.kind === 'wrong' ? '❌ ' : f.kind === 'lucky' ? '🍀 ' : '📁 '}{f.name}</span>
+            <span className="truncate inline-flex items-center gap-2"><Icon name={f.kind === 'wrong' ? 'cross' : f.kind === 'lucky' ? 'clover' : 'folder'} className="w-4 h-4" />{f.name}</span>
             <span className={`text-[11px] ${f.id === activeId ? 'text-indigo-100' : 'text-slate-400'}`}>{f.item_count ?? 0}</span>
           </button>
         ))}

@@ -6,6 +6,22 @@
   --foreground: #171717;
 }
 
+/* Brand: Peacock. The site's "indigo" utilities now resolve to this blue-teal scale,
+   so every existing indigo class picks up the brand colour from this one place. */
+@theme {
+  --color-indigo-50: #e6f2f5;
+  --color-indigo-100: #cce5eb;
+  --color-indigo-200: #a3d0da;
+  --color-indigo-300: #6fb4c4;
+  --color-indigo-400: #3e9db3;
+  --color-indigo-500: #1b7f96;
+  --color-indigo-600: #0f6d83;
+  --color-indigo-700: #0b5f73;
+  --color-indigo-800: #084a5a;
+  --color-indigo-900: #073c49;
+  --color-indigo-950: #07242d;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -79,14 +95,14 @@ pre {
 [data-text-size="lg"] .q-hint { font-size: 1.0625rem; }
 
 /* Revision notes (Markdown rendered by lib/markdown.ts) */
-.note-body h2 { font-size: 1.05rem; font-weight: 700; color: #1e1b4b; margin: 1rem 0 0.4rem; }
-.note-body h3, .note-body h4, .note-body h5 { font-size: 0.95rem; font-weight: 700; color: #312e81; margin: 0.9rem 0 0.3rem; }
+.note-body h2 { font-size: 1.05rem; font-weight: 700; color: #07242d; margin: 1rem 0 0.4rem; }
+.note-body h3, .note-body h4, .note-body h5 { font-size: 0.95rem; font-weight: 700; color: #084a5a; margin: 0.9rem 0 0.3rem; }
 .note-body p { margin: 0.5rem 0; }
 .note-body ul { list-style: disc; padding-left: 1.25rem; margin: 0.4rem 0; }
 .note-body ol { list-style: decimal; padding-left: 1.25rem; margin: 0.4rem 0; }
 .note-body li { margin: 0.2rem 0; }
 .note-body code { background: #f1f5f9; padding: 0 0.25rem; border-radius: 0.25rem; font-size: 0.85em; }
-.note-body a { color: #4338ca; text-decoration: underline; }
+.note-body a { color: #0b5f73; text-decoration: underline; }
 .note-body table { width: 100%; border-collapse: collapse; margin: 0.6rem 0; font-size: 0.85rem; display: block; overflow-x: auto; }
 .note-body th, .note-body td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; vertical-align: top; }
 .note-body th { background: #f8fafc; }

@@ -8,6 +8,7 @@ import { normalizeUnit } from '@/lib/scoring';
 import { getMyPerformance, getMyProgress } from '@/lib/testApi';
 import { MISTAKE_TAGS, type Performance, type Progress } from '@/lib/types';
 import { formatTestLabel } from '@/lib/testTitle';
+import Icon from '@/components/Icon';
 
 // NTA gives 60 minutes for 50 Paper 1 questions in practice: about 72 s each.
 const TARGET_SECONDS = 72;
@@ -56,7 +57,7 @@ function PerformanceBody() {
         <Stat label="Questions answered" value={String(totals.attempted)} />
         <Stat label="Accuracy" value={`${accuracy}%`} />
         <Stat label="Avg. time per question" value={totals.avg_seconds ? `${Math.round(totals.avg_seconds)} s` : '—'} hint={`Exam pace ≈ ${TARGET_SECONDS} s`} />
-        <Stat label="Day streak" value={progress ? `${progress.streak} 🔥` : '—'} />
+        <Stat label="Day streak" value={progress ? <span className="inline-flex items-center gap-1">{progress.streak}<Icon name="flame" className="w-5 h-5 text-orange-500" /></span> : '—'} />
       </section>
 
       <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
@@ -128,7 +129,7 @@ function PerformanceBody() {
   );
 }
 
-function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
+function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-3.5">
       <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{label}</p>
@@ -160,13 +161,13 @@ function ScoreTrend({ trend }: { trend: Performance['trend'] }) {
             <text x={P.l - 8} y={y(g) + 7} textAnchor="end" fontSize="20" fill="#64748b">{g}%</text>
           </g>
         ))}
-        <path d={path} fill="none" stroke="#4f46e5" strokeWidth="2" strokeLinejoin="round" />
+        <path d={path} fill="none" stroke="#0b5f73" strokeWidth="2" strokeLinejoin="round" />
         {trend.map((t, i) => (
           <g key={t.id}>
             <circle cx={x(i)} cy={y(t.score_percentage)} r="12" fill="transparent">
               <title>{`${formatTestLabel(t.test_mode)}: ${t.score_percentage}% (${new Date(t.submitted_at).toLocaleDateString('en-IN')})`}</title>
             </circle>
-            <circle cx={x(i)} cy={y(t.score_percentage)} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="2" pointerEvents="none" />
+            <circle cx={x(i)} cy={y(t.score_percentage)} r="4" fill="#0b5f73" stroke="#fff" strokeWidth="2" pointerEvents="none" />
           </g>
         ))}
         <text x={x(trend.length - 1)} y={y(last.score_percentage) - 12} textAnchor="end" fontSize="22" fontWeight="700" fill="#1e1b4b">{last.score_percentage}%</text>

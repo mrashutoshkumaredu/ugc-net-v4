@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import Icon, { type IconName } from '@/components/Icon';
 import {
   OPEN_GUIDE_EVENT, WELCOME_AUTO_PATHS, getGuideLang, hasSeenWelcome, markWelcomeSeen, setGuideLang, type GuideLang,
 } from '@/lib/welcome';
 
-type Section = { icon: string; name: string; text: string };
+type Section = { icon: IconName; name: string; text: string };
 type Copy = { title: string; subtitle: string; sections: Section[]; tipsTitle: string; tips: string[]; findAgain: string; gotIt: string };
 
 // Tab names are kept in English beside the Hindi word, because the tabs on the site are in English.
@@ -15,11 +16,11 @@ const COPY: Record<GuideLang, Copy> = {
     title: 'Welcome to UGC NET Paper 1 Portal',
     subtitle: 'A 30-second guide to finding your way around.',
     sections: [
-      { icon: '🏠', name: 'Today', text: 'Your starting point: resume a test, see what to revise and count down to your exam.' },
-      { icon: '📝', name: 'Practice', text: 'Full previous year papers with a real 60-minute timer, unit-wise sets, daily practice and Speed Maths.' },
-      { icon: '📘', name: 'Learn', text: 'Maths course, revision notes and previous year question trends by unit.' },
-      { icon: '📊', name: 'Progress', text: 'Your scores, weak areas, saved questions (Revision Vault) and the leaderboard.' },
-      { icon: '👥', name: 'Classes', text: 'Appears when you join a class, displaying tasks assigned by your teacher.' },
+      { icon: 'home', name: 'Today', text: 'Your starting point: resume a test, see what to revise and count down to your exam.' },
+      { icon: 'write', name: 'Practice', text: 'Full previous year papers with a real 60-minute timer, unit-wise sets, daily practice and Speed Maths.' },
+      { icon: 'learn', name: 'Learn', text: 'Maths course, revision notes and previous year question trends by unit.' },
+      { icon: 'chart', name: 'Progress', text: 'Your scores, weak areas, saved questions (Revision Vault) and the leaderboard.' },
+      { icon: 'users', name: 'Classes', text: 'Appears when you join a class, displaying tasks assigned by your teacher.' },
     ],
     tipsTitle: 'Good to know',
     tips: [
@@ -36,11 +37,11 @@ const COPY: Record<GuideLang, Copy> = {
     title: 'UGC NET पेपर 1 पोर्टल में आपका स्वागत है',
     subtitle: '30 सेकंड में जानें कि इस साइट का उपयोग कैसे करें।',
     sections: [
-      { icon: '🏠', name: 'आज (Today)', text: 'यहीं से शुरुआत करें: अधूरा टेस्ट दोबारा शुरू करें, आज क्या दोहराना है देखें और जानें कि परीक्षा में कितने दिन बाकी हैं।' },
-      { icon: '📝', name: 'प्रैक्टिस (Practice)', text: '60 मिनट के वास्तविक टाइमर के साथ पिछले वर्षों के पूरे पेपर, यूनिट-वार सेट, रोज़ का अभ्यास और स्पीड मैथ्स।' },
-      { icon: '📘', name: 'सीखें (Learn)', text: 'गणित कोर्स, रिवीज़न नोट्स और यूनिट के अनुसार पिछले वर्षों के प्रश्नों के रुझान।' },
-      { icon: '📊', name: 'प्रगति (Progress)', text: 'आपके अंक, कमज़ोर यूनिट, सहेजे गए प्रश्न (रिवीज़न वॉल्ट) और लीडरबोर्ड।' },
-      { icon: '👥', name: 'क्लास (Classes)', text: 'यह तब दिखता है जब आप किसी क्लास से जुड़ते हैं। इसमें आपके शिक्षक द्वारा दिए गए टास्क दिखते हैं।' },
+      { icon: 'home', name: 'आज (Today)', text: 'यहीं से शुरुआत करें: अधूरा टेस्ट दोबारा शुरू करें, आज क्या दोहराना है देखें और जानें कि परीक्षा में कितने दिन बाकी हैं।' },
+      { icon: 'write', name: 'प्रैक्टिस (Practice)', text: '60 मिनट के वास्तविक टाइमर के साथ पिछले वर्षों के पूरे पेपर, यूनिट-वार सेट, रोज़ का अभ्यास और स्पीड मैथ्स।' },
+      { icon: 'learn', name: 'सीखें (Learn)', text: 'गणित कोर्स, रिवीज़न नोट्स और यूनिट के अनुसार पिछले वर्षों के प्रश्नों के रुझान।' },
+      { icon: 'chart', name: 'प्रगति (Progress)', text: 'आपके अंक, कमज़ोर यूनिट, सहेजे गए प्रश्न (रिवीज़न वॉल्ट) और लीडरबोर्ड।' },
+      { icon: 'users', name: 'क्लास (Classes)', text: 'यह तब दिखता है जब आप किसी क्लास से जुड़ते हैं। इसमें आपके शिक्षक द्वारा दिए गए टास्क दिखते हैं।' },
     ],
     tipsTitle: 'ध्यान रखें',
     tips: [
@@ -106,7 +107,7 @@ export default function WelcomeGuide() {
           <ul className="mt-4 space-y-2.5">
             {c.sections.map((s) => (
               <li key={s.icon} className="flex gap-3 rounded-xl bg-slate-50 p-3">
-                <span className="text-xl leading-none" aria-hidden>{s.icon}</span>
+                <span className="text-indigo-700 shrink-0" aria-hidden><Icon name={s.icon} className="w-5 h-5" /></span>
                 <p className="text-xs leading-relaxed text-slate-600"><span className="font-bold text-slate-800">{s.name}.</span> {s.text}</p>
               </li>
             ))}
