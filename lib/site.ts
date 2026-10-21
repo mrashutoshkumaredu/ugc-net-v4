@@ -16,3 +16,7 @@ export const MAINTAINER = {
 // Public contact address. Change it here and the footer and Contact page both update.
 // Set NEXT_PUBLIC_CONTACT_EMAIL in Vercel to override without editing code.
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "lousingdost@gmail.com";
+
+// Independence notice, shown in the footer of every page except the test screen (/quiz).
+export const DISCLAIMER =
+  "Independent site. Not affiliated with UGC, NTA or the Government of India. No official logos or emblems used.";
