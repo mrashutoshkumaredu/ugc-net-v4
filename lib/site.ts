@@ -5,3 +5,14 @@ export const SITE_NAME = "UGC NET Paper 1 Portal";
 
 export const SITE_DESCRIPTION =
   "National Eligibility Test practice platform — full-length previous year question papers and unit-wise practice for UGC NET Paper 1.";
+
+// Who maintains the site. Shown in the footer and on the Contact page.
+export const MAINTAINER = {
+  name: "Ashutosh Kumar",
+  department: "Department of Society-Technology Interface",
+  institution: "Central University of Rajasthan",
+};
+
+// Public contact address. Change it here and the footer and Contact page both update.
+// Set NEXT_PUBLIC_CONTACT_EMAIL in Vercel to override without editing code.
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "REPLACE-WITH-YOUR-EMAIL@example.com";
