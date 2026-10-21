@@ -62,7 +62,7 @@ export type ExamConfig = {
 // Returned by the `get_catalog` database function (no answers).
 export type Catalog = {
   total: number;
-  papers: { paper_id: string; cycle: string | null; question_count: number }[];
+  papers: { paper_id: string; cycle: string | null; question_count: number; hindi_text_count?: number }[];
   units: { unit: string; question_count: number }[];
   topics?: { unit: string; topic: string; question_count: number }[];
 };

@@ -11,6 +11,7 @@ import { UNIT_OPTIONS, getCycleDisplayName, getPaperDisplayName, cycleSortKey } 
 import { normalizeUnit } from '@/lib/scoring';
 import Link from 'next/link';
 import { getCatalog, getMyProgress } from '@/lib/testApi';
+import { hindiCoverage, usePicturePapers } from '@/lib/hindiImages';
 import { clearProgress, getActiveProgress, type SavedProgress } from '@/lib/progress';
 import type { Catalog, ExamConfig, Progress } from '@/lib/types';
 
@@ -20,6 +21,7 @@ export default function PracticePage() {
   const { user, checkedSession } = useAuth();
 
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const picturePapers = usePicturePapers();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [resumable, setResumable] = useState<SavedProgress | null>(null);
@@ -68,7 +70,9 @@ export default function PracticePage() {
     }
   }, [papersForCycle, selectedPaperId]);
 
-  const fullTestQuestionCount = papers.find((p) => p.paper_id === selectedPaperId)?.question_count ?? 0;
+  const selectedPaper = papers.find((p) => p.paper_id === selectedPaperId);
+  const fullTestQuestionCount = selectedPaper?.question_count ?? 0;
+  const selectedCoverage = selectedPaper ? hindiCoverage(selectedPaper, picturePapers) : 'NONE';
 
   const unitCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -262,10 +266,17 @@ export default function PracticePage() {
                     className="mt-1 w-full text-xs bg-white border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-600 font-semibold text-slate-800"
                   >
                     {papersForCycle.length === 0 && <option value="">No papers available for this cycle</option>}
-                    {papersForCycle.map((p) => <option key={p.paper_id} value={p.paper_id}>{getPaperDisplayName(p.paper_id)}</option>)}
+                    {papersForCycle.map((p) => <option key={p.paper_id} value={p.paper_id}>{getPaperDisplayName(p.paper_id)}{hindiCoverage(p, picturePapers) === 'FULL' ? ' · English + हिंदी' : ''}</option>)}
                   </select>
                 </label>
 
+                {selectedPaper && (
+                  <p className={`text-[11px] font-bold rounded-lg px-2.5 py-1.5 ${selectedCoverage === 'FULL' ? 'bg-emerald-50 text-emerald-800' : selectedCoverage === 'PARTIAL' ? 'bg-amber-50 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>
+                    {selectedCoverage === 'FULL' && 'Available in English and Hindi (हिंदी). Switch language during the test.'}
+                    {selectedCoverage === 'PARTIAL' && `Hindi (हिंदी) available for ${selectedPaper.hindi_text_count} of ${selectedPaper.question_count} questions.`}
+                    {selectedCoverage === 'NONE' && 'English only. Hindi is not available for this paper yet.'}
+                  </p>
+                )}
                 <div className="flex justify-between text-xs text-slate-600 pt-1 border-t border-slate-200">
                   <span>Questions:</span>
                   <strong className="text-indigo-600 font-bold">{fullTestQuestionCount}</strong>

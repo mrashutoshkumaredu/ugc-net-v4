@@ -15,4 +15,4 @@ export const MAINTAINER = {
 
 // Public contact address. Change it here and the footer and Contact page both update.
 // Set NEXT_PUBLIC_CONTACT_EMAIL in Vercel to override without editing code.
-export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "REPLACE-WITH-YOUR-EMAIL@example.com";
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "lousingdost@gmail.com";
