@@ -40,9 +40,9 @@ export const courseApi = {
 };
 
 export const PART_STYLE: Record<string, { icon: IconName; gradient: string }> = {
-  A: { icon: 'calculator', gradient: 'from-orange-500 to-rose-500' },
-  B: { icon: 'puzzle', gradient: 'from-emerald-500 to-teal-600' },
-  C: { icon: 'chart', gradient: 'from-sky-500 to-indigo-600' },
-  D: { icon: 'write', gradient: 'from-violet-500 to-fuchsia-600' },
+  A: { icon: 'calculator', gradient: 'from-indigo-500 to-indigo-700' },
+  B: { icon: 'puzzle', gradient: 'from-indigo-500 to-indigo-700' },
+  C: { icon: 'chart', gradient: 'from-indigo-500 to-indigo-700' },
+  D: { icon: 'write', gradient: 'from-indigo-500 to-indigo-700' },
 };
 export const partLetter = (part: string) => (part.match(/Part ([A-D])/)?.[1] || 'A');

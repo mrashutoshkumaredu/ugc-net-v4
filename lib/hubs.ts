@@ -10,14 +10,14 @@ export const HUBS: Hub[] = [
     sub: [{ href: '/practice', label: 'Papers, Units & Daily Practice' }, { href: '/speed-math', label: 'Speed Maths' }],
   },
   {
-    id: 'learn', label: 'Learn', icon: 'learn', href: '/learn', accent: 'bg-teal-600',
+    id: 'learn', label: 'Learn', icon: 'learn', href: '/learn', accent: 'bg-indigo-600',
     sub: [{ href: '/course', label: 'Maths Course' }, { href: '/notes', label: 'Revision Notes' }, { href: '/trends', label: 'PYQ Trends' }],
   },
   {
-    id: 'progress', label: 'Progress', icon: 'chart', href: '/progress', accent: 'bg-amber-500',
+    id: 'progress', label: 'Progress', icon: 'chart', href: '/progress', accent: 'bg-indigo-600',
     sub: [{ href: '/performance', label: 'My Performance' }, { href: '/vault', label: 'Revision Vault' }, { href: '/leaderboard', label: 'Leaderboard' }],
   },
-  { id: 'class', label: 'Classes', icon: 'users', href: '/classes', accent: 'bg-violet-600', sub: [] },
+  { id: 'class', label: 'Classes', icon: 'users', href: '/classes', accent: 'bg-indigo-600', sub: [] },
 ];
 
 export function hubOf(pathname: string | null): HubId {

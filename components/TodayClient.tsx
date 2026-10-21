@@ -93,7 +93,7 @@ export default function TodayClient() {
           {tasks.length > 0 && (
             <Card tone="violet" icon="clipboard" title={`${tasks.length} class task${tasks.length > 1 ? 's' : ''} to do`} text={tasks.slice(0, 3).map((t) => `${t.title}${t.due_on ? ` (due ${new Date(t.due_on + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })})` : ''}`).join(' · ')}>
               <Link href={taskHref(tasks[0])} className="btn bg-indigo-600 hover:bg-indigo-700 text-white">Start next</Link>
-              <Link href="/classes" className="text-xs text-violet-800 hover:underline">All tasks</Link>
+              <Link href="/classes" className="text-xs text-indigo-800 hover:underline">All tasks</Link>
             </Card>
           )}
 
@@ -124,9 +124,9 @@ export default function TodayClient() {
         <div className="hidden md:grid grid-cols-4 gap-3">
           {([
             ['/practice', 'write', 'Practice', 'PYQ papers and units', 'from-indigo-500 to-indigo-700'],
-            ['/learn', 'learn', 'Learn', 'Course and notes', 'from-teal-500 to-emerald-600'],
-            ['/progress', 'chart', 'Progress', 'Scores and mistakes', 'from-amber-500 to-orange-600'],
-            ['/speed-math', 'zap', 'Speed Maths', '11 quick games', 'from-rose-500 to-pink-600'],
+            ['/learn', 'learn', 'Learn', 'Course and notes', 'from-indigo-500 to-indigo-700'],
+            ['/progress', 'chart', 'Progress', 'Scores and mistakes', 'from-indigo-500 to-indigo-700'],
+            ['/speed-math', 'zap', 'Speed Maths', '11 quick games', 'from-indigo-500 to-indigo-700'],
           ] as [string, IconName, string, string, string][]).map(([href, icon, title, text, g]) => (
             <Link key={href} href={href} className="rounded-2xl p-4 bg-white border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex items-center gap-3">
               <span className={`shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${g} flex items-center justify-center text-white`} aria-hidden><Icon name={icon} className="w-6 h-6" /></span>
@@ -146,8 +146,8 @@ export default function TodayClient() {
 
 const TONES: Record<string, string> = {
   // White cards; the colour stays only on the left edge, so buttons and right/wrong colours stand out.
-  amber: 'border-slate-200 border-l-amber-400 bg-white', violet: 'border-slate-200 border-l-violet-400 bg-white', emerald: 'border-slate-200 border-l-emerald-400 bg-white',
-  teal: 'border-slate-200 border-l-teal-400 bg-white', orange: 'border-slate-200 border-l-orange-400 bg-white',
+  amber: 'border-slate-200 border-l-amber-400 bg-white', violet: 'border-slate-200 border-l-indigo-400 bg-white', emerald: 'border-slate-200 border-l-indigo-400 bg-white',
+  teal: 'border-slate-200 border-l-indigo-400 bg-white', orange: 'border-slate-200 border-l-orange-400 bg-white',
 };
 
 function Card({ tone, icon, title, text, children }: { tone: string; icon: IconName; title: string; text: string; children: React.ReactNode }) {

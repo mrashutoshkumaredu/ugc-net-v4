@@ -207,7 +207,7 @@ function Chapter({ ch, sets, taskId, onBack, onOpenSet }: { ch: CourseChapter; s
                 <p className="text-sm font-semibold text-emerald-900 flex items-center gap-2"><Icon name="clipboard" className="w-4 h-4" />This lesson is a class task. When you have read it, mark it as done.</p>
                 {doneMsg ? <p className="text-sm font-bold text-emerald-700">{doneMsg}</p> : (
                   <button onClick={() => courseApi.lessonDone(taskId).then(() => setDoneMsg('✓ Marked as read')).catch((e) => setDoneMsg(e.message))}
-                    className="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg">I have read it ✓</button>
+                    className="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-bold rounded-lg">I have read it ✓</button>
                 )}
               </div>
             )}
@@ -356,7 +356,7 @@ function Player({ setId, taskId, onBack }: { setId: string; taskId: string | nul
               {i < qs.length - 1 ? (
                 <button onClick={() => setI(i + 1)} className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold">Next »</button>
               ) : (
-                <button onClick={() => setConfirm(true)} className="px-5 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">Submit</button>
+                <button onClick={() => setConfirm(true)} className="px-5 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-sm font-bold">Submit</button>
               )}
             </div>
           </div>
