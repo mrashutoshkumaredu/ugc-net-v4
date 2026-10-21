@@ -19,7 +19,7 @@ export function mapAuthError(error: unknown): string {
     return 'Too many attempts. Please wait a moment and try again.';
   }
   if (msg.includes('password') && (msg.includes('short') || msg.includes('at least') || msg.includes('6 characters'))) {
-    return 'Password is too short. Please use at least 6 characters.';
+    return 'Password is too short. Please use at least 8 characters, with letters and numbers.';
   }
   if (msg.includes('pwned') || msg.includes('leaked') || msg.includes('weak password')) {
     return 'This password has appeared in a data leak. Please choose a different one.';

@@ -63,7 +63,7 @@ export function testTitle(session: TestSession | null, questionCount: number): s
 
   switch (session.mode) {
     case 'FULL':
-      return `Full Test · ${formatPaperTitle(session.paper_id || '')} · ${qs}`;
+      return `Full Paper · ${formatPaperTitle(session.paper_id || '')} · ${qs}`;
     case 'UNIT':
       if (session.topic) return `Topic Practice · ${session.unit || 'All units'} › ${session.topic} · ${qs}`;
       return `Unit Practice · ${session.unit || 'All units'} · ${qs}`;
@@ -77,9 +77,9 @@ export function testTitle(session: TestSession | null, questionCount: number): s
 }
 
 // Saved test names come from the database as "Full Test (01 ECONOMICS 12 DEC 2023 SHIFT1)".
-// Show them as "Full Test · 01 Economics · 12 Dec 2023 · Shift 1".
+// Show them as "Full Paper · 01 Economics · 12 Dec 2023 · Shift 1".
 export function formatTestLabel(label: string | null | undefined): string {
   if (!label) return '';
   const m = label.match(/^Full Test \((.+)\)$/);
-  return m ? `Full Test · ${formatPaperTitle(m[1].replace(/ /g, '_'))}` : label;
+  return m ? `Full Paper · ${formatPaperTitle(m[1].replace(/ /g, '_'))}` : label;
 }

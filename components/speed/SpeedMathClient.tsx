@@ -90,7 +90,7 @@ const Stars = ({ n, size = 'text-base' }: { n: number; size?: string }) => (
 
 export default function SpeedMathClient() {
   return (
-    <PageShell title="⚡ Speed Math & Logic" subtitle="Quick-fire games for the calculation and pattern skills Paper 1 tests. Beat the clock, build combos, collect stars." wide>
+    <PageShell title="⚡ Speed Maths & Logic" subtitle="Quick-fire games for the calculation and pattern skills Paper 1 tests. Beat the clock, build combos, collect stars." wide>
       <SpeedMathBody />
     </PageShell>
   );

@@ -35,7 +35,7 @@ describe('formatPaperTitle', () => {
 describe('testTitle', () => {
   it('names each kind of test', () => {
     expect(testTitle({ ...base, mode: 'FULL', paper_id: '30_ENGLISH_06_DEC_2023_SHIFT1' }, 50))
-      .toBe('Full Test · 30 English · 06 Dec 2023 · Shift 1 · 50 Qs');
+      .toBe('Full Paper · 30 English · 06 Dec 2023 · Shift 1 · 50 Qs');
     expect(testTitle({ ...base, mode: 'UNIT', unit: 'Research Aptitude' }, 10)).toBe('Unit Practice · Research Aptitude · 10 Qs');
     expect(testTitle({ ...base, mode: 'UNIT', unit: 'Research Aptitude', topic: 'Steps of Research' }, 10))
       .toBe('Topic Practice · Research Aptitude › Steps of Research · 10 Qs');
@@ -49,7 +49,7 @@ describe('testTitle', () => {
 
 describe('formatTestLabel', () => {
   it('tidies saved full test names and leaves others alone', () => {
-    expect(formatTestLabel('Full Test (01 ECONOMICS 12 DEC 2023 SHIFT1)')).toBe('Full Test · 01 Economics · 12 Dec 2023 · Shift 1');
+    expect(formatTestLabel('Full Test (01 ECONOMICS 12 DEC 2023 SHIFT1)')).toBe('Full Paper · 01 Economics · 12 Dec 2023 · Shift 1');
     expect(formatTestLabel('Teaching Aptitude (10 Qs)')).toBe('Teaching Aptitude (10 Qs)');
     expect(formatTestLabel(null)).toBe('');
   });

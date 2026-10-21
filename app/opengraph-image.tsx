@@ -25,7 +25,7 @@ export default function OpengraphImage() {
         </div>
         <div style={{ fontSize: 84, fontWeight: 900, marginTop: 20, lineHeight: 1.05 }}>UGC NET Paper 1</div>
         <div style={{ fontSize: 38, marginTop: 28, color: "#c7d2fe", lineHeight: 1.3, maxWidth: 950 }}>
-          Full previous year papers, unit-wise practice, notes and Speed Math games.
+          Full previous year papers, unit-wise practice, notes and Speed Maths games.
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 48, fontSize: 28, color: "#e0e7ff" }}>
           <div>ugcnetpaper1.vercel.app</div>

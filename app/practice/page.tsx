@@ -187,7 +187,7 @@ export default function PracticePage() {
                 <p className="text-sm font-bold text-slate-800">Daily Practice · 10 questions</p>
                 <p className="text-xs text-slate-500">
                   {progress.revisions_due > 0
-                    ? `${progress.revisions_due} question${progress.revisions_due > 1 ? 's' : ''} you got wrong ${progress.revisions_due > 1 ? 'are' : 'is'} due for revision, plus new ones from your weakest units.`
+                    ? `${progress.revisions_due} question${progress.revisions_due > 1 ? 's' : ''} you got wrong ${progress.revisions_due > 1 ? 'are' : 'is'} due for revision, plus new questions from your weakest units.`
                     : 'New questions from your weakest units. Wrong answers come back after 1, 3 and 7 days.'}
                 </p>
               </div>
@@ -225,7 +225,7 @@ export default function PracticePage() {
             <span className="text-xs font-semibold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">Based on the NTA pattern</span>
             <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight">Let&apos;s Master UGC NET Paper 1 PYQs</h2>
             <p className="sm:hidden text-xs text-indigo-200">{loading ? 'Loading papers…' : `${catalog?.total ?? 0} questions · ${papers.length} papers · 2 marks each, no negative marking`}</p>
-            <p className="hidden sm:block text-xs sm:text-sm text-indigo-200 leading-relaxed">Attempt full-length 60-minute previous year papers or build unit-wise practice sets. Each correct answer gives 2 marks, with no negative marking.</p>
+            <p className="hidden sm:block text-xs sm:text-sm text-indigo-200 leading-relaxed">Previous year questions (PYQs): attempt full-length 60-minute papers or build unit-wise practice sets. Each correct answer gives 2 marks, with no negative marking.</p>
           </div>
           <div className="hidden sm:grid grid-cols-2 gap-3 w-full md:w-auto shrink-0">
             <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3.5 rounded-xl text-center">

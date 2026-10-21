@@ -57,7 +57,7 @@ function Summary() {
         <Num label="Latest test" value={latest === null ? '—' : `${latest}%`} />
         <Num label="Accuracy" value={`${accuracy}%`} note={`${totals.correct}/${totals.attempted} right`} />
         <Num label="Work on" value={weakest ? weakest.unit : '—'} note={weakest ? `${Math.round(weakest.accuracy)}% right` : undefined} small />
-        <Num label="Days to exam" value={days === null ? '—' : String(days)} note={days === null ? 'Set it in Settings (A menu)' : undefined} />
+        <Num label="Days to exam" value={days === null ? '—' : String(days)} note={days === null ? 'Set it in Settings (profile menu)' : undefined} />
       </div>
       <Link href="/performance" className="inline-block mt-3 text-sm font-bold text-indigo-700 hover:underline">See full details →</Link>
     </section>

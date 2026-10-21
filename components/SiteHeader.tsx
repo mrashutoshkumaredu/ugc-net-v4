@@ -58,7 +58,7 @@ export default function SiteHeader({ masterSecondsRemaining }: { masterSecondsRe
 
   return (
     <>
-      <header className="bg-indigo-900 text-white shadow-md z-40 shrink-0">
+      <header className="sticky top-0 bg-indigo-900 text-white shadow-md z-40 shrink-0">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
           <Link href="/" onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); goHome(); }} className="cursor-pointer group min-w-0">
             <p className="text-base sm:text-lg font-black tracking-wide group-hover:text-amber-400 transition truncate">UGC NET Paper 1</p>

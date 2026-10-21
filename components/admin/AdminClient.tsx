@@ -96,7 +96,7 @@ export default function AdminClient() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-indigo-900">Student reports</h1>
-            <p className="text-xs text-slate-500">Each report shows the exact question, its paper and its number in that paper, however it was shuffled for the student.</p>
+            <p className="text-xs text-slate-500">Each report shows the exact question, its paper and its number in that paper, regardless of how it was shuffled for the student.</p>
           </div>
           <div className="flex gap-1" role="group" aria-label="Filter reports">
             {(['Open', 'Resolved', 'ALL'] as StatusFilter[]).map((f) => (

@@ -77,7 +77,7 @@ function CourseBody() {
       )}
 
       <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-        <strong>📖 Lesson notes open</strong> · <strong>🔒 Lesson notes locked</strong>: they open when your teacher sets that chapter in your class.
+        <strong>📖 Lesson notes open</strong> · <strong>🔒 Lesson notes locked</strong>: they open when your teacher assigns that chapter to your class.
         Practice sets in every chapter are free for everyone. The number (for example 0/1) shows practice sets done.
       </p>
 
@@ -166,7 +166,7 @@ function Chapter({ ch, sets, taskId, onBack, onOpenSet }: { ch: CourseChapter; s
         !lesson ? <p className="text-sm text-slate-500">Loading…</p> : lesson.locked ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center max-w-lg mx-auto">
             <p className="text-4xl mb-2">🔒</p>
-            <p className="font-bold text-slate-900">The full lesson is for students in a class</p>
+            <p className="font-bold text-slate-900">The full lesson is available to students in a class</p>
             <p className="text-sm text-slate-500 mt-1 mb-4">Ask your teacher to assign this chapter&apos;s lesson. Join their class on the Classes page with the code they give you. The practice questions are free for everyone.</p>
             <div className="flex justify-center gap-3">
               <Link href="/classes" className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg">Join a class</Link>

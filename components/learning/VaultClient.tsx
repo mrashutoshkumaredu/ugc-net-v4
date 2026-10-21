@@ -88,7 +88,7 @@ function VaultBody() {
 
   const remove = async () => {
     if (!active) return;
-    if (!window.confirm(`Delete the folder "${active.name}" and its ${active.item_count ?? 0} saved question(s)? The questions stay on the site; only your saved list is removed.`)) return;
+    if (!window.confirm(`Delete the folder "${active.name}" and its ${active.item_count ?? 0} saved question${(active.item_count ?? 0) === 1 ? '' : 's'}? The questions stay on the site; only your saved list is removed.`)) return;
     try {
       await deleteVaultFolder(active.id);
       setActiveId(null);
@@ -156,7 +156,7 @@ function VaultBody() {
             <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-bold text-indigo-950">{active.name}</h2>
-                <p className="text-xs text-slate-500">{KIND_NOTE[active.kind]} {active.item_count ?? 0} question(s).</p>
+                <p className="text-xs text-slate-500">{KIND_NOTE[active.kind]} {active.item_count ?? 0} question{(active.item_count ?? 0) === 1 ? '' : 's'}.</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <button onClick={retest} disabled={!active.item_count} className="text-xs font-bold px-3 py-2 rounded-lg bg-emerald-600 text-white disabled:opacity-50">

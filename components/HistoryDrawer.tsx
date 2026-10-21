@@ -36,8 +36,8 @@ export default function HistoryDrawer({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-2xl w-full shadow-2xl relative max-h-[80vh] flex flex-col border border-slate-200">
         <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
-        <h3 className="text-lg sm:text-xl font-bold text-indigo-900 mb-1">Your Test Attempt History</h3>
-        <p className="text-xs text-slate-500 mb-4">A complete record of your previous PYQ tests and unit scores.</p>
+        <h3 className="text-lg sm:text-xl font-bold text-indigo-900 mb-1">Your Test History</h3>
+        <p className="text-xs text-slate-500 mb-4">A complete record of your past tests and unit scores.</p>
 
         <div className="flex-1 overflow-y-auto space-y-3 pr-1">
           {!user && <p className="text-sm text-slate-500">Please log in to view your test history.</p>}

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import WelcomeGuide from './WelcomeGuide';
-import { OPEN_GUIDE_EVENT, WELCOME_SEEN_KEY } from '@/lib/welcome';
+import { GUIDE_LANG_KEY, OPEN_GUIDE_EVENT, WELCOME_SEEN_KEY } from '@/lib/welcome';
 
 const path = vi.hoisted(() => ({ value: '/' }));
 vi.mock('next/navigation', () => ({ usePathname: () => path.value }));
@@ -14,6 +14,20 @@ describe('WelcomeGuide', () => {
     render(<WelcomeGuide />);
     expect(screen.getByRole('dialog', { name: /welcome/i })).toBeTruthy();
     for (const name of ['Today', 'Practice', 'Learn', 'Progress']) expect(screen.getByText(`${name}.`)).toBeTruthy();
+  });
+
+  it('can be switched to Hindi, and remembers the choice', async () => {
+    const { unmount } = render(<WelcomeGuide />);
+    await userEvent.click(screen.getByRole('button', { name: 'हिंदी' }));
+    expect(screen.getByRole('dialog', { name: /स्वागत है/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'ठीक है' })).toBeTruthy();
+    expect(screen.getByText(/आज \(Today\)\./)).toBeTruthy();
+    expect(localStorage.getItem(GUIDE_LANG_KEY)).toBe('hi');
+    unmount();
+    render(<WelcomeGuide />);
+    expect(await screen.findByRole('dialog', { name: /स्वागत है/ })).toBeTruthy();
+    await userEvent.click(screen.getByRole('button', { name: 'English' }));
+    expect(screen.getByRole('dialog', { name: /Welcome/ })).toBeTruthy();
   });
 
   it('closes with "Got it" and does not come back on the next visit', async () => {

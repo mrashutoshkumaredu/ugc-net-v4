@@ -43,7 +43,7 @@ function PerformanceBody() {
     return (
       <div className="space-y-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-6 text-sm text-slate-600">
-          Nothing to show yet. Take a full paper, a unit practice or today&apos;s Daily Practice, and your strengths and weak spots will appear here.{' '}
+          Nothing to show yet. Take a full paper, unit-wise practice or today&apos;s Daily Practice, and your strengths and weak spots will appear here.{' '}
           <Link href="/practice" className="font-bold text-indigo-700 hover:underline">Start a test</Link>
         </div>
       </div>
@@ -55,7 +55,7 @@ function PerformanceBody() {
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Questions answered" value={String(totals.attempted)} />
         <Stat label="Accuracy" value={`${accuracy}%`} />
-        <Stat label="Avg time / question" value={totals.avg_seconds ? `${Math.round(totals.avg_seconds)} s` : '—'} hint={`Exam pace ≈ ${TARGET_SECONDS} s`} />
+        <Stat label="Avg. time per question" value={totals.avg_seconds ? `${Math.round(totals.avg_seconds)} s` : '—'} hint={`Exam pace ≈ ${TARGET_SECONDS} s`} />
         <Stat label="Day streak" value={progress ? `${progress.streak} 🔥` : '—'} />
       </section>
 
@@ -89,7 +89,7 @@ function PerformanceBody() {
         <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
           <h2 className="text-sm font-bold text-slate-800">Why you lose marks</h2>
           {tagTotal === 0 ? (
-            <p className="text-xs text-slate-500 mt-2">Tag your wrong answers in Deep Review (after each test) and the reasons will add up here.</p>
+            <p className="text-xs text-slate-500 mt-2">Tag your wrong answers in Deep Review after each test, and the reasons will add up here.</p>
           ) : (
             <ul className="mt-3 space-y-2">
               {MISTAKE_TAGS.map((t) => {

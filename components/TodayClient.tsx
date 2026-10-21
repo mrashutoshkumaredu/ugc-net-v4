@@ -98,7 +98,7 @@ export default function TodayClient() {
 
           {user && progress && (
             <Card tone="emerald" icon={progress.daily_done ? '✅' : '🎯'} title={progress.daily_done ? 'Daily Practice done. Well done!' : 'Daily Practice · 10 questions'}
-              text={progress.revisions_due > 0 ? `${progress.revisions_due} question${progress.revisions_due > 1 ? 's' : ''} you got wrong ${progress.revisions_due > 1 ? 'are' : 'is'} due for revision, plus new ones from your weakest units.` : 'New questions from your weakest units. Wrong answers come back after 1, 3 and 7 days.'}>
+              text={progress.revisions_due > 0 ? `${progress.revisions_due} question${progress.revisions_due > 1 ? 's' : ''} you got wrong ${progress.revisions_due > 1 ? 'are' : 'is'} due for revision, plus new questions from your weakest units.` : 'New questions from your weakest units. Wrong answers come back after 1, 3 and 7 days.'}>
               <button onClick={() => go('Starting Daily Practice', '/quiz?mode=DAILY')} className={`btn ${progress.daily_done ? 'bg-slate-100 text-slate-700' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>{progress.daily_done ? 'Again' : 'Start'}</button>
             </Card>
           )}
@@ -125,7 +125,7 @@ export default function TodayClient() {
             ['/practice', '📝', 'Practice', 'PYQ papers and units', 'from-indigo-500 to-indigo-700'],
             ['/learn', '📘', 'Learn', 'Course and notes', 'from-teal-500 to-emerald-600'],
             ['/progress', '📊', 'Progress', 'Scores and mistakes', 'from-amber-500 to-orange-600'],
-            ['/speed-math', '⚡', 'Speed Math', '11 quick games', 'from-rose-500 to-pink-600'],
+            ['/speed-math', '⚡', 'Speed Maths', '11 quick games', 'from-rose-500 to-pink-600'],
           ].map(([href, icon, title, text, g]) => (
             <Link key={href} href={href} className={`rounded-2xl p-4 text-white bg-gradient-to-br ${g} shadow hover:shadow-lg hover:-translate-y-0.5 transition`}>
               <span className="text-2xl" aria-hidden>{icon}</span>

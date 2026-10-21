@@ -216,16 +216,16 @@ export default function QuestionPanel({
           {question.isDropped && (
             <p className="mb-3 text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-300 rounded-lg p-2.5">
               {language === 'HI'
-                ? 'यह प्रश्न NTA द्वारा आधिकारिक उत्तर कुंजी में हटा दिया गया था।'
-                : 'This question was dropped by NTA in the official answer key.'}
+                ? 'NTA की आधिकारिक उत्तर कुंजी में यह प्रश्न रद्द कर दिया गया था। हमने सही उत्तर जोड़ दिया है, इसलिए इसे सामान्य रूप से हल करें।'
+                : 'This question was dropped by NTA in the official answer key. We have added the correct answer, so please answer it as usual.'}
             </p>
           )}
           {language === 'HI' && hasHindiText && question.isTranslatedHi && (
             <p
               className="mb-3 text-xs font-semibold text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2.5"
-              title="इस प्रश्न का हिंदी संस्करण मूल प्रश्न पत्र में नहीं था। इसे सत्यापित अंग्रेज़ी संस्करण से अनुवादित किया गया है। (The official paper had no Hindi for this question. It was translated from the checked English version.)"
+              title="इस प्रश्न का हिंदी संस्करण मूल प्रश्न पत्र में नहीं था। इसका अनुवाद सत्यापित अंग्रेज़ी संस्करण से किया गया है। (The official paper had no Hindi for this question. It was translated from the checked English version.)"
             >
-              ⚠️ हमारे द्वारा अनूदित — मूल प्रश्न पत्र में हिंदी उपलब्ध नहीं थी। (Translated by us — Hindi was missing in the original question paper.)
+              ⚠️ हमारे द्वारा अनुवादित — मूल प्रश्न पत्र में हिंदी उपलब्ध नहीं थी। (Translated by us — Hindi was missing in the original question paper.)
             </p>
           )}
           {showHindiImage ? (
@@ -282,7 +282,7 @@ export default function QuestionPanel({
             >
               {confidence === 'guess' ? '🤔 I am guessing' : '✅ I am sure'}
             </button>
-            <span className="text-[11px] text-slate-400">Tap if you&apos;re guessing, so lucky guesses come back for revision.</span>
+            <span className="text-[11px] text-slate-400">Tap if you&apos;re guessing. Lucky guesses come back for revision.</span>
           </div>
         )}
 

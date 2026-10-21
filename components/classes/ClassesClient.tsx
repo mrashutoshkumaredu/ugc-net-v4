@@ -26,7 +26,7 @@ function describe(t: ClassTask) {
   if (t.kind === 'CHAPTER') return `Chapter practice · ${t.question_count ? `${t.question_count} questions` : 'practice set'}`;
   if (t.kind === 'FULL') return `Full paper · ${formatPaperTitle(t.paper_id || '')}`;
   if (t.kind === 'UNIT') return `${t.question_count} questions · ${t.topic ? `${t.topic} (${t.unit})` : t.unit}`;
-  return `Speed Math · ${drillName(t.drill)} · target ${'★'.repeat(t.target_stars || 1)}`;
+  return `Speed Maths · ${drillName(t.drill)} · target ${'★'.repeat(t.target_stars || 1)}`;
 }
 const resultText = (t: ClassTask, r: TaskResult) =>
   t.kind === 'LESSON' ? 'Read ✓' : t.kind === 'SPEED' ? `${'★'.repeat(r.stars || 0)}${'☆'.repeat(3 - (r.stars || 0))} · ${r.points} pts` : `${r.score_percentage}% · ${r.correct}/${r.total}`;
@@ -151,7 +151,7 @@ function StudentView() {
                   </div>
                   <p className="text-xs text-slate-500">{t.class_name} · {describe(t)}</p>
                   {t.result && t.kind === 'SPEED' && <p className="text-xs text-amber-700">Best so far: {resultText(t, t.result)}</p>}
-                  {['FULL', 'UNIT', 'CHAPTER'].includes(t.kind) && <p className="text-[11px] text-slate-500">Your first attempt is the one your teacher sees.</p>}
+                  {['FULL', 'UNIT', 'CHAPTER'].includes(t.kind) && <p className="text-[11px] text-slate-500">Your first submitted attempt is the one your teacher sees.</p>}
                   <Link href={taskHref(t)} className="self-start mt-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg">Start ▸</Link>
                 </div>
               );
@@ -192,7 +192,7 @@ function TeacherView({ role, onRequested }: { role: ClassRole | null; onRequeste
       <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center max-w-lg mx-auto">
         <p className="text-4xl mb-2">🧑‍🏫</p>
         <p className="font-bold text-slate-900">Teach on this site</p>
-        <p className="text-sm text-slate-500 mt-1 mb-4">Create classes, add students by code or email, set papers, unit practice and Speed Math games, and see who has done what.</p>
+        <p className="text-sm text-slate-500 mt-1 mb-4">Create classes, add students by code or email, set papers, unit practice and Speed Maths games, and track each student&apos;s progress.</p>
         {role.teacher_status === 'pending' ? (
           <p className="text-sm font-bold text-amber-700">Your request has been sent. The site admin will approve it soon.</p>
         ) : (
@@ -418,7 +418,7 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
   const topics = (catalog?.topics || []).filter((t) => t.unit === unit);
   const autoTitle = kind === 'FULL' ? `Full paper: ${formatPaperTitle(paper)}` : kind === 'UNIT' ? `${count} Qs: ${topic || unit}`
     : kind === 'LESSON' ? `Read: Chapter ${chapter} ${chTitle(chapter)}` : kind === 'CHAPTER' ? (setInfo?.title || 'Chapter practice')
-    : `Speed Math: ${drillName(drill)} ${'★'.repeat(stars)}`;
+    : `Speed Maths: ${drillName(drill)} ${'★'.repeat(stars)}`;
   const sel = 'w-full border border-slate-300 rounded-lg p-2 text-sm bg-white';
 
   const save = async () => {
@@ -439,7 +439,7 @@ function TaskForm({ classId, onCreated }: { classId: string; onCreated: () => vo
   return (
     <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 space-y-3">
       <div className="flex rounded-lg bg-white p-1 w-fit border border-indigo-200">
-        {([['FULL', '📄 Full paper'], ['UNIT', '🎯 Unit practice'], ['LESSON', '📖 Read lesson'], ['CHAPTER', '📝 Chapter practice'], ['SPEED', '⚡ Speed Math']] as const).map(([v, l]) => (
+        {([['FULL', '📄 Full paper'], ['UNIT', '🎯 Unit-wise practice'], ['LESSON', '📖 Read lesson'], ['CHAPTER', '📝 Chapter practice'], ['SPEED', '⚡ Speed Maths']] as const).map(([v, l]) => (
           <button key={v} onClick={() => setKind(v)} className={`px-3 py-1.5 text-xs font-bold rounded-md ${kind === v ? 'bg-indigo-600 text-white' : 'text-slate-600'}`}>{l}</button>
         ))}
       </div>
