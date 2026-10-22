@@ -10,6 +10,13 @@ vi.mock('next/navigation', () => ({ usePathname: () => path.value }));
 beforeEach(() => { localStorage.clear(); path.value = '/'; });
 
 describe('WelcomeGuide', () => {
+  it('focuses "Got it" without scrolling the guide down', () => {
+    const spy = vi.spyOn(HTMLElement.prototype, 'focus');
+    render(<WelcomeGuide />);
+    expect(spy).toHaveBeenCalledWith({ preventScroll: true });
+    spy.mockRestore();
+  });
+
   it('opens for a first-time visitor on the home page and names the sections', () => {
     render(<WelcomeGuide />);
     expect(screen.getByRole('dialog', { name: /welcome/i })).toBeTruthy();
